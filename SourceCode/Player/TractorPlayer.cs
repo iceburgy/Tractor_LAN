@@ -17,7 +17,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void DistributingCardsFinishedEventHandler();
     public delegate void StarterFailedForTrumpEventHandler();
     public delegate void StarterChangedEventHandler();
-    public delegate void RoomIsFullEventHandler(string msg);
+    public delegate void NotifyMessageEventHandler(string msg);
 
     public delegate void DiscardingLast8EventHandler();
     public delegate void Last8DiscardedEventHandler();    
@@ -55,7 +55,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event DistributingCardsFinishedEventHandler AllCardsGot;
         public event StarterFailedForTrumpEventHandler StarterFailedForTrump; //亮不起
         public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
-        public event RoomIsFullEventHandler RoomIsFullEvent; //房间已满
+        public event NotifyMessageEventHandler NotifyMessageEvent; //广播消息
         
         public event DiscardingLast8EventHandler DiscardingLast8;
         public event Last8DiscardedEventHandler Last8Discarded;
@@ -68,7 +68,7 @@ namespace Duan.Xiugang.Tractor.Player
         
         public event HandEndingEventHandler HandEnding;
 
-        private ITractorHost _tractorHost;
+        private readonly ITractorHost _tractorHost;
         
 
         public TractorPlayer()
@@ -81,7 +81,6 @@ namespace Duan.Xiugang.Tractor.Player
 
             var instanceContext = new InstanceContext(this);
             var channelFactory = new DuplexChannelFactory<ITractorHost>(instanceContext, "NetTcpBinding_ITractorHost");
-            _tractorHost = null;
             _tractorHost = channelFactory.CreateChannel();
 
 
@@ -114,7 +113,10 @@ namespace Duan.Xiugang.Tractor.Player
             this.CurrentPoker.Clear();
         }
 
-        
+        public void RestoreGameStateFromFile()
+        {
+            _tractorHost.RestoreGameStateFromFile();
+        }
 
         public void Ready()
         {
@@ -152,18 +154,10 @@ namespace Duan.Xiugang.Tractor.Player
                 GameOnStarted();
         }
 
-        public void ClearTeamState()
+        public void NotifyMessage(string msg)
         {
-            foreach (PlayerEntity p in this.CurrentGameState.Players)
-            {
-                p.Team = GameTeam.None;
-            }
-        }
-
-        public void RoomIsFull(string msg)
-        {
-            if (RoomIsFullEvent != null)
-                RoomIsFullEvent(msg);
+            if (NotifyMessageEvent != null)
+                NotifyMessageEvent(msg);
         }
 
         public void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump)
@@ -283,24 +277,18 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void NotifyGameState(GameState gameState)
         {
-            bool teamMade = false;            
-
-            if (this.CurrentGameState.Players.Count > 0)
+            bool teamMade = false;
+            if (gameState.Players[0] != null && gameState.Players[0].Team != GameTeam.None &&
+                (this.CurrentGameState.Players[0] == null || this.CurrentGameState.Players[0].Team == GameTeam.None))
             {
-                if (this.CurrentGameState.Players[0].Team == GameTeam.None &&
-                gameState.Players[0] != null && gameState.Players[0].Team != GameTeam.None)
                 teamMade = true;
-            }
-            else
-            {
-                if (gameState.Players[0] != null && gameState.Players[0].Team != GameTeam.None)
-                    teamMade = true;
             }
 
             this.CurrentGameState = gameState;
 
             foreach (PlayerEntity p in gameState.Players)
             {
+                if (p == null) continue;
                 if (p.PlayerId == this.PlayerId)
                 {
                     if (NewPlayerReadyToStart != null)

@@ -6,6 +6,9 @@ using System.Web;
 using Duan.Xiugang.Tractor.Objects;
 using System.Threading;
 using System.Text;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
@@ -42,11 +45,18 @@ namespace TractorServer
                 IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
                 if (PlayersProxy.Count >= 4)
                 {
-                    player.RoomIsFull("房间已满");
+                    player.NotifyMessage("房间已满");
                     return;
                 }
 
-                CurrentGameState.Players.Add(new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None });
+                for (int i = 0; i < 4; i++)
+                {
+                    if (CurrentGameState.Players[i] == null)
+                    {
+                        CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None };
+                        break;
+                    }
+                }
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
                 if (PlayersProxy.Count < 4)
@@ -64,7 +74,7 @@ namespace TractorServer
             }
             else
             {
-                PlayersProxy[playerID].RoomIsFull("已在房间里");
+                PlayersProxy[playerID].NotifyMessage("已在房间里");
                 return;
             }
         }
@@ -72,7 +82,7 @@ namespace TractorServer
         public void PlayerIsReadyToStart(string playerID)
         {
 			foreach (PlayerEntity p in CurrentGameState.Players) {
-				if (p.PlayerId == playerID)
+                if (p != null && p.PlayerId == playerID)
 				{
 					p.IsReadyToStart = true;
 					break;
@@ -82,7 +92,7 @@ namespace TractorServer
 			int isReadyToStart = 0;
 			foreach (PlayerEntity p in CurrentGameState.Players)
 			{
-				if (p.IsReadyToStart)
+                if (p != null && p.IsReadyToStart)
 				{
 					isReadyToStart++;
 				}
@@ -108,19 +118,29 @@ namespace TractorServer
         public void PlayerQuit(string playerId)
         {
             log.Debug(playerId + " quit.");
-            var quitPlayer = CurrentGameState.Players.SingleOrDefault(p => p.PlayerId == playerId);
-            if (quitPlayer != null)
-                CurrentGameState.Players.Remove(quitPlayer);
-
             PlayersProxy.Remove(playerId);
-            foreach (PlayerEntity p in CurrentGameState.Players)
+            for (int i = 0; i < 4; i++)
             {
-                p.IsReadyToStart = false;
+                if (CurrentGameState.Players[i] != null)
+                {
+                    CurrentGameState.Players[i].Rank = 0;
+                    CurrentGameState.Players[i].IsReadyToStart = false;
+                    CurrentGameState.Players[i].Team = GameTeam.None;
+                    if (CurrentGameState.Players[i].PlayerId == playerId)
+                    {
+                        CurrentGameState.Players[i] = null;
+                    }
+                }
             }
             UpdateGameState();
+
+            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentHandState.IsFirstHand = true;
+            UpdatePlayersCurrentHandState();
+
             foreach (var player in PlayersProxy.Values)
             {
-                player.ClearTeamState();
                 player.StartGame();
             }
         }
@@ -243,10 +263,12 @@ namespace TractorServer
                         {
                             p.IsReadyToStart = false;
                         }
-                        UpdateGameState();
-
                         this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                         this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
+
+                        UpdateGameState();
+
+                        SaveGameStateToFile();
                     }
                 }
                 else
@@ -321,7 +343,7 @@ namespace TractorServer
             var oldTrump = this.CurrentHandState.Trump;
             while (true)
             {
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);
                 if (this.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -338,7 +360,7 @@ namespace TractorServer
         public void RestartCurrentHand()
         {
             log.Debug("restart current hand, starter: " + this.CurrentHandState.Starter + " Rank: " + this.CurrentHandState.Rank.ToString());
-            StartNextHand(this.CurrentGameState.Players.Single(p => p.PlayerId == this.CurrentHandState.Starter));
+            StartNextHand(this.CurrentGameState.Players.Single(p => p != null && p.PlayerId == this.CurrentHandState.Starter));
         }
 
         public void StartNextHand(PlayerEntity nextStarter)
@@ -363,7 +385,7 @@ namespace TractorServer
             var oldTrump = this.CurrentHandState.Trump;
             while (true)
             {
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);
                 if (this.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -388,7 +410,7 @@ namespace TractorServer
                 var oldTrump2 = this.CurrentHandState.Trump;
                 while (true)
                 {
-                    Thread.Sleep(10000);
+                    Thread.Sleep(5000);
                     if (this.CurrentHandState.Trump == oldTrump2)
                     {
                         break;
@@ -454,6 +476,137 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
         }
 
+        //保存牌局
+        private void SaveGameStateToFile()
+        {
+            if (string.IsNullOrEmpty(this.CurrentHandState.Starter)) return;
+            Stream stream = null;
+            Stream stream2 = null;
+            try
+            {
+                stream = new FileStream("backup_gamestate", FileMode.Create, FileAccess.Write, FileShare.None);
+                DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
+                ser.WriteObject(stream, this.CurrentGameState);
+
+                stream2 = new FileStream("backup_HandState", FileMode.Create, FileAccess.Write, FileShare.None);
+                DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
+                ser2.WriteObject(stream2, this.CurrentHandState);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+                if (stream2 != null)
+                {
+                    stream2.Close();
+                }
+            }
+        }
+
+        //读取牌局
+        public void RestoreGameStateFromFile()
+        {
+            bool isValid = true;
+            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            {
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid)
+            {
+                PublishMessage("读取牌局失败：玩家人数不够");
+                return;
+            }
+
+            Stream stream = null;
+            Stream stream2 = null;
+            try
+            {
+                DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
+                stream = new FileStream("backup_gamestate", FileMode.Open, FileAccess.Read, FileShare.Read);
+                GameState gs = (GameState)ser.ReadObject(stream);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    this.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
+                }
+
+                DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
+                stream2 = new FileStream("backup_HandState", FileMode.Open, FileAccess.Read, FileShare.Read);
+                CurrentHandState hs = (CurrentHandState)ser2.ReadObject(stream2);
+
+                int lastStarterIndex = -1;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (gs.Players[i] != null && gs.Players[i].PlayerId == hs.Starter)
+                    {
+                        lastStarterIndex = i;
+                        break;
+                    }
+                }
+
+                if (lastStarterIndex < 0)
+                {
+                    PublishMessage("读取牌局失败：上盘牌局无庄家");
+                    return;
+                }
+
+                PlayerEntity thisStarter = this.CurrentGameState.Players[lastStarterIndex];
+
+                this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+                this.CurrentHandState.Starter = thisStarter.PlayerId;
+                this.CurrentHandState.Rank = thisStarter.Rank;
+                this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+                if (stream2 != null)
+                {
+                    stream2.Close();
+                }
+
+                this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                this.CurrentGameState.startNextHandStarter = thisStarter;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    this.CurrentGameState.Players[i].IsReadyToStart = false;
+                }
+
+                UpdatePlayersCurrentHandState();
+                UpdateGameState();
+
+                PublishMessage("读取牌局成功！请点击就绪继续上盘游戏");
+            }
+            catch (Exception ex)
+            {
+                PublishMessage("读取牌局失败：牌局存档文件读取失败");
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+                if (stream2 != null)
+                {
+                    stream2.Close();
+                }
+            }
+        }
+
         //发底牌
         public void DistributeLast8Cards()
         {
@@ -506,6 +659,7 @@ namespace TractorServer
             List<String> playerIDList = new List<string>();
             foreach (PlayerEntity p in this.CurrentGameState.Players)
             {
+                if (p == null) continue;
                 playerIDList.Add(p.PlayerId);
             }
             this.CurrentTrickState = new CurrentTrickState(playerIDList);
@@ -589,6 +743,14 @@ namespace TractorServer
         }
 
         #endregion
+
+        public void PublishMessage(string msg)
+        {
+            foreach (IPlayer player in PlayersProxy.Values)
+            {
+                player.NotifyMessage(msg);
+            }
+        }
                         
     }
 }

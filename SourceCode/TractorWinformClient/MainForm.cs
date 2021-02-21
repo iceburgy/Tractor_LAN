@@ -137,7 +137,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.HandEnding += ThisPlayer_HandEnding;
             ThisPlayer.StarterFailedForTrump += ThisPlayer_StarterFailedForTrump;
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
-            ThisPlayer.RoomIsFullEvent += ThisPlayer_RoomIsFullEventHandler;
+            ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
             ThisPlayer.DumpingFail += ThisPlayer_DumpingFail;
@@ -322,8 +322,84 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (e.Button == MouseButtons.Right) //右键
                 {
-                    ToDiscard8Cards();
-                    ToShowCards();
+                    if ((e.X >= (int)myCardsLocation[0] &&
+                         e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71)) && (e.Y >= 355 && e.Y < 472))
+                    {
+                        int i = calculateRegionHelper.CalculateRightClickedRegion(e);
+                        if (i > -1 && i < myCardIsReady.Count)
+                        {
+                            bool b = (bool)myCardIsReady[i];
+                            int x = (int)myCardsLocation[i];
+                            int selectMoreCount = i;
+                            bool isLeader = false;
+                            if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
+                            {
+                                selectMoreCount = ThisPlayer.CurrentTrickState.LeadingCards.Count - 1;
+                            }
+                            else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
+                            {
+                                isLeader = true;
+                            }
+                            if (b)
+                            {
+                                for (int j = 1; j <= selectMoreCount; j++)
+                                {
+                                    if ((int)myCardsLocation[i - j] == (x - 13))
+                                    {
+                                        if (isLeader)
+                                        {
+                                            if (i - j > 0 && (int)myCardsNumber[i - j] == (int)myCardsNumber[i - j + 1])
+                                            {
+                                                myCardIsReady[i - j] = b;
+                                                myCardIsReady[i - j + 1] = b;
+                                                j++;
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            myCardIsReady[i - j] = b;
+                                        }
+                                        x = x - 13;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                for (int j = 1; j <= i; j++)
+                                {
+                                    if ((int)myCardsLocation[i - j] == (x - 13))
+                                    {
+                                        myCardIsReady[i - j] = b;
+                                        x = x - 13;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+
+                            }
+                            SelectedCards.Clear();
+                            for (int k = 0; k < myCardIsReady.Count; k++)
+                            {
+                                if ((bool)myCardIsReady[k])
+                                {
+                                    SelectedCards.Add((int)myCardsNumber[k]);
+                                }
+                            }
+
+                            drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+                            Refresh();
+                        }
+                    }
                 }
 
 
@@ -620,72 +696,64 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
-            string curPlayerID = null;
-            int hostToMeDistance = 0;
-            int totalPlayersCount = ThisPlayer.CurrentGameState.Players.Count;
-            int processedCount = 0;
-            foreach (PlayerEntity p in ThisPlayer.CurrentGameState.Players)
+            int curIndex = -1;
+            for (int i = 0; i < 4; i++)
             {
-                if (curPlayerID == null) curPlayerID = p.PlayerId;
-                if (p.PlayerId == ThisPlayer.PlayerId) break;
-                hostToMeDistance++;
-            }
-
-            System.Windows.Forms.Label[] nickNameLabels = new System.Windows.Forms.Label[] { this.lblSouthNickName, this.lblEastNickName, this.lblNorthNickName, this.lblWestNickName };
-            int lblIndex = (4 - hostToMeDistance) % 4;
-            while (processedCount < 4)
-            {
-                if (processedCount < totalPlayersCount)
+                var curPlayer=ThisPlayer.CurrentGameState.Players[i];
+                if (curPlayer != null && curPlayer.PlayerId == ThisPlayer.PlayerId)
                 {
-                    nickNameLabels[lblIndex].Text = curPlayerID;
+                    curIndex = i;
+                    break;
+                }
+            }
+            System.Windows.Forms.Label[] nickNameLabels = new System.Windows.Forms.Label[] { this.lblSouthNickName, this.lblEastNickName, this.lblNorthNickName, this.lblWestNickName };
+            for (int i = 0; i < 4; i++)
+            {
+                var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
+                if (curPlayer != null)
+                {
+                    nickNameLabels[i].Text = curPlayer.PlayerId;
                 }
                 else
                 {
-                    nickNameLabels[lblIndex].Text = "";
+                    nickNameLabels[i].Text = "";
                 }
-
-                processedCount++;
-                lblIndex = (lblIndex + 1) % 4;
-
-                var nextPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(curPlayerID);
-                if (nextPlayer != null)
-                {
-                    curPlayerID = nextPlayer.PlayerId;
-                }
+                curIndex = (curIndex + 1) % 4;
             }
         }
 
         private void ThisPlayer_NewPlayerReadyToStart(bool readyToStart)
         {
             this.btnReady.Enabled = !readyToStart;
-            string[] readyStatus = new string[]{"","沉思"};
             
             //看看谁不点就绪
             System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
-            int meIndex = -1;
-            int totalPlayer = ThisPlayer.CurrentGameState.Players.Count;
-            int totalLabel = readyLabels.Length;
-            for (int i = 0; i < totalPlayer; i++)
+            int curIndex = -1;
+            for (int i = 0; i < 4; i++)
             {
-                if (ThisPlayer.CurrentGameState.Players[i].PlayerId == ThisPlayer.PlayerId)
+                var curPlayer = ThisPlayer.CurrentGameState.Players[i];
+                if (curPlayer != null && curPlayer.PlayerId == ThisPlayer.PlayerId)
                 {
-                    meIndex = i;
+                    curIndex = i;
                     break;
                 }
             }
-
-            for (int i = 0; i < totalLabel; i++)
+            for (int i = 0; i < 4; i++)
             {
-                if (meIndex < totalPlayer)
+                var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
+                if (curPlayer != null && !curPlayer.IsReadyToStart)
                 {
-                    bool isReady = ThisPlayer.CurrentGameState.Players[meIndex].IsReadyToStart;
-                    readyLabels[i].Text = readyStatus[isReady ? 0 : 1];
+                    readyLabels[i].Text = "沉思";
+                }
+                else if (curPlayer != null && !string.IsNullOrEmpty(ThisPlayer.CurrentHandState.Starter) && curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter)
+                {
+                    readyLabels[i].Text = "庄家";
                 }
                 else
                 {
-                    readyLabels[i].Text = readyStatus[0];
+                    readyLabels[i].Text = (curIndex + 1).ToString();
                 }
-                meIndex = (meIndex + 1) % totalLabel;
+                curIndex = (curIndex + 1) % 4;
             }
         }
 
@@ -734,43 +802,36 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_StarterChangedEventHandler()
         {
             if (ThisPlayer.CurrentHandState.Starter == null || ThisPlayer.CurrentHandState.Starter.Length == 0) return;
-            System.Windows.Forms.Label[] starterLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
-            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Ending)
-            {
-                for (int i = 0; i < starterLabels.Length; i++)
-                {
-                    starterLabels[i].Text = "";
-                }
-                return;
-            }
-            string starterLabelText = "庄家";
-            int starterToMeDistance = -1;
-            int starterIndex = -1;
-            int meIndex = -1;
-            int total=ThisPlayer.CurrentGameState.Players.Count;
-            for (int i = 0; i < total; i++)
-            {
-                var curPlayerID = ThisPlayer.CurrentGameState.Players[i].PlayerId;
-                if (curPlayerID == ThisPlayer.CurrentHandState.Starter)
-                {
-                    starterIndex = i;
-                }
-                if (curPlayerID == ThisPlayer.PlayerId)
-                {
-                    meIndex = i;
-                }
-            }
-            starterToMeDistance = starterIndex - meIndex;
-            if (starterToMeDistance < 0) starterToMeDistance += 4;
 
-            for (int i = 0; i < starterLabels.Length; i++)
+            System.Windows.Forms.Label[] starterLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
+            string starterLabelText = "庄家";
+            int curIndex = -1;
+            for (int i = 0; i < 4; i++)
             {
-                if (i == starterToMeDistance) starterLabels[i].Text = starterLabelText;
-                else starterLabels[i].Text = "";
+                var curPlayer = ThisPlayer.CurrentGameState.Players[i];
+                if (curPlayer != null && curPlayer.PlayerId == ThisPlayer.PlayerId)
+                {
+                    curIndex = i;
+                    break;
+                }
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
+                if (curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter &&
+                    ThisPlayer.CurrentHandState.CurrentHandStep != HandStep.Ending)
+                {
+                    starterLabels[i].Text = starterLabelText;
+                }
+                else
+                {
+                    starterLabels[i].Text = (curIndex + 1).ToString();
+                }                
+                curIndex = (curIndex + 1) % 4;
             }
         }
 
-        private void ThisPlayer_RoomIsFullEventHandler(string msg)
+        private void ThisPlayer_NotifyMessageEventHandler(string msg)
         {
             MessageBox.Show(msg);
         }        
@@ -843,6 +904,11 @@ namespace Duan.Xiugang.Tractor
         private void RebootToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Restart();
+        }
+
+        private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.RestoreGameStateFromFile();
         }
     }
 }

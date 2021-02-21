@@ -18,6 +18,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public GameState()
         {
             Players = new List<PlayerEntity>();
+            for (int i = 0; i < 4; i++)
+            {
+                Players.Add(null);
+            }
         }
 
         public List<PlayerEntity> VerticalTeam
@@ -27,7 +31,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 var team = new List<PlayerEntity>();
                 foreach (PlayerEntity player in Players)
                 {
-                    if (player.Team == GameTeam.VerticalTeam)
+                    if (player != null && player.Team == GameTeam.VerticalTeam)
                     {
                         team.Add(player);
                     }
@@ -43,7 +47,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 var team = new List<PlayerEntity>();
                 foreach (PlayerEntity player in Players)
                 {
-                    if (player.Team == GameTeam.HorizonTeam)
+                    if (player != null && player.Team == GameTeam.HorizonTeam)
                     {
                         team.Add(player);
                     }
@@ -56,7 +60,7 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             foreach (PlayerEntity player in Players)
             {
-                if (players.Exists(p => p.PlayerId == player.PlayerId))
+                if (players.Exists(p => p != null && p.PlayerId == player.PlayerId))
                 {
                     player.Team = GameTeam.VerticalTeam;
                 }
@@ -77,7 +81,7 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             PlayerEntity nextStarter = null;
 
-            if (!Players.Exists(p => p.PlayerId == starter))
+            if (!Players.Exists(p => p != null && p.PlayerId == starter))
             {
                 //log
                 return null;
@@ -111,6 +115,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     foreach (PlayerEntity player in Players)
                     {
+                        if (player == null) continue;
                         if (player.Team == starterTeam)
                         {
                             //5,10,K必打
@@ -129,6 +134,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     foreach (PlayerEntity player in Players)
                     {
+                        if (player == null) continue;
                         if (player.Team == starterTeam)
                         {
                             //5,10,K必打
@@ -147,6 +153,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     foreach (PlayerEntity player in Players)
                     {
+                        if (player == null) continue;
                         if (player.Team == starterTeam)
                             player.Rank = player.Rank + 1;
                     }
@@ -163,7 +170,7 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <returns></returns>
         public PlayerEntity NextRank(CurrentHandState handState, CurrentTrickState lastTrickState)
         {
-            if (!Players.Exists(p => p.PlayerId == handState.Starter))
+            if (!Players.Exists(p => p != null && p.PlayerId == handState.Starter))
             {
                 //log
                 return null;
@@ -179,41 +186,15 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <returns></returns>
         public PlayerEntity GetNextPlayerAfterThePlayer(string playerId)
         {
-            PlayerEntity result = null;
-            if (!Players.Exists(p => p.PlayerId == playerId))
+            int thisPlayerIndex = -1;
+            for (int i = 0; i < Players.Count; i++)
             {
-                //log
-                return result;
-            }
-
-            bool afterThePlayer = false;
-            foreach (PlayerEntity player in Players)
-            {
-                if (player.PlayerId != playerId && !afterThePlayer)
-                    continue;
-                if (player.PlayerId == playerId)
+                if (Players[i] != null && Players[i].PlayerId == playerId)
                 {
-                    afterThePlayer = true;
-                }
-                else if (player.PlayerId != playerId && afterThePlayer)
-                {
-                    result = player;
-                    break;
+                    thisPlayerIndex = i;
                 }
             }
-            if (result == null)
-            {
-                foreach (PlayerEntity player in Players)
-                {
-                    if (player.PlayerId != playerId)
-                    {
-                        result = player;
-                        break;
-                    }
-                }
-            }
-
-            return result;
+            return Players[(thisPlayerIndex + 1) % 4];
         }
 
         /// <summary>
@@ -225,15 +206,16 @@ namespace Duan.Xiugang.Tractor.Objects
         public PlayerEntity GetNextPlayerAfterThePlayer(bool inSameTeam, string playerId)
         {
             PlayerEntity result = null;
-            if (!Players.Exists(p => p.PlayerId == playerId))
+            if (!Players.Exists(p => p != null && p.PlayerId == playerId))
             {
                 //log
             }
-            GameTeam thePlayerTeam = Players.Single(p => p.PlayerId == playerId).Team;
+            GameTeam thePlayerTeam = Players.Single(p => p != null && p.PlayerId == playerId).Team;
 
             bool afterStarter = false;
             foreach (PlayerEntity player in Players)
             {
+                if (player == null) continue;
                 if (player.PlayerId != playerId && !afterStarter)
                     continue;
                 if (player.PlayerId == playerId)
@@ -254,7 +236,7 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 foreach (PlayerEntity player in Players)
                 {
-                    if (player.PlayerId != playerId)
+                    if (player != null && player.PlayerId != playerId)
                     {
                         if ((inSameTeam && player.Team == thePlayerTeam) ||
                             (!inSameTeam && player.Team != thePlayerTeam))

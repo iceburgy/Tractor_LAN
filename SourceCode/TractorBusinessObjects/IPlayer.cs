@@ -19,13 +19,9 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void StartGame();
 
-        //有玩家退出，重新组队
+        //广播消息
         [OperationContract(IsOneWay = true)]
-        void ClearTeamState();
-
-        //房间已满
-        [OperationContract(IsOneWay = true)]
-        void RoomIsFull(string msg);
+        void NotifyMessage(string msg);
 
         [OperationContract(IsOneWay = true)]
         void GetDistributedCard(int number);
@@ -43,7 +39,6 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <param name="currentTrickState"></param>
         [OperationContract(IsOneWay = true)]
         void NotifyCurrentTrickState(CurrentTrickState currentTrickState);
-
 
         /// <summary>
         ///     更新游戏状态

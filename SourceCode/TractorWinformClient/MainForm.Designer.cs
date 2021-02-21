@@ -54,6 +54,7 @@ namespace Duan.Xiugang.Tractor
             this.lblWestStarter = new System.Windows.Forms.Label();
             this.lblNorthStarter = new System.Windows.Forms.Label();
             this.lblEastStarter = new System.Windows.Forms.Label();
+            this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,6 +74,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.GameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.SettingToolStripMenuItem,
+            this.RestoreGameStateToolStripMenuItem,
             this.StartToolStripMenuItem,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
@@ -83,7 +85,7 @@ namespace Duan.Xiugang.Tractor
             // SettingToolStripMenuItem
             // 
             this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
             this.SettingToolStripMenuItem.Text = "设置";
             this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
@@ -92,21 +94,21 @@ namespace Duan.Xiugang.Tractor
             this.StartToolStripMenuItem.Image = global::Duan.Xiugang.Tractor.Properties.Resources.MenuStart;
             this.StartToolStripMenuItem.Name = "StartToolStripMenuItem";
             this.StartToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.StartToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.StartToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
             this.StartToolStripMenuItem.Text = "加入房间";
             this.StartToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
             this.RebootToolStripMenuItem.Text = "重启游戏";
             this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
             this.ExitToolStripMenuItem.Text = "退出";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
@@ -301,6 +303,13 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter.TabIndex = 14;
             this.lblEastStarter.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // RestoreGameStateToolStripMenuItem
+            // 
+            this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
+            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
+            this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -367,6 +376,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Label lblNorthStarter;
         private System.Windows.Forms.Label lblEastStarter;
         private System.Windows.Forms.ToolStripMenuItem RebootToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem RestoreGameStateToolStripMenuItem;
     }
 }
 

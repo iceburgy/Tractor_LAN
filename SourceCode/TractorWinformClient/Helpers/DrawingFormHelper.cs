@@ -362,8 +362,8 @@ namespace Duan.Xiugang.Tractor
             int rankofNorthSouth = 0;
             int rankofEastWest = 0;
 
-            if (mainForm.ThisPlayer.CurrentGameState.Players.Find(p => p.PlayerId == mainForm.ThisPlayer.PlayerId) != null)
-                rankofNorthSouth = mainForm.ThisPlayer.CurrentGameState.Players.Find(p => p.PlayerId == mainForm.ThisPlayer.PlayerId).Rank;
+            if (mainForm.ThisPlayer.CurrentGameState.Players.Find(p => p != null && p.PlayerId == mainForm.ThisPlayer.PlayerId) != null)
+                rankofNorthSouth = mainForm.ThisPlayer.CurrentGameState.Players.Find(p => p != null && p.PlayerId == mainForm.ThisPlayer.PlayerId).Rank;
             if (mainForm.ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(mainForm.ThisPlayer.PlayerId) != null)
                 rankofEastWest = mainForm.ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(mainForm.ThisPlayer.PlayerId).Rank;
 

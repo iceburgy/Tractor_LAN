@@ -21,6 +21,7 @@ namespace Duan.Xiugang.Tractor.Objects
             PlayerHoldingCards = new Dictionary<string, CurrentPoker>();
             foreach (PlayerEntity player in gameState.Players)
             {
+                if (player == null) continue;
                 PlayerHoldingCards[player.PlayerId] = new CurrentPoker();
             }
             LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(gameState.Players.Count);

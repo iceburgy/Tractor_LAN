@@ -32,6 +32,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void RefreshPlayersCurrentHandState();
 
+        //读取牌局
+        [OperationContract(IsOneWay = true)]
+        void RestoreGameStateFromFile();
+
         //甩牌检查
         [OperationContract]
         ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId);
