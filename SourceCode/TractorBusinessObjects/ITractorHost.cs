@@ -13,6 +13,9 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerIsReady(string playerId);
 
         [OperationContract(IsOneWay = true)]
+        void PlayerIsReadyToStart(string playerId);
+
+        [OperationContract(IsOneWay = true)]
         void PlayerQuit(string playerId);
 
         [OperationContract(IsOneWay = true)]
@@ -24,6 +27,10 @@ namespace Duan.Xiugang.Tractor.Objects
         //玩家出牌
         [OperationContract(IsOneWay = true)]
         void PlayerShowCards(CurrentTrickState currentTrickState);
+
+        //更新玩家分数显示（用于甩牌失败后显示惩罚分数）
+        [OperationContract(IsOneWay = true)]
+        void RefreshPlayersCurrentHandState();
 
         //甩牌检查
         [OperationContract]

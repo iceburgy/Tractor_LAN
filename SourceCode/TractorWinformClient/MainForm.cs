@@ -110,8 +110,19 @@ namespace Duan.Xiugang.Tractor
             BackgroundImage = image;
 
             //变量初始化
-            bmp = new Bitmap(ClientRectangle.Width, ClientRectangle.Height);
+            bmp = new Bitmap(3000, 5000);
             ThisPlayer = new TractorPlayer();
+
+            var myreader = new AppSettingsReader();
+            try
+            {
+                var nickName = (String)myreader.GetValue("nickName", typeof(String));
+                ThisPlayer.PlayerId = nickName;
+            }
+            catch (Exception ex)
+            {
+                
+            }
 
             ThisPlayer.PlayerOnGetCard += PlayerGetCard;
             ThisPlayer.GameOnStarted += StartGame;
@@ -120,10 +131,13 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
+            ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
             ThisPlayer.PlayersTeamMade += ThisPlayer_PlayersTeamMade;
             ThisPlayer.TrickFinished += ThisPlayer_TrickFinished;
             ThisPlayer.HandEnding += ThisPlayer_HandEnding;
             ThisPlayer.StarterFailedForTrump += ThisPlayer_StarterFailedForTrump;
+            ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
+            ThisPlayer.RoomIsFullEvent += ThisPlayer_RoomIsFullEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
             ThisPlayer.DumpingFail += ThisPlayer_DumpingFail;
@@ -326,8 +340,7 @@ namespace Duan.Xiugang.Tractor
                 }
             }
             else if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards ||
-                     ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished ||
-                     ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
+                     ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
             {
                 ExposeTrump(e);
             }
@@ -491,7 +504,7 @@ namespace Duan.Xiugang.Tractor
                 Close();
             }
 
-            if (menuItem.Text.Equals("开始新游戏"))
+            if (menuItem.Text.Equals("加入房间"))
             {
                 ThisPlayer.Ready();
 
@@ -510,19 +523,6 @@ namespace Duan.Xiugang.Tractor
                 WindowState = FormWindowState.Normal;
             }
             Activate();
-        }
-
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            if (WindowState == FormWindowState.Minimized)
-            {
-                Visible = false;
-                notifyIcon.Visible = true;
-            }
-            else
-            {
-                notifyIcon.Visible = false;
-            }
         }
     
 
@@ -620,6 +620,78 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
+            string curPlayerID = null;
+            int hostToMeDistance = 0;
+            int totalPlayersCount = ThisPlayer.CurrentGameState.Players.Count;
+            int processedCount = 0;
+            foreach (PlayerEntity p in ThisPlayer.CurrentGameState.Players)
+            {
+                if (curPlayerID == null) curPlayerID = p.PlayerId;
+                if (p.PlayerId == ThisPlayer.PlayerId) break;
+                hostToMeDistance++;
+            }
+
+            System.Windows.Forms.Label[] nickNameLabels = new System.Windows.Forms.Label[] { this.lblSouthNickName, this.lblEastNickName, this.lblNorthNickName, this.lblWestNickName };
+            int lblIndex = (4 - hostToMeDistance) % 4;
+            while (processedCount < 4)
+            {
+                if (processedCount < totalPlayersCount)
+                {
+                    nickNameLabels[lblIndex].Text = curPlayerID;
+                }
+                else
+                {
+                    nickNameLabels[lblIndex].Text = "";
+                }
+
+                processedCount++;
+                lblIndex = (lblIndex + 1) % 4;
+
+                var nextPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(curPlayerID);
+                if (nextPlayer != null)
+                {
+                    curPlayerID = nextPlayer.PlayerId;
+                }
+            }
+        }
+
+        private void ThisPlayer_NewPlayerReadyToStart(bool readyToStart)
+        {
+            this.btnReady.Enabled = !readyToStart;
+            string[] readyStatus = new string[]{"","沉思"};
+            
+            //看看谁不点就绪
+            System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
+            int meIndex = -1;
+            int totalPlayer = ThisPlayer.CurrentGameState.Players.Count;
+            int totalLabel = readyLabels.Length;
+            for (int i = 0; i < totalPlayer; i++)
+            {
+                if (ThisPlayer.CurrentGameState.Players[i].PlayerId == ThisPlayer.PlayerId)
+                {
+                    meIndex = i;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < totalLabel; i++)
+            {
+                if (meIndex < totalPlayer)
+                {
+                    bool isReady = ThisPlayer.CurrentGameState.Players[meIndex].IsReadyToStart;
+                    readyLabels[i].Text = readyStatus[isReady ? 0 : 1];
+                }
+                else
+                {
+                    readyLabels[i].Text = readyStatus[0];
+                }
+                meIndex = (meIndex + 1) % totalLabel;
+            }
+        }
+
+        private void Mainform_SettingsUpdatedEventHandler()
+        {
+            Application.Restart();
         }
 
         private void ThisPlayer_TrickFinished()
@@ -659,6 +731,50 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
+        private void ThisPlayer_StarterChangedEventHandler()
+        {
+            if (ThisPlayer.CurrentHandState.Starter == null || ThisPlayer.CurrentHandState.Starter.Length == 0) return;
+            System.Windows.Forms.Label[] starterLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
+            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Ending)
+            {
+                for (int i = 0; i < starterLabels.Length; i++)
+                {
+                    starterLabels[i].Text = "";
+                }
+                return;
+            }
+            string starterLabelText = "庄家";
+            int starterToMeDistance = -1;
+            int starterIndex = -1;
+            int meIndex = -1;
+            int total=ThisPlayer.CurrentGameState.Players.Count;
+            for (int i = 0; i < total; i++)
+            {
+                var curPlayerID = ThisPlayer.CurrentGameState.Players[i].PlayerId;
+                if (curPlayerID == ThisPlayer.CurrentHandState.Starter)
+                {
+                    starterIndex = i;
+                }
+                if (curPlayerID == ThisPlayer.PlayerId)
+                {
+                    meIndex = i;
+                }
+            }
+            starterToMeDistance = starterIndex - meIndex;
+            if (starterToMeDistance < 0) starterToMeDistance += 4;
+
+            for (int i = 0; i < starterLabels.Length; i++)
+            {
+                if (i == starterToMeDistance) starterLabels[i].Text = starterLabelText;
+                else starterLabels[i].Text = "";
+            }
+        }
+
+        private void ThisPlayer_RoomIsFullEventHandler(string msg)
+        {
+            MessageBox.Show(msg);
+        }        
+        
         private void ThisPlayer_Last8Discarded()
         {
             Graphics g = Graphics.FromImage(bmp);
@@ -672,6 +788,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_DiscardingLast8()
         {
+            drawingFormHelper.ReDrawToolbar();
             Graphics g = Graphics.FromImage(bmp);
 
             g.DrawImage(image, new Rectangle(200, 186, 85, 96), new Rectangle(200, 186, 85, 96), GraphicsUnit.Pixel);
@@ -710,5 +827,22 @@ namespace Duan.Xiugang.Tractor
         }
 
         #endregion
+
+        private void btnReady_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.ReadyToStart();
+        }
+
+        private void SettingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormSettings formSettings = new FormSettings();
+            formSettings.SettingsUpdatedEvent += Mainform_SettingsUpdatedEventHandler;
+            formSettings.Show();
+        }
+
+        private void RebootToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Restart();
+        }
     }
 }

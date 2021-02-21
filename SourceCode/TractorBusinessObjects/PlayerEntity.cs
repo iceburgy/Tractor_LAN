@@ -16,5 +16,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         [DataMember]
         public GameTeam Team { get; set; }
+
+        [DataMember]
+        public bool IsReadyToStart { get; set; }
     }
 }

@@ -40,6 +40,12 @@ namespace TractorServer
             if (!PlayersProxy.Keys.Contains(playerID))
             {
                 IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
+                if (PlayersProxy.Count >= 4)
+                {
+                    player.RoomIsFull("房间已满");
+                    return;
+                }
+
                 CurrentGameState.Players.Add(new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None });
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
@@ -53,20 +59,49 @@ namespace TractorServer
                     CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
                     CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
                     UpdateGameState();
-
-                    RestartGame();
+                    CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 }
             }
             else
             {
-                if (PlayersProxy.Count == 4)
-                {
-                    if (this.CurrentHandState.IsFirstHand)
-                        RestartGame();
-                    else
-                        RestartCurrentHand();
-                }
+                PlayersProxy[playerID].RoomIsFull("已在房间里");
+                return;
             }
+        }
+
+        public void PlayerIsReadyToStart(string playerID)
+        {
+			foreach (PlayerEntity p in CurrentGameState.Players) {
+				if (p.PlayerId == playerID)
+				{
+					p.IsReadyToStart = true;
+					break;
+				}
+			}
+            UpdateGameState();
+			int isReadyToStart = 0;
+			foreach (PlayerEntity p in CurrentGameState.Players)
+			{
+				if (p.IsReadyToStart)
+				{
+					isReadyToStart++;
+				}
+			}
+			if (isReadyToStart == 4){
+				switch (CurrentGameState.nextRestartID) {
+                    case GameState.RESTART_GAME:
+						RestartGame();
+						break;
+                    case GameState.RESTART_CURRENT_HAND:
+						RestartCurrentHand();
+						break;
+                    case GameState.START_NEXT_HAND:
+						StartNextHand(CurrentGameState.startNextHandStarter);
+						break;
+					default:
+						break;
+				}
+			}
         }
 
         //玩家推出
@@ -78,8 +113,14 @@ namespace TractorServer
                 CurrentGameState.Players.Remove(quitPlayer);
 
             PlayersProxy.Remove(playerId);
+            foreach (PlayerEntity p in CurrentGameState.Players)
+            {
+                p.IsReadyToStart = false;
+            }
+            UpdateGameState();
             foreach (var player in PlayersProxy.Values)
             {
+                player.ClearTeamState();
                 player.StartGame();
             }
         }
@@ -198,12 +239,14 @@ namespace TractorServer
                         this.CurrentHandState.CurrentHandStep = HandStep.Ending;
                         UpdatePlayersCurrentHandState();
 
-                        Thread.Sleep(5000);
-                        var starter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
+                        foreach (PlayerEntity p in CurrentGameState.Players)
+                        {
+                            p.IsReadyToStart = false;
+                        }
+                        UpdateGameState();
 
-                        Thread.Sleep(5000);
-                        StartNextHand(starter);
-
+                        this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                        this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
                     }
                 }
                 else
@@ -220,6 +263,19 @@ namespace TractorServer
 
             if (result.ResultType == ShowingCardsValidationResultType.DumpingFail)
             {
+                //甩牌失败，扣分：牌的张数x10
+                int punishScore = selectedCards.Count * 10;
+                if (
+                    !this.CurrentGameState.ArePlayersInSameTeam(CurrentHandState.Starter,
+                                                                playerId))
+                {
+                    CurrentHandState.Score -= punishScore;
+                }
+                else
+                {
+                    CurrentHandState.Score += punishScore;
+                }
+                log.Debug("tried to dump cards and failed, punish score: " + punishScore);
                 foreach (var player in PlayersProxy)
                 {
                     if (player.Key != playerId)
@@ -235,6 +291,11 @@ namespace TractorServer
             }
             log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
             return result;
+        }
+
+        public void RefreshPlayersCurrentHandState()
+        {
+            UpdatePlayersCurrentHandState();
         }
         #endregion
 
@@ -255,7 +316,19 @@ namespace TractorServer
             DistributeCards();
             if (this.CurrentHandState.Id != currentHandId)
                 return;
-            Thread.Sleep(5000);
+
+            // reset timer everytime Trump is modified
+            var oldTrump = this.CurrentHandState.Trump;
+            while (true)
+            {
+                Thread.Sleep(10000);
+                if (this.CurrentHandState.Trump == oldTrump)
+                {
+                    break;
+                }
+                oldTrump = this.CurrentHandState.Trump;
+            }
+            
             if (this.CurrentHandState.Trump != Suit.None)
                 DistributeLast8Cards();
             else if (PlayersProxy.Count == 4)
@@ -286,10 +359,20 @@ namespace TractorServer
             if (this.CurrentHandState.Id != currentHandId)
                 return;
 
-            Thread.Sleep(5000);
+            // reset timer everytime Trump is modified
+            var oldTrump = this.CurrentHandState.Trump;
+            while (true)
+            {
+                Thread.Sleep(10000);
+                if (this.CurrentHandState.Trump == oldTrump)
+                {
+                    break;
+                }
+                oldTrump = this.CurrentHandState.Trump;
+            }
             if (this.CurrentHandState.Trump != Suit.None)
                 DistributeLast8Cards();
-            
+
             else if (PlayersProxy.Count == 4)
             {
                 //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
@@ -301,7 +384,17 @@ namespace TractorServer
                 UpdatePlayersCurrentHandState();
 
                 //10 seconds to make trump
-                Thread.Sleep(10000);
+                // reset timer everytime Trump is modified
+                var oldTrump2 = this.CurrentHandState.Trump;
+                while (true)
+                {
+                    Thread.Sleep(10000);
+                    if (this.CurrentHandState.Trump == oldTrump2)
+                    {
+                        break;
+                    }
+                    oldTrump2 = this.CurrentHandState.Trump;
+                }
                 if (this.CurrentHandState.Trump != Suit.None)
                     DistributeLast8Cards();
                 else if (PlayersProxy.Count == 4)
@@ -343,7 +436,7 @@ namespace TractorServer
 
                     this.CurrentHandState.PlayerHoldingCards[player.Key].AddCard(CardsShoe.Cards[index]);
                 }
-                Thread.Sleep(500);
+                Thread.Sleep(750);
             }
 
             log.Debug("distribute cards to each player: ");
@@ -410,7 +503,12 @@ namespace TractorServer
         //begin new trick
         private void BeginNewTrick(string leader)
         {
-            this.CurrentTrickState = new CurrentTrickState(this.PlayersProxy.Keys.ToList());
+            List<String> playerIDList = new List<string>();
+            foreach (PlayerEntity p in this.CurrentGameState.Players)
+            {
+                playerIDList.Add(p.PlayerId);
+            }
+            this.CurrentTrickState = new CurrentTrickState(playerIDList);
             this.CurrentTrickState.Learder = leader;
             this.CurrentTrickState.Trump = CurrentHandState.Trump;
             this.CurrentTrickState.Rank = CurrentHandState.Rank;

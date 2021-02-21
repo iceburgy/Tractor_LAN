@@ -9,6 +9,12 @@ namespace Duan.Xiugang.Tractor.Objects
     {
         [DataMember] public readonly List<PlayerEntity> Players;
 
+        public int nextRestartID = 0;
+        public const int RESTART_GAME = 1;
+        public const int RESTART_CURRENT_HAND = 2;
+        public const int START_NEXT_HAND = 3;
+        public PlayerEntity startNextHandStarter = null;
+
         public GameState()
         {
             Players = new List<PlayerEntity>();
@@ -87,8 +93,8 @@ namespace Duan.Xiugang.Tractor.Objects
                     int scoreCopy = score;
                     while (scoreCopy >= 120)
                     {
-                        //2,J必打
-                        if (player.Team != starterTeam && player.Rank != 0 && player.Rank != 9)
+                        //5,10,K必打
+                        if (player.Team != starterTeam && player.Rank != 3 && player.Rank != 8 && player.Rank != 11)
                         {
                             player.Rank = player.Rank + 1;
                             scoreCopy -= 40;
@@ -107,9 +113,13 @@ namespace Duan.Xiugang.Tractor.Objects
                     {
                         if (player.Team == starterTeam)
                         {
-                            //J必打
-                            if (player.Rank < 9 && player.Rank + 3 > 9)
-                                player.Rank = 9;
+                            //5,10,K必打
+                            if (player.Rank < 3 && player.Rank + 3 > 3)
+                                player.Rank = 3;
+                            else if (player.Rank < 8 && player.Rank + 3 > 8)
+                                player.Rank = 8;
+                            else if (player.Rank < 11 && player.Rank + 3 > 11)
+                                player.Rank = 11;
                             else
                                 player.Rank = player.Rank + 3;
                         }
@@ -121,9 +131,13 @@ namespace Duan.Xiugang.Tractor.Objects
                     {
                         if (player.Team == starterTeam)
                         {
-                            //J必打
-                            if (player.Rank < 9 && player.Rank + 2 > 9)
-                                player.Rank = 9;
+                            //5,10,K必打
+                            if (player.Rank < 3 && player.Rank + 2 > 3)
+                                player.Rank = 3;
+                            else if (player.Rank < 8 && player.Rank + 2 > 8)
+                                player.Rank = 8;
+                            else if (player.Rank < 11 && player.Rank + 2 > 11)
+                                player.Rank = 11;
                             else
                                 player.Rank = player.Rank + 2;
                         }
@@ -155,45 +169,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 return null;
             }
 
-
-            if (handState.Rank != 9)
-            {
-                return NextRank(handState.Starter, handState.Score);
-            }
-            if (handState.Score >= 80)
-            {
-                //主J勾到底
-
-                var cardscp = new CurrentPoker(lastTrickState.ShowedCards[lastTrickState.LatestPlayerShowedCard()],
-                    handState.Trump, handState.Rank);
-                if (cardscp.MasterRank > 0)
-                {
-                    foreach (PlayerEntity player in Players)
-                    {
-                        if (ArePlayersInSameTeam(handState.Starter,
-                            player.PlayerId))
-                        {
-                            player.Rank = 0;
-                        }
-                    }
-                }
-                    //副J勾一半
-                else if (cardscp.SubRank > 0)
-                {
-                    foreach (PlayerEntity player in Players)
-                    {
-                        if (ArePlayersInSameTeam(handState.Starter,
-                            player.PlayerId))
-                        {
-                            player.Rank = handState.Rank/2;
-                        }
-                    }
-                }
-
-                return GetNextPlayerAfterThePlayer(false, handState.Starter);
-            }
-
-            return null;
+			return NextRank(handState.Starter, handState.Score);
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using Duan.Xiugang.Tractor.Objects;
 namespace Duan.Xiugang.Tractor.Player
 {
     public delegate void NewPlayerJoinedEventHandler();
+    public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);    
     public delegate void PlayersTeamMadeEventHandler();
     public delegate void GameStartedEventHandler();
 
@@ -15,6 +16,8 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void TrumpChangedEventHandler(CurrentHandState currentHandState);
     public delegate void DistributingCardsFinishedEventHandler();
     public delegate void StarterFailedForTrumpEventHandler();
+    public delegate void StarterChangedEventHandler();
+    public delegate void RoomIsFullEventHandler(string msg);
 
     public delegate void DiscardingLast8EventHandler();
     public delegate void Last8DiscardedEventHandler();    
@@ -42,6 +45,7 @@ namespace Duan.Xiugang.Tractor.Player
         public CurrentTrickState CurrentTrickState { get; set; }
 
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
+        public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
         public event PlayersTeamMadeEventHandler PlayersTeamMade;
         public event GameStartedEventHandler GameOnStarted;
 
@@ -50,8 +54,9 @@ namespace Duan.Xiugang.Tractor.Player
         public event TrumpChangedEventHandler TrumpChanged;
         public event DistributingCardsFinishedEventHandler AllCardsGot;
         public event StarterFailedForTrumpEventHandler StarterFailedForTrump; //亮不起
-
-
+        public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
+        public event RoomIsFullEventHandler RoomIsFullEvent; //房间已满
+        
         public event DiscardingLast8EventHandler DiscardingLast8;
         public event Last8DiscardedEventHandler Last8Discarded;
 
@@ -63,7 +68,7 @@ namespace Duan.Xiugang.Tractor.Player
         
         public event HandEndingEventHandler HandEnding;
 
-        private readonly ITractorHost _tractorHost;
+        private ITractorHost _tractorHost;
         
 
         public TractorPlayer()
@@ -76,8 +81,8 @@ namespace Duan.Xiugang.Tractor.Player
 
             var instanceContext = new InstanceContext(this);
             var channelFactory = new DuplexChannelFactory<ITractorHost>(instanceContext, "NetTcpBinding_ITractorHost");
-
-                _tractorHost = channelFactory.CreateChannel();
+            _tractorHost = null;
+            _tractorHost = channelFactory.CreateChannel();
 
 
 
@@ -116,6 +121,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.PlayerIsReady(this.PlayerId);
         }
 
+        public void ReadyToStart()
+        {
+            _tractorHost.PlayerIsReadyToStart(this.PlayerId);
+        }
+
         public void Quit()
         {
             _tractorHost.PlayerQuit(this.PlayerId);
@@ -142,8 +152,19 @@ namespace Duan.Xiugang.Tractor.Player
                 GameOnStarted();
         }
 
-        
+        public void ClearTeamState()
+        {
+            foreach (PlayerEntity p in this.CurrentGameState.Players)
+            {
+                p.Team = GameTeam.None;
+            }
+        }
 
+        public void RoomIsFull(string msg)
+        {
+            if (RoomIsFullEvent != null)
+                RoomIsFullEvent(msg);
+        }
 
         public void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump)
         {
@@ -223,7 +244,14 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
-            //出完牌，庄家亮不起主，所以换庄家
+            //显示庄家
+            if (starterChanged || this.CurrentHandState.CurrentHandStep == HandStep.Ending)
+            {
+                if (StarterChangedEvent != null)
+                    StarterChangedEvent();
+            }
+
+            //摸完牌，庄家亮不起主，所以换庄家
             if (currentHandState.CurrentHandStep == HandStep.DistributingCardsFinished && starterChanged)
             {
                 this.CurrentPoker.Rank = this.CurrentHandState.Rank;
@@ -255,11 +283,8 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void NotifyGameState(GameState gameState)
         {
-            bool newPlayerJoined = false;
             bool teamMade = false;            
 
-            if (gameState.Players.Count > this.CurrentGameState.Players.Count)
-                newPlayerJoined = true;
             if (this.CurrentGameState.Players.Count > 0)
             {
                 if (this.CurrentGameState.Players[0].Team == GameTeam.None &&
@@ -274,13 +299,23 @@ namespace Duan.Xiugang.Tractor.Player
 
             this.CurrentGameState = gameState;
 
-            if (newPlayerJoined)
+            foreach (PlayerEntity p in gameState.Players)
             {
-                if (NewPlayerJoined != null)
+                if (p.PlayerId == this.PlayerId)
                 {
-                    NewPlayerJoined();
+                    if (NewPlayerReadyToStart != null)
+                    {
+                        NewPlayerReadyToStart(p.IsReadyToStart);
+                    }
+                    break;
                 }
             }
+
+            if (NewPlayerJoined != null)
+            {
+                NewPlayerJoined();
+            }
+
 
             if (teamMade)
             {
@@ -296,6 +331,10 @@ namespace Duan.Xiugang.Tractor.Player
         {
 
             var result = _tractorHost.ValidateDumpingCards(selectedCards, this.PlayerId);
+            if (result.ResultType != ShowingCardsValidationResultType.DumpingSuccess)
+            {
+                _tractorHost.RefreshPlayersCurrentHandState();
+            }
             
             return result;
         }
@@ -326,7 +365,7 @@ namespace Duan.Xiugang.Tractor.Player
             List<Suit> availableTrumps = new List<Suit>();
             int rank = this.CurrentHandState.Rank;
 
-            if (this.PlayerId == this.CurrentHandState.Starter && this.CurrentHandState.CurrentHandStep >= HandStep.DistributingLast8Cards)
+            if (this.CurrentHandState.CurrentHandStep >= HandStep.DistributingLast8Cards)
             {
                 availableTrumps.Clear();
                 return availableTrumps;

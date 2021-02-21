@@ -10,6 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
         int Rank { get; set; }
         void ClearAllCards();
         void Ready();
+        void ReadyToStart();
         void Quit();
         void ShowCards(List<int> cards);
         void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump);
@@ -17,6 +18,14 @@ namespace Duan.Xiugang.Tractor.Objects
         //从新开始打
         [OperationContract(IsOneWay = true)]
         void StartGame();
+
+        //有玩家退出，重新组队
+        [OperationContract(IsOneWay = true)]
+        void ClearTeamState();
+
+        //房间已满
+        [OperationContract(IsOneWay = true)]
+        void RoomIsFull(string msg);
 
         [OperationContract(IsOneWay = true)]
         void GetDistributedCard(int number);

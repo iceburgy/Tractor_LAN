@@ -54,7 +54,7 @@ namespace Duan.Xiugang.Tractor
             {
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 437, 124, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294, 80, 71, 96);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
@@ -71,8 +71,8 @@ namespace Duan.Xiugang.Tractor
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
                     ClearSuitCards(g);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 423, 124, 71, 96);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 437, 124, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280, 80, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294, 80, 71, 96);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
@@ -100,7 +100,7 @@ namespace Duan.Xiugang.Tractor
         {
             g.DrawImage(mainForm.image, new Rectangle(80, 158, 71, 116), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
             g.DrawImage(mainForm.image, new Rectangle(480, 200, 71, 116), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(423, 124, 85, 96), new Rectangle(423, 124, 85, 96), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(280, 80, 85, 96), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
         }
 
         //清除亮的牌
@@ -109,7 +109,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             g.DrawImage(mainForm.image, new Rectangle(80, 158, 71, 116), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
             g.DrawImage(mainForm.image, new Rectangle(480, 200, 71, 116), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(423, 124, 85, 96), new Rectangle(423, 85, 71, 96), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(280, 80, 85, 96), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
             mainForm.Refresh();
             g.Dispose();
         }
@@ -142,7 +142,7 @@ namespace Duan.Xiugang.Tractor
         internal void DrawCenterImage()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Rectangle rect = new Rectangle(77, 124, 476, 244);
+            Rectangle rect = new Rectangle(77, 120, 476, 244);
             g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
             g.Dispose();
             mainForm.Refresh();
@@ -607,11 +607,11 @@ namespace Duan.Xiugang.Tractor
             int j = 0;
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 360, 560, 96);
+            Rectangle rect = new Rectangle(30, this.mainForm.Height - 173 - 15, this.mainForm.Width, 96);
             g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
 
             //确定绘画起始位置
-            int start = (int)((2780 - index * 75) / 10);
+            int start = (int)((this.mainForm.Width*4.31 - index * 75) / 10);
 
             //红桃
             j = DrawMyHearts(g, currentPoker, j, start);
@@ -671,11 +671,11 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 355, 600, 116);
+            Rectangle rect = new Rectangle(30, this.mainForm.Height - 173 - 15, this.mainForm.Width, 96);
             g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
 
             //计算初始位置
-            int start = (int)((2780 - index * 75) / 10);
+            int start = (int)((this.mainForm.Width*4.31 - index * 75) / 10);
 
 
             //记录每张牌的X值
@@ -801,11 +801,11 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 355, 600, 116);
+            Rectangle rect = new Rectangle(30, this.mainForm.Height - 173 - 15, this.mainForm.Width, 96);
             g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
             DrawScoreImage();
 
-            int start = (int)((2780 - index * 75) / 10);
+            int start = (int)((this.mainForm.Width*4.31 - index * 75) / 10);
 
             //Rank(分主、副Rank)
             //记录每张牌的X值
@@ -1153,6 +1153,8 @@ namespace Duan.Xiugang.Tractor
             }
             b = b && (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards);
 
+            int bottomY = this.mainForm.Height - 173;
+            int bottomYUpOffset = bottomY - 15;
             if (count == 1)
             {
                 SetCardsInformation(start + j * 13, number, false);
@@ -1160,16 +1162,16 @@ namespace Duan.Xiugang.Tractor
                 {
                     if (number == 52 || number == 53)
                     {
-                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, 375, 71, 96); //单个的王不被提上
+                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomYUpOffset, 71, 96); //单个的王不被提上
                     }
                     else
                     {
-                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, 360, 71, 96);
+                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomY, 71, 96);
                     }
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomYUpOffset, 71, 96);
                 }
 
                 j++;
@@ -1181,11 +1183,11 @@ namespace Duan.Xiugang.Tractor
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b &&
                     mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker >= TrumpExposingPoker.SingleRank)
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 360, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomY, 71, 96);
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomYUpOffset, 71, 96);
                 }
 
                 j++;
@@ -1193,11 +1195,11 @@ namespace Duan.Xiugang.Tractor
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b &&
                     mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker >= TrumpExposingPoker.PairRank)
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 360, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomY, 71, 96);
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, bottomYUpOffset, 71, 96);
                 }
 
                 j++;
@@ -1396,7 +1398,7 @@ namespace Duan.Xiugang.Tractor
             }
             else //重新下部空间
             {
-                Rectangle rect = new Rectangle(30, 355, 560, 116);
+                Rectangle rect = new Rectangle(30, this.mainForm.Height - 173 - 15, this.mainForm.Width, 96);
                 Graphics g = Graphics.FromImage(mainForm.bmp);
                 g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
                 g.Dispose();
@@ -1656,7 +1658,7 @@ namespace Duan.Xiugang.Tractor
                 DrawMySortedCards(mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
             else //所有的牌都出完了
             {
-                Rectangle rect = new Rectangle(30, 355, 560, 116);
+                Rectangle rect = new Rectangle(30, this.mainForm.Height - 173 - 15, this.mainForm.Width, 96);
                 Graphics g = Graphics.FromImage(mainForm.bmp);
                 g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
                 g.Dispose();
