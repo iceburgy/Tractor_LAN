@@ -436,7 +436,7 @@ namespace TractorServer
 
                     this.CurrentHandState.PlayerHoldingCards[player.Key].AddCard(CardsShoe.Cards[index]);
                 }
-                Thread.Sleep(750);
+                Thread.Sleep(500);
             }
 
             log.Debug("distribute cards to each player: ");

@@ -110,7 +110,7 @@ namespace Duan.Xiugang.Tractor
             BackgroundImage = image;
 
             //变量初始化
-            bmp = new Bitmap(3000, 5000);
+            bmp = new Bitmap(ClientRectangle.Width, ClientRectangle.Height);
             ThisPlayer = new TractorPlayer();
 
             var myreader = new AppSettingsReader();
