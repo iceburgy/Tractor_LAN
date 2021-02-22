@@ -114,7 +114,7 @@ namespace TractorServer
 						RestartCurrentHand();
 						break;
                     case GameState.START_NEXT_HAND:
-						StartNextHand(CurrentGameState.startNextHandStarter);
+                        StartNextHand(CurrentGameState.startNextHandStarter);
 						break;
                     default:
 						break;
@@ -246,7 +246,7 @@ namespace TractorServer
                         }
 
 
-                       log.Debug("Winner: " + this.CurrentTrickState.Winner);
+                        log.Debug("Winner: " + this.CurrentTrickState.Winner);
 
                     }
 
@@ -273,6 +273,24 @@ namespace TractorServer
                         }
                         this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                         this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
+
+                        //检查是否本轮游戏结束
+                        if (this.CurrentGameState.startNextHandStarter.Rank >= 13)
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            foreach (PlayerEntity player in CurrentGameState.Players)
+                            {
+                                if (player == null) continue;
+                                player.Rank = 0;
+                                if (player.Team == this.CurrentGameState.startNextHandStarter.Team)
+                                    sb.Append(string.Format("【{0}】",player.PlayerId));
+                            }
+                            CurrentHandState.Rank = 0;
+                            PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
+
+                            this.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+                            this.CurrentGameState.startNextHandStarter = null;
+                        }
 
                         UpdateGameState();
 
