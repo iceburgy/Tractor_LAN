@@ -770,7 +770,7 @@ namespace Duan.Xiugang.Tractor
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
                 if (curPlayer != null && !curPlayer.IsReadyToStart)
                 {
-                    readyLabels[i].Text = "沉思";
+                    readyLabels[i].Text = "思索中";
                 }
                 else if (curPlayer != null && !string.IsNullOrEmpty(ThisPlayer.CurrentHandState.Starter) && curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter)
                 {
@@ -846,7 +846,7 @@ namespace Duan.Xiugang.Tractor
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
                 if (curPlayer != null && !curPlayer.IsReadyToStart)
                 {
-                    starterLabels[i].Text = "沉思";
+                    starterLabels[i].Text = "思索中";
                 }
                 else if (curPlayer != null && !string.IsNullOrEmpty(ThisPlayer.CurrentHandState.Starter) &&
                     curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter &&
