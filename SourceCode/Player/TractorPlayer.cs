@@ -118,6 +118,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.RestoreGameStateFromFile();
         }
 
+        public void SetBeginRank(string beginRankString)
+        {
+            _tractorHost.SetBeginRank(beginRankString);
+        }
+
         public void Ready()
         {
             _tractorHost.PlayerIsReady(this.PlayerId);

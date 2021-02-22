@@ -330,34 +330,45 @@ namespace Duan.Xiugang.Tractor
                         {
                             bool b = (bool)myCardIsReady[i];
                             int x = (int)myCardsLocation[i];
+                            int clickedCardNumber = (int)myCardsNumber[i];
                             int selectMoreCount = i;
                             bool isLeader = false;
-                            if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
+                            if (ThisPlayer.CurrentHandState.CurrentHandStep != HandStep.DiscardingLast8Cards)
                             {
-                                selectMoreCount = ThisPlayer.CurrentTrickState.LeadingCards.Count - 1;
-                            }
-                            else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
-                            {
-                                isLeader = true;
+                                if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
+                                {
+                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1);
+                                }
+                                else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
+                                {
+                                    isLeader = true;
+                                }
                             }
                             if (b)
                             {
                                 for (int j = 1; j <= selectMoreCount; j++)
                                 {
+                                    //如果候选牌是同一花色
                                     if ((int)myCardsLocation[i - j] == (x - 13))
                                     {
+                                        //候选牌仅限于对子，拖拉机
                                         if (isLeader)
                                         {
-                                            if (i - j > 0 && (int)myCardsNumber[i - j] == (int)myCardsNumber[i - j + 1])
+                                            int toAddCardNumber = (int)myCardsNumber[i - j];
+                                            int rankNumber = ThisPlayer.CurrentHandState.Rank + 2;
+                                            //如果候选牌的数值与右键点中的牌的数值差就是它们的间距差/2，或者当前打几的数字落在了中间，则数值差应减去1
+                                            if (clickedCardNumber - toAddCardNumber == j / 2 ||
+                                                clickedCardNumber - toAddCardNumber - 1 == j / 2 && (rankNumber > toAddCardNumber && rankNumber < clickedCardNumber))
                                             {
                                                 myCardIsReady[i - j] = b;
                                                 myCardIsReady[i - j + 1] = b;
-                                                j++;
                                             }
                                             else
                                             {
                                                 break;
                                             }
+                                            x = x - 13;
+                                            j++;
                                         }
                                         else
                                         {
@@ -397,6 +408,18 @@ namespace Duan.Xiugang.Tractor
                             }
 
                             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+                            Refresh();
+                        }
+                    }
+                    else
+                    {
+                        //允许刚埋完牌后查看底牌
+                        if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count == 25 &&
+                            ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
+                            ThisPlayer.CurrentHandState.DiscardedCards != null &&
+                            ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
+                        {
+                            drawingFormHelper.DrawDiscardedCards();
                             Refresh();
                         }
                     }
@@ -579,14 +602,18 @@ namespace Duan.Xiugang.Tractor
             {
                 Close();
             }
-
-            if (menuItem.Text.Equals("加入房间"))
+            else if (menuItem.Text.Equals("加入房间"))
             {
                 ThisPlayer.Ready();
 
 
                 //初始化
                 init();
+            }
+            else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank"))
+            {
+                string beginRankString = menuItem.Name.Substring("toolStripMenuItemBeginRank".Length, 1);
+                ThisPlayer.SetBeginRank(beginRankString);
             }
         }
 
@@ -804,7 +831,6 @@ namespace Duan.Xiugang.Tractor
             if (ThisPlayer.CurrentHandState.Starter == null || ThisPlayer.CurrentHandState.Starter.Length == 0) return;
 
             System.Windows.Forms.Label[] starterLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
-            string starterLabelText = "庄家";
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
             {
@@ -818,15 +844,20 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter &&
+                if (curPlayer != null && !curPlayer.IsReadyToStart)
+                {
+                    starterLabels[i].Text = "沉思";
+                }
+                else if (curPlayer != null && !string.IsNullOrEmpty(ThisPlayer.CurrentHandState.Starter) &&
+                    curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter &&
                     ThisPlayer.CurrentHandState.CurrentHandStep != HandStep.Ending)
                 {
-                    starterLabels[i].Text = starterLabelText;
+                    starterLabels[i].Text = "庄家";
                 }
                 else
                 {
                     starterLabels[i].Text = (curIndex + 1).ToString();
-                }                
+                }
                 curIndex = (curIndex + 1) % 4;
             }
         }

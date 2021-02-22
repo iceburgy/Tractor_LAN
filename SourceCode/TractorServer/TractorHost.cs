@@ -68,6 +68,12 @@ namespace TractorServer
                     CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
                     CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
                     CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+                    log.Debug("restart game");
+                    foreach (var p in CurrentGameState.Players)
+                    {
+                        p.Rank = 0;
+                    }
+                    CurrentHandState.Rank = 0;
                     UpdateGameState();
                     CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 }
@@ -97,10 +103,12 @@ namespace TractorServer
 					isReadyToStart++;
 				}
 			}
-			if (isReadyToStart == 4){
+
+            if (isReadyToStart == 4)
+            {
 				switch (CurrentGameState.nextRestartID) {
                     case GameState.RESTART_GAME:
-						RestartGame();
+                        RestartGame(CurrentHandState.Rank);
 						break;
                     case GameState.RESTART_CURRENT_HAND:
 						RestartCurrentHand();
@@ -108,7 +116,7 @@ namespace TractorServer
                     case GameState.START_NEXT_HAND:
 						StartNextHand(CurrentGameState.startNextHandStarter);
 						break;
-					default:
+                    default:
 						break;
 				}
 			}
@@ -322,15 +330,12 @@ namespace TractorServer
         #endregion
 
         #region Host Action
-        public void RestartGame()
+        public void RestartGame(int curRank)
         {
-            log.Debug("restart game");
-            foreach (var player in CurrentGameState.Players)
-            {
-                player.Rank = 0;
-            }
+            log.Debug("restart game with current set rank");
 
             this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.Rank = curRank;
             this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
             CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
@@ -350,11 +355,11 @@ namespace TractorServer
                 }
                 oldTrump = this.CurrentHandState.Trump;
             }
-            
+
             if (this.CurrentHandState.Trump != Suit.None)
                 DistributeLast8Cards();
             else if (PlayersProxy.Count == 4)
-                RestartGame();
+                RestartGame(curRank);
         }
 
         public void RestartCurrentHand()
@@ -585,8 +590,8 @@ namespace TractorServer
                     this.CurrentGameState.Players[i].IsReadyToStart = false;
                 }
 
-                UpdatePlayersCurrentHandState();
                 UpdateGameState();
+                UpdatePlayersCurrentHandState();
 
                 PublishMessage("读取牌局成功！请点击就绪继续上盘游戏");
             }
@@ -605,6 +610,67 @@ namespace TractorServer
                     stream2.Close();
                 }
             }
+        }
+
+        //设置从几打起
+        public void SetBeginRank(string beginRankString)
+        {
+            bool isValid = true;
+            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            {
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid)
+            {
+                PublishMessage(string.Format("设置从{0}打起失败：玩家人数不够", beginRankString));
+                return;
+            }
+            int beginRank = 0;
+            if (!int.TryParse(beginRankString, out beginRank))
+            {
+                switch (beginRankString)
+                {
+                    case "J":
+                        beginRank = 9;
+                        break;
+                    case "Q":
+                        beginRank = 10;
+                        break;
+                    case "K":
+                        beginRank = 11;
+                        break;
+                    case "A":
+                        beginRank = 12;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                beginRank -= 2;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                this.CurrentGameState.Players[i].Rank = beginRank;
+                this.CurrentGameState.Players[i].IsReadyToStart = false;
+            }
+            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.Rank = beginRank;
+            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentHandState.IsFirstHand = true;
+
+            UpdateGameState();
+            UpdatePlayersCurrentHandState();
+
+            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+
+            PublishMessage(string.Format("设置从{0}打起成功！请点击就绪开始游戏", beginRankString));
         }
 
         //发底牌

@@ -33,6 +33,7 @@ namespace Duan.Xiugang.Tractor
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.GameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RebootToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,7 +55,20 @@ namespace Duan.Xiugang.Tractor
             this.lblWestStarter = new System.Windows.Forms.Label();
             this.lblNorthStarter = new System.Windows.Forms.Label();
             this.lblEastStarter = new System.Windows.Forms.Label();
-            this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.BeginRankToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank7 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank8 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank9 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRank10 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRankJ = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRankQ = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRankK = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemBeginRankA = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,6 +87,7 @@ namespace Duan.Xiugang.Tractor
             // GameToolStripMenuItem
             // 
             this.GameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.BeginRankToolStripMenuItem,
             this.SettingToolStripMenuItem,
             this.RestoreGameStateToolStripMenuItem,
             this.StartToolStripMenuItem,
@@ -88,6 +103,13 @@ namespace Duan.Xiugang.Tractor
             this.SettingToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
             this.SettingToolStripMenuItem.Text = "设置";
             this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
+            // 
+            // RestoreGameStateToolStripMenuItem
+            // 
+            this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
+            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
+            this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
             // 
             // StartToolStripMenuItem
             // 
@@ -303,13 +325,117 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter.TabIndex = 14;
             this.lblEastStarter.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // RestoreGameStateToolStripMenuItem
+            // BeginRankToolStripMenuItem
             // 
-            this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
-            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
-            this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
-            this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
+            this.BeginRankToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemBeginRank2,
+            this.toolStripMenuItemBeginRank3,
+            this.toolStripMenuItemBeginRank4,
+            this.toolStripMenuItemBeginRank5,
+            this.toolStripMenuItemBeginRank6,
+            this.toolStripMenuItemBeginRank7,
+            this.toolStripMenuItemBeginRank8,
+            this.toolStripMenuItemBeginRank9,
+            this.toolStripMenuItemBeginRank10,
+            this.toolStripMenuItemBeginRankJ,
+            this.toolStripMenuItemBeginRankQ,
+            this.toolStripMenuItemBeginRankK,
+            this.toolStripMenuItemBeginRankA});
+            this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
+            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.BeginRankToolStripMenuItem.Text = "从几打起";
             // 
+            // toolStripMenuItemBeginRank2
+            // 
+            this.toolStripMenuItemBeginRank2.Name = "toolStripMenuItemBeginRank2";
+            this.toolStripMenuItemBeginRank2.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank2.Text = "2";
+            this.toolStripMenuItemBeginRank2.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank3
+            // 
+            this.toolStripMenuItemBeginRank3.Name = "toolStripMenuItemBeginRank3";
+            this.toolStripMenuItemBeginRank3.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank3.Text = "3";
+            this.toolStripMenuItemBeginRank3.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank4
+            // 
+            this.toolStripMenuItemBeginRank4.Name = "toolStripMenuItemBeginRank4";
+            this.toolStripMenuItemBeginRank4.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank4.Text = "4";
+            this.toolStripMenuItemBeginRank4.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank5
+            // 
+            this.toolStripMenuItemBeginRank5.Name = "toolStripMenuItemBeginRank5";
+            this.toolStripMenuItemBeginRank5.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank5.Text = "5";
+            this.toolStripMenuItemBeginRank5.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank6
+            // 
+            this.toolStripMenuItemBeginRank6.Name = "toolStripMenuItemBeginRank6";
+            this.toolStripMenuItemBeginRank6.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank6.Text = "6";
+            this.toolStripMenuItemBeginRank6.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank7
+            // 
+            this.toolStripMenuItemBeginRank7.Name = "toolStripMenuItemBeginRank7";
+            this.toolStripMenuItemBeginRank7.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank7.Text = "7";
+            this.toolStripMenuItemBeginRank7.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank8
+            // 
+            this.toolStripMenuItemBeginRank8.Name = "toolStripMenuItemBeginRank8";
+            this.toolStripMenuItemBeginRank8.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank8.Text = "8";
+            this.toolStripMenuItemBeginRank8.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank9
+            // 
+            this.toolStripMenuItemBeginRank9.Name = "toolStripMenuItemBeginRank9";
+            this.toolStripMenuItemBeginRank9.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank9.Text = "9";
+            this.toolStripMenuItemBeginRank9.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRank10
+            // 
+            this.toolStripMenuItemBeginRank10.Name = "toolStripMenuItemBeginRank10";
+            this.toolStripMenuItemBeginRank10.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRank10.Text = "10";
+            this.toolStripMenuItemBeginRank10.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRankJ
+            // 
+            this.toolStripMenuItemBeginRankJ.Name = "toolStripMenuItemBeginRankJ";
+            this.toolStripMenuItemBeginRankJ.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRankJ.Text = "J";
+            this.toolStripMenuItemBeginRankJ.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRankQ
+            // 
+            this.toolStripMenuItemBeginRankQ.Name = "toolStripMenuItemBeginRankQ";
+            this.toolStripMenuItemBeginRankQ.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRankQ.Text = "Q";
+            this.toolStripMenuItemBeginRankQ.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRankK
+            // 
+            this.toolStripMenuItemBeginRankK.Name = "toolStripMenuItemBeginRankK";
+            this.toolStripMenuItemBeginRankK.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRankK.Text = "K";
+            this.toolStripMenuItemBeginRankK.Click += new System.EventHandler(this.MenuItem_Click);
+            //
+            // toolStripMenuItemBeginRankA
+            // 
+            this.toolStripMenuItemBeginRankA.Name = "toolStripMenuItemBeginRankA";
+            this.toolStripMenuItemBeginRankA.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItemBeginRankA.Text = "A";
+            this.toolStripMenuItemBeginRankA.Click += new System.EventHandler(this.MenuItem_Click);
+            //
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -377,6 +503,20 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Label lblEastStarter;
         private System.Windows.Forms.ToolStripMenuItem RebootToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem RestoreGameStateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem BeginRankToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank3;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank5;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank6;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank7;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank8;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank9;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRank10;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankJ;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankQ;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankK;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankA;
     }
 }
 

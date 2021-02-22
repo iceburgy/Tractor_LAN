@@ -1582,6 +1582,19 @@ namespace Duan.Xiugang.Tractor
 
         }
 
+        internal void DrawDiscardedCards()
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            //画底牌,从169开始画
+            for (int i = 0; i < 8; i++)
+            {
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 230 + i * 14, 130, 71, 96);
+            }
+
+            g.Dispose();
+        }
+
         //大家都出完牌，则计算得分多少，下次该谁出牌
         internal void DrawFinishedSendedCards()
         {
