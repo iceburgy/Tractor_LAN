@@ -1834,7 +1834,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public List<int> GetTractor(Suit suit)
         {
-            if (suit == Trump)
+            if (suit == Trump || suit == Suit.Joker)
                 return GetTrumpTractor();
 
             var result = new List<int>();

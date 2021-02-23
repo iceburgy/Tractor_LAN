@@ -328,7 +328,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         maxCard = tmpMax;
                     }
                 }
-                List<int> tractor3 = cp[2].GetTractor(trump);
+                List<int> tractor3 = cp[3].GetTractor(trump);
                 if (tractor3.Count >= leadingTractor.Count &&
                     (!cp[3].IsMixed() && cp[3].GetPairs().Count >= cp[0].GetPairs().Count))
                 {
