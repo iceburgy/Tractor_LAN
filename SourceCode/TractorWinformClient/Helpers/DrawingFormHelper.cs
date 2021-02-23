@@ -1679,6 +1679,48 @@ namespace Duan.Xiugang.Tractor
 
         }
 
+        //基于庄家相对于自己所在的位置，画庄家获得底牌的动画
+        public void DrawDistributingLast8Cards(int position)
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            //画8张底牌
+            for (int i = 0; i < 8; i++)
+            {
+                g.DrawImage(mainForm.gameConfig.BackImage, 200 + i * 2, 186, 71, 96);
+            }
+            mainForm.Refresh();
+            Thread.Sleep(500);
+
+            //分发
+            for (int i = 0; i < 8; i++)
+            {
+                Rectangle rect = new Rectangle(200, 186, 16 + 71, 96);
+                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+                for (int j = 0; j < 8-(i+1); j++)
+                {
+                    g.DrawImage(mainForm.gameConfig.BackImage, 200 + j * 2, 186, 71, 96);
+                }
+                switch (position)
+                {
+                    case 2:
+                        //画东家的位置
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 520, 220 - 12 * 4, 71, 96);
+                        break;
+                    case 3:
+                        //画对家的位置
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 400 - 12 * 13, 60, 71, 96);
+                        break;
+                    case 4:
+                        //画西家的位置
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 50, 160 + 12 * 4, 71, 96);
+                        break;
+                }
+                mainForm.Refresh();
+                Thread.Sleep(100);
+            }
+            g.Dispose();
+        }
 
         internal void Starter()
         {

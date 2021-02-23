@@ -139,6 +139,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
             ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
+            ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
             ThisPlayer.DumpingFail += ThisPlayer_DumpingFail;
             SelectedCards = new List<int>();
@@ -876,6 +877,16 @@ namespace Duan.Xiugang.Tractor
             }
             Refresh();
             g.Dispose();
+        }
+
+        private void ThisPlayer_DistributingLast8Cards()
+        {
+            int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
+            //自己摸底不用画
+            if (position > 1)
+            {
+                drawingFormHelper.DrawDistributingLast8Cards(position);
+            }
         }
 
         private void ThisPlayer_DiscardingLast8()
