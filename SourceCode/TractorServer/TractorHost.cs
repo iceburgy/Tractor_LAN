@@ -265,7 +265,6 @@ namespace TractorServer
                         CalculatePointsFromDiscarded8Cards();
                         Thread.Sleep(2000);
                         this.CurrentHandState.CurrentHandStep = HandStep.Ending;
-                        UpdatePlayersCurrentHandState();
 
                         foreach (PlayerEntity p in CurrentGameState.Players)
                         {
@@ -273,6 +272,7 @@ namespace TractorServer
                         }
                         this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                         this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
+                        CurrentHandState.Starter = this.CurrentGameState.startNextHandStarter.PlayerId;
 
                         //检查是否本轮游戏结束
                         if (this.CurrentGameState.startNextHandStarter.Rank >= 13)
@@ -286,11 +286,13 @@ namespace TractorServer
                                     sb.Append(string.Format("【{0}】",player.PlayerId));
                             }
                             CurrentHandState.Rank = 0;
+                            CurrentHandState.Starter = null;
                             PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
 
                             this.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                             this.CurrentGameState.startNextHandStarter = null;
                         }
+                        UpdatePlayersCurrentHandState();
 
                         UpdateGameState();
 

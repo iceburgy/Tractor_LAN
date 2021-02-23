@@ -356,10 +356,12 @@ namespace Duan.Xiugang.Tractor
                                         if (isLeader)
                                         {
                                             int toAddCardNumber = (int)myCardsNumber[i - j];
+                                            int toAddCardNumberOnRight = (int)myCardsNumber[i - j + 1];
                                             int rankNumber = ThisPlayer.CurrentHandState.Rank + 2;
                                             //如果候选牌的数值与右键点中的牌的数值差就是它们的间距差/2，或者当前打几的数字落在了中间，则数值差应减去1
-                                            if (clickedCardNumber - toAddCardNumber == j / 2 ||
-                                                clickedCardNumber - toAddCardNumber - 1 == j / 2 && (rankNumber > toAddCardNumber && rankNumber < clickedCardNumber))
+                                            if (toAddCardNumber == toAddCardNumberOnRight && 
+                                                (clickedCardNumber - toAddCardNumber == j / 2 ||
+                                                clickedCardNumber - toAddCardNumber - 1 == j / 2 && (rankNumber > toAddCardNumber && rankNumber < clickedCardNumber)))
                                             {
                                                 myCardIsReady[i - j] = b;
                                                 myCardIsReady[i - j + 1] = b;
@@ -829,8 +831,6 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_StarterChangedEventHandler()
         {
-            if (ThisPlayer.CurrentHandState.Starter == null || ThisPlayer.CurrentHandState.Starter.Length == 0) return;
-
             System.Windows.Forms.Label[] starterLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
