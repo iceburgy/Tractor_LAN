@@ -138,6 +138,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.StarterFailedForTrump += ThisPlayer_StarterFailedForTrump;
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
             ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
+            ThisPlayer.NotifyStartTimerEvent += ThisPlayer_NotifyStartTimerEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
@@ -866,7 +867,13 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_NotifyMessageEventHandler(string msg)
         {
             MessageBox.Show(msg);
-        }        
+        }
+
+        private void ThisPlayer_NotifyStartTimerEventHandler(int timerLength)
+        {
+            this.lblTheTimer.Text = timerLength.ToString();
+            this.theTimer.Start();
+        }     
         
         private void ThisPlayer_Last8Discarded()
         {
@@ -951,6 +958,21 @@ namespace Duan.Xiugang.Tractor
         private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThisPlayer.RestoreGameStateFromFile();
+        }
+
+        private void theTimer_Tick(object sender, EventArgs e)
+        {
+            int timeRemaining = 0;
+            if (int.TryParse(this.lblTheTimer.Text, out timeRemaining))
+            {
+                if (timeRemaining > 0)
+                {
+                    this.lblTheTimer.Text = (timeRemaining - 1).ToString();
+                    if (timeRemaining - 1 > 0) return;
+                }
+            }
+            this.lblTheTimer.Text = "";
+            this.theTimer.Stop();
         }
     }
 }

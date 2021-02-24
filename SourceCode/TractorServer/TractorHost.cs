@@ -175,7 +175,7 @@ namespace TractorServer
 
             //等待5秒，让玩家反底
             var trump = CurrentHandState.Trump;
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
             if (trump == CurrentHandState.Trump) //没有玩家反
             {
                 BeginNewTrick(this.CurrentHandState.Starter);
@@ -368,7 +368,9 @@ namespace TractorServer
             var oldTrump = this.CurrentHandState.Trump;
             while (true)
             {
-                Thread.Sleep(5000);
+                PublishStartTimer(5);
+                //加一秒缓冲时间，让客户端倒计时完成
+                Thread.Sleep(5000+1000);
                 if (this.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -410,7 +412,8 @@ namespace TractorServer
             var oldTrump = this.CurrentHandState.Trump;
             while (true)
             {
-                Thread.Sleep(5000);
+                PublishStartTimer(5);
+                Thread.Sleep(5000+1000);
                 if (this.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -435,7 +438,8 @@ namespace TractorServer
                 var oldTrump2 = this.CurrentHandState.Trump;
                 while (true)
                 {
-                    Thread.Sleep(5000);
+                    PublishStartTimer(5);
+                    Thread.Sleep(5000+1000);
                     if (this.CurrentHandState.Trump == oldTrump2)
                     {
                         break;
@@ -835,6 +839,14 @@ namespace TractorServer
             foreach (IPlayer player in PlayersProxy.Values)
             {
                 player.NotifyMessage(msg);
+            }
+        }
+
+        public void PublishStartTimer(int timerLength)
+        {
+            foreach (IPlayer player in PlayersProxy.Values)
+            {
+                player.NotifyStartTimer(timerLength);
             }
         }
                         

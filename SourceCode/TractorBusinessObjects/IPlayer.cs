@@ -23,6 +23,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void NotifyMessage(string msg);
 
+        //广播倒计时
+        [OperationContract(IsOneWay = true)]
+        void NotifyStartTimer(int timerLength);
+
         [OperationContract(IsOneWay = true)]
         void GetDistributedCard(int number);
 

@@ -18,6 +18,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void StarterFailedForTrumpEventHandler();
     public delegate void StarterChangedEventHandler();
     public delegate void NotifyMessageEventHandler(string msg);
+    public delegate void NotifyStartTimerEventHandler(int timerLength);
 
     public delegate void DistributingLast8CardsEventHandler();
     public delegate void DiscardingLast8EventHandler();
@@ -57,7 +58,8 @@ namespace Duan.Xiugang.Tractor.Player
         public event StarterFailedForTrumpEventHandler StarterFailedForTrump; //亮不起
         public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
         public event NotifyMessageEventHandler NotifyMessageEvent; //广播消息
-
+        public event NotifyStartTimerEventHandler NotifyStartTimerEvent; //广播倒计时
+        
         public event DistributingLast8CardsEventHandler DistributingLast8Cards;
         public event DiscardingLast8EventHandler DiscardingLast8;
         public event Last8DiscardedEventHandler Last8Discarded;
@@ -165,6 +167,12 @@ namespace Duan.Xiugang.Tractor.Player
         {
             if (NotifyMessageEvent != null)
                 NotifyMessageEvent(msg);
+        }
+
+        public void NotifyStartTimer(int timerLength)
+        {
+            if (NotifyStartTimerEvent != null)
+                NotifyStartTimerEvent(timerLength);
         }
 
         public void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump)
