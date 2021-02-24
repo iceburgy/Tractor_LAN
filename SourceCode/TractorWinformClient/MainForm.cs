@@ -330,6 +330,11 @@ namespace Duan.Xiugang.Tractor
                         int i = calculateRegionHelper.CalculateRightClickedRegion(e);
                         if (i > -1 && i < myCardIsReady.Count)
                         {
+                            int readyCount = 0;
+                            for (int ri = 0; ri < myCardIsReady.Count; ri++)
+                            {
+                                if (ri != i && (bool)myCardIsReady[ri]) readyCount++;
+                            }
                             bool b = (bool)myCardIsReady[i];
                             int x = (int)myCardsLocation[i];
                             int clickedCardNumber = (int)myCardsNumber[i];
@@ -339,7 +344,7 @@ namespace Duan.Xiugang.Tractor
                             {
                                 if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
                                 {
-                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1);
+                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1) - readyCount;
                                 }
                                 else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
                                 {
