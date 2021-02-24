@@ -971,6 +971,8 @@ namespace Duan.Xiugang.Tractor
                     if (timeRemaining - 1 > 0) return;
                 }
             }
+            Refresh();
+            Thread.Sleep(200);
             this.lblTheTimer.Text = "";
             this.theTimer.Stop();
         }

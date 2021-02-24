@@ -1690,7 +1690,7 @@ namespace Duan.Xiugang.Tractor
                 g.DrawImage(mainForm.gameConfig.BackImage, 200 + i * 2, 186, 71, 96);
             }
             mainForm.Refresh();
-            Thread.Sleep(500);
+            Thread.Sleep(100);
 
             //·Ö·¢
             for (int i = 0; i < 8; i++)
