@@ -338,17 +338,22 @@ namespace Duan.Xiugang.Tractor
                             bool b = (bool)myCardIsReady[i];
                             int x = (int)myCardsLocation[i];
                             int clickedCardNumber = (int)myCardsNumber[i];
-                            int selectMoreCount = i;
+                            //响应右键的3种情况：
+                            //1. 埋底牌（默认）
+                            int selectMoreCount = Math.Min(i, 8 - 1 - readyCount);
                             bool isLeader = false;
                             if (ThisPlayer.CurrentHandState.CurrentHandStep != HandStep.DiscardingLast8Cards)
                             {
+                                //2. 跟出
                                 if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
                                 {
-                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1) - readyCount;
+                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1 - readyCount);
                                 }
+                                //3. 首出
                                 else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
                                 {
                                     isLeader = true;
+                                    selectMoreCount = i;
                                 }
                             }
                             if (b)
