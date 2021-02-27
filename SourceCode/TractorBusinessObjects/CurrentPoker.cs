@@ -1934,7 +1934,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
 
             //顺序比较
-            for (int i = 12; i > 0; i--)
+            for (int i = 12; i > -1; i--)
             {
                 if (i == Rank)
                 {

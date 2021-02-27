@@ -498,21 +498,6 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            //如果当前没有牌可出 
-            if (ThisPlayer.CurrentPoker.Count == 0)
-            {
-                return;
-            }
-
-
-            if (SelectedCards.Count == 0)
-                return;
-            ToDiscard8Cards();
-            ToShowCards();
-        }
-
         private void ToDiscard8Cards()
         {
             var pigRect = new Rectangle(296, 300, 53, 46);
