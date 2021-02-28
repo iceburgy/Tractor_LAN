@@ -78,7 +78,7 @@ namespace Duan.Xiugang.Tractor
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
-            this.menuStrip.Size = new System.Drawing.Size(944, 35);
+            this.menuStrip.Size = new System.Drawing.Size(820, 35);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -280,7 +280,7 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthNickName.BackColor = System.Drawing.Color.Transparent;
             this.lblSouthNickName.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblSouthNickName.ForeColor = System.Drawing.SystemColors.Control;
-            this.lblSouthNickName.Location = new System.Drawing.Point(434, 737);
+            this.lblSouthNickName.Location = new System.Drawing.Point(372, 784);
             this.lblSouthNickName.Name = "lblSouthNickName";
             this.lblSouthNickName.Size = new System.Drawing.Size(0, 37);
             this.lblSouthNickName.TabIndex = 5;
@@ -292,7 +292,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastNickName.BackColor = System.Drawing.Color.Transparent;
             this.lblEastNickName.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblEastNickName.ForeColor = System.Drawing.SystemColors.Control;
-            this.lblEastNickName.Location = new System.Drawing.Point(767, 377);
+            this.lblEastNickName.Location = new System.Drawing.Point(643, 401);
             this.lblEastNickName.Name = "lblEastNickName";
             this.lblEastNickName.Size = new System.Drawing.Size(177, 37);
             this.lblEastNickName.TabIndex = 6;
@@ -305,7 +305,7 @@ namespace Duan.Xiugang.Tractor
             this.lblNorthNickName.BackColor = System.Drawing.Color.Transparent;
             this.lblNorthNickName.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblNorthNickName.ForeColor = System.Drawing.SystemColors.Control;
-            this.lblNorthNickName.Location = new System.Drawing.Point(434, 44);
+            this.lblNorthNickName.Location = new System.Drawing.Point(372, 44);
             this.lblNorthNickName.Name = "lblNorthNickName";
             this.lblNorthNickName.Size = new System.Drawing.Size(0, 37);
             this.lblNorthNickName.TabIndex = 7;
@@ -317,7 +317,7 @@ namespace Duan.Xiugang.Tractor
             this.lblWestNickName.BackColor = System.Drawing.Color.Transparent;
             this.lblWestNickName.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblWestNickName.ForeColor = System.Drawing.SystemColors.Control;
-            this.lblWestNickName.Location = new System.Drawing.Point(9, 377);
+            this.lblWestNickName.Location = new System.Drawing.Point(9, 401);
             this.lblWestNickName.Name = "lblWestNickName";
             this.lblWestNickName.Size = new System.Drawing.Size(0, 37);
             this.lblWestNickName.TabIndex = 8;
@@ -328,7 +328,7 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnReady.Enabled = false;
             this.btnReady.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnReady.Location = new System.Drawing.Point(13, 729);
+            this.btnReady.Location = new System.Drawing.Point(13, 776);
             this.btnReady.Name = "btnReady";
             this.btnReady.Size = new System.Drawing.Size(72, 45);
             this.btnReady.TabIndex = 10;
@@ -342,7 +342,7 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthStarter.BackColor = System.Drawing.Color.Transparent;
             this.lblSouthStarter.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblSouthStarter.ForeColor = System.Drawing.Color.Orange;
-            this.lblSouthStarter.Location = new System.Drawing.Point(313, 735);
+            this.lblSouthStarter.Location = new System.Drawing.Point(251, 782);
             this.lblSouthStarter.Name = "lblSouthStarter";
             this.lblSouthStarter.Size = new System.Drawing.Size(121, 39);
             this.lblSouthStarter.TabIndex = 11;
@@ -354,7 +354,7 @@ namespace Duan.Xiugang.Tractor
             this.lblWestStarter.BackColor = System.Drawing.Color.Transparent;
             this.lblWestStarter.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblWestStarter.ForeColor = System.Drawing.Color.Orange;
-            this.lblWestStarter.Location = new System.Drawing.Point(8, 335);
+            this.lblWestStarter.Location = new System.Drawing.Point(8, 359);
             this.lblWestStarter.Name = "lblWestStarter";
             this.lblWestStarter.Size = new System.Drawing.Size(124, 42);
             this.lblWestStarter.TabIndex = 12;
@@ -366,7 +366,7 @@ namespace Duan.Xiugang.Tractor
             this.lblNorthStarter.BackColor = System.Drawing.Color.Transparent;
             this.lblNorthStarter.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblNorthStarter.ForeColor = System.Drawing.Color.Orange;
-            this.lblNorthStarter.Location = new System.Drawing.Point(306, 44);
+            this.lblNorthStarter.Location = new System.Drawing.Point(244, 44);
             this.lblNorthStarter.Name = "lblNorthStarter";
             this.lblNorthStarter.Size = new System.Drawing.Size(128, 37);
             this.lblNorthStarter.TabIndex = 13;
@@ -378,7 +378,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter.BackColor = System.Drawing.Color.Transparent;
             this.lblEastStarter.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblEastStarter.ForeColor = System.Drawing.Color.Orange;
-            this.lblEastStarter.Location = new System.Drawing.Point(818, 335);
+            this.lblEastStarter.Location = new System.Drawing.Point(694, 359);
             this.lblEastStarter.Name = "lblEastStarter";
             this.lblEastStarter.Size = new System.Drawing.Size(126, 42);
             this.lblEastStarter.TabIndex = 14;
@@ -386,11 +386,11 @@ namespace Duan.Xiugang.Tractor
             // 
             // lblTheTimer
             // 
-            this.lblTheTimer.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.lblTheTimer.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.lblTheTimer.BackColor = System.Drawing.Color.Transparent;
             this.lblTheTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblTheTimer.ForeColor = System.Drawing.Color.Yellow;
-            this.lblTheTimer.Location = new System.Drawing.Point(850, 484);
+            this.lblTheTimer.Location = new System.Drawing.Point(726, 541);
             this.lblTheTimer.Name = "lblTheTimer";
             this.lblTheTimer.Size = new System.Drawing.Size(82, 57);
             this.lblTheTimer.TabIndex = 15;
@@ -404,10 +404,9 @@ namespace Duan.Xiugang.Tractor
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
-            this.ClientSize = new System.Drawing.Size(944, 783);
+            this.ClientSize = new System.Drawing.Size(820, 830);
             this.Controls.Add(this.lblTheTimer);
             this.Controls.Add(this.lblEastStarter);
             this.Controls.Add(this.lblNorthStarter);

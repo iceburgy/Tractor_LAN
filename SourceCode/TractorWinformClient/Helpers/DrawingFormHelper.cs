@@ -20,9 +20,18 @@ namespace Duan.Xiugang.Tractor
     class DrawingFormHelper
     {
         MainForm mainForm;
+        public int scaleDividend = 3;
+        public int scaleDivisor = 2;
+        public int offsetY = 245;
+        public int offsetCenterHalf = 90;
+        public int offsetCenter = 180;
+        public int offsetSideBar = 0;
+        public int offsetWinnerYMe = 21;
+
         internal DrawingFormHelper(MainForm mainForm)
         {
             this.mainForm = mainForm;
+            this.offsetSideBar = mainForm.Width - 70 - 20;
         }
 
 
@@ -32,7 +41,6 @@ namespace Duan.Xiugang.Tractor
         {
             //得到缓冲区图像的Graphics
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            DrawAnimatedCard(getPokerImageByNumber(cardNumber), 260, 280, 71, 96);
             DrawMyCards(g, mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
 
             ReDrawToolbar();
@@ -54,16 +62,16 @@ namespace Duan.Xiugang.Tractor
             {
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294, 80, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294 + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
 
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 158, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 2)
                 {
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480, 200, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
             }
             else if (mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker > TrumpExposingPoker.SingleRank)
@@ -71,21 +79,21 @@ namespace Duan.Xiugang.Tractor
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
                     ClearSuitCards(g);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280, 80, 71, 96);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294, 80, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + 12 * scaleDividend / scaleDivisor + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
                     ClearSuitCards(g);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 158, 71, 96);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 178, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 80, 158 + 20 * scaleDividend / scaleDivisor + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
 
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 2)
                 {
                     ClearSuitCards(g);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480, 200, 71, 96);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480, 220, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 480 + offsetCenterHalf, 200 + 20 * scaleDividend / scaleDivisor + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 1)
                 {
@@ -98,18 +106,18 @@ namespace Duan.Xiugang.Tractor
         //清除亮的牌
         internal void ClearSuitCards(Graphics g)
         {
-            g.DrawImage(mainForm.image, new Rectangle(80, 158, 71, 116), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(480, 200, 71, 116), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(280, 80, 85, 96), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(280 + offsetCenterHalf, 80, 85 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
         }
 
         //清除亮的牌
         internal void ClearSuitCards()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(mainForm.image, new Rectangle(80, 158, 71, 116), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(480, 200, 71, 116), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(280, 80, 85, 96), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(280 + offsetCenterHalf, 80, 85 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
             mainForm.Refresh();
             g.Dispose();
         }
@@ -142,8 +150,8 @@ namespace Duan.Xiugang.Tractor
         internal void DrawCenterImage()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Rectangle rect = new Rectangle(77, 120, 476, 244);
-            g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+            Rectangle rect = new Rectangle(77, 120, offsetSideBar, 244 + offsetCenter + 75);
+            g.DrawImage(mainForm.image, 77, 120, rect.Width, rect.Height);
             g.Dispose();
             mainForm.Refresh();
         }
@@ -267,7 +275,7 @@ namespace Duan.Xiugang.Tractor
         internal void DrawSidebar(Graphics g)
         {
             DrawMyImage(g, Properties.Resources.Sidebar, 20, 30, 70, 89);
-            DrawMyImage(g, Properties.Resources.Sidebar, 540, 30, 70, 89);
+            DrawMyImage(g, Properties.Resources.Sidebar, offsetSideBar, 30, 70, 89);
         }
         /// <summary>
         /// 画东西南北
@@ -289,12 +297,12 @@ namespace Duan.Xiugang.Tractor
             if (who == 1)
             {
                 start += 40;
-                X = 548;
+                X = offsetSideBar + 8;
             }
             else if (who == 2)
             {
                 start += 60;
-                X = 580;
+                X = offsetSideBar + 40;
             }
             else if (who == 3)
             {
@@ -326,13 +334,13 @@ namespace Duan.Xiugang.Tractor
 
             if (who != 1)
             {
-                Rectangle destRect = new Rectangle(548, 45, 20, 20);
+                Rectangle destRect = new Rectangle(offsetSideBar + 8, 45, 20, 20);
                 Rectangle srcRect = new Rectangle(40, 0, 20, 20);
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }
             if (who != 2)
             {
-                Rectangle destRect = new Rectangle(580, 45, 20, 20);
+                Rectangle destRect = new Rectangle(offsetSideBar + 40, 45, 20, 20);
                 Rectangle srcRect = new Rectangle(60, 0, 20, 20);
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }
@@ -377,7 +385,7 @@ namespace Duan.Xiugang.Tractor
             }
 
 
-            Rectangle northSouthRect = new Rectangle(566, 68, 20, 20);
+            Rectangle northSouthRect = new Rectangle(offsetSideBar + 26, 68, 20, 20);
             Rectangle eastWestRect = new Rectangle(46, 68, 20, 20);
 
 
@@ -446,7 +454,7 @@ namespace Duan.Xiugang.Tractor
 
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            Rectangle northSouthRect = new Rectangle(563, 88, 25, 25);
+            Rectangle northSouthRect = new Rectangle(offsetSideBar + 23, 88, 25, 25);
             Rectangle eastWestRect = new Rectangle(43, 88, 25, 25);
 
             Rectangle trumpRect = new Rectangle(23, 58, 25, 25);//backGroud
@@ -517,9 +525,9 @@ namespace Duan.Xiugang.Tractor
         internal void DrawToolbar()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415, 325, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
             //画五种暗花色
-            g.DrawImage(Properties.Resources.Suit, new Rectangle(417, 327, 125, 25), new Rectangle(125, 0, 125, 25), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter, 327 + offsetY, 125, 25), new Rectangle(125, 0, 125, 25), GraphicsUnit.Pixel);
             g.Dispose();
         }
 
@@ -529,7 +537,7 @@ namespace Duan.Xiugang.Tractor
         internal void RemoveToolbar()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(mainForm.image, new Rectangle(415, 325, 129, 29), new Rectangle(415, 325, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(415, 325, 129, 29), GraphicsUnit.Pixel);
             g.Dispose();
         }
 
@@ -554,17 +562,17 @@ namespace Duan.Xiugang.Tractor
         internal void ReDrawToolbar(List<Suit> suits)
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415, 325, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
             //画五种暗花色
             for (int i = 0; i < 5; i++)
             {
                 if (suits.Exists(s=> (int)s ==i+1))
                 {
-                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + i * 25, 327, 25, 25), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
+                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter + i * 25, 327 + offsetY, 25, 25), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
                 else
                 {
-                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + i * 25, 327, 25, 25), new Rectangle(125 + i * 25, 0, 25, 25), GraphicsUnit.Pixel);
+                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter + i * 25, 327 + offsetY, 25, 25), new Rectangle(125 + i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
             }
             g.Dispose();
@@ -607,8 +615,8 @@ namespace Duan.Xiugang.Tractor
             int j = 0;
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 360, 560, 96);
-            g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+            Rectangle rect = new Rectangle(30, 360 + offsetY, 560 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+            g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
 
             //确定绘画起始位置
             int start = (int)((2780 - index * 75) / 10);
@@ -671,8 +679,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 355, 600, 116);
-            g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+            Rectangle rect = new Rectangle(30, 355 + offsetY, 600 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
+            g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
 
             //计算初始位置
             int start = (int)((2780 - index * 75) / 10);
@@ -801,8 +809,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             //清下面的屏幕
-            Rectangle rect = new Rectangle(30, 355, 600, 116);
-            g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+            Rectangle rect = new Rectangle(30, 355 + offsetY, 600 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
+            g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
             DrawScoreImage();
 
             int start = (int)((2780 - index * 75) / 10);
@@ -901,7 +909,8 @@ namespace Duan.Xiugang.Tractor
 
 
             //判断当前的出的牌是否有效,如果有效，画小猪
-            Rectangle pigRect = new Rectangle(296, 300, 53, 46);
+            Rectangle pigRect = new Rectangle(296 - mainForm.drawingFormHelper.offsetCenterHalf, 300 + offsetY, 53, 46);
+            Rectangle pigRectEmpty = new Rectangle(296, 300, 53, 46);
             if (mainForm.SelectedCards.Count > 0)
             {
                 var selectedCardsValidationResult = TractorRules.IsValid(mainForm.ThisPlayer.CurrentTrickState,
@@ -919,14 +928,14 @@ namespace Duan.Xiugang.Tractor
                 else if ((mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing
                  && mainForm.ThisPlayer.CurrentTrickState.NextPlayer() == mainForm.ThisPlayer.PlayerId))
                 {
-                    g.DrawImage(mainForm.image, pigRect, pigRect, GraphicsUnit.Pixel);
+                    g.DrawImage(mainForm.image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
                 }    
 
             }
             else if ((mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing
              && mainForm.ThisPlayer.CurrentTrickState.NextPlayer() == mainForm.ThisPlayer.PlayerId))
             {
-                g.DrawImage(mainForm.image, pigRect, pigRect, GraphicsUnit.Pixel);
+                g.DrawImage(mainForm.image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
             }    
 
 
@@ -949,14 +958,15 @@ namespace Duan.Xiugang.Tractor
                         total++;
                     }
                 }
-                Rectangle pigRect = new Rectangle(296, 300, 53, 46);
+                Rectangle pigRect = new Rectangle(296 - mainForm.drawingFormHelper.offsetCenterHalf, 300 + offsetY, 53, 46);
+                Rectangle pigRectEmpty = new Rectangle(296, 300, 53, 46);
                 if (total == 8)
                 {
                     g.DrawImage(Properties.Resources.Ready, pigRect);
                 }
                 else
                 {
-                    g.DrawImage(mainForm.image, pigRect, pigRect, GraphicsUnit.Pixel);
+                    g.DrawImage(mainForm.image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
 
                 }
             }
@@ -973,8 +983,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 244, 71, 96);
-                start += 14;
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 244 + offsetCenter, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
             }
             g.Dispose();
 
@@ -991,8 +1001,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             foreach (var card in cards)
             {
-                DrawMyImage(g, getPokerImageByNumber(card), start, 244, 71, 96);
-                start += 14;
+                DrawMyImage(g, getPokerImageByNumber(card), start + offsetCenterHalf, 244 + offsetCenter, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
             }
             mainForm.Refresh();
             g.Dispose();
@@ -1008,8 +1018,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 130, 71, 96);
-                start += 14;
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
             }
             // RedrawFrieldUserCardsAction(g, mainForm.currentPokers[1]);
 
@@ -1029,7 +1039,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 13, 192, 71, 96);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor, 192 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
             // RedrawPreviousUserCardsAction(g, mainForm.currentPokers[2]);
@@ -1048,7 +1058,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 326 + i * 13, 192, 71, 96);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 326 + offsetCenter + i * 12 * scaleDividend / scaleDivisor, 192 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
             //RedrawNextUserCardsAction(g, mainForm.currentPokers[3]);
@@ -1155,49 +1165,49 @@ namespace Duan.Xiugang.Tractor
 
             if (count == 1)
             {
-                SetCardsInformation(start + j * 13, number, false);
+                SetCardsInformation(start + j * 12 * scaleDividend / scaleDivisor, number, false);
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b)
                 {
                     if (number == 52 || number == 53)
                     {
-                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, 375, 71, 96); //单个的王不被提上
+                        g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor); //单个的王不被提上
                     }
                     else
                     {
-                        g.DrawImage(getPokerImageByNumber(number), start + j * 13, 360, 71, 96);
+                        g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 360 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                     }
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j * 13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
 
                 j++;
             }
             else if (count == 2)
             {
-                SetCardsInformation(start + j*13, number, false);
+                SetCardsInformation(start + j * 12 * scaleDividend / scaleDivisor, number, false);
 
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b &&
                     mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker >= TrumpExposingPoker.SingleRank)
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 360, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 360 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
 
                 j++;
-                SetCardsInformation(start + j*13, number, false);
+                SetCardsInformation(start + j * 12 * scaleDividend / scaleDivisor, number, false);
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b &&
                     mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker >= TrumpExposingPoker.PairRank)
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 360, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 360 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else
                 {
-                    g.DrawImage(getPokerImageByNumber(number), start + j*13, 375, 71, 96);
+                    g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
 
                 j++;
@@ -1213,12 +1223,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.RedJoker == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, 53, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 53, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.RedJoker == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, 53, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, 53, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 53, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 53, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1227,12 +1237,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.BlackJoker == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, 52, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 52, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.BlackJoker == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, 52, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, 52, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 52, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, 52, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1241,12 +1251,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.DiamondsRankTotal == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.DiamondsRankTotal == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 26, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1255,12 +1265,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.ClubsRankTotal == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.ClubsRankTotal == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 39, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1269,12 +1279,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.SpadesRankCount == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.SpadesRankCount == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank + 13, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1283,12 +1293,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (currentPoker.HeartsRankTotal == 1)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start, 355, 71, 96) + 1;
             }
             else if (currentPoker.HeartsRankTotal == 2)
             {
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start + j * 13, 355, 71, 96) + 1;
-                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start + j * 13, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start, 355, 71, 96) + 1;
+                j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start, 355, 71, 96) + 1;
             }
             return j;
         }
@@ -1299,12 +1309,12 @@ namespace Duan.Xiugang.Tractor
             {
                 if (currentPoker.ClubsNoRank[i] == 1)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start, 355, 71, 96) + 1;
                 }
                 else if (currentPoker.ClubsNoRank[i] == 2)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start + j * 13, 355, 71, 96) + 1;
-                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 39, start, 355, 71, 96) + 1;
                 }
             }
             return j;
@@ -1316,12 +1326,12 @@ namespace Duan.Xiugang.Tractor
             {
                 if (currentPoker.DiamondsNoRank[i] == 1)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start, 355, 71, 96) + 1;
                 }
                 else if (currentPoker.DiamondsNoRank[i] == 2)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start + j * 13, 355, 71, 96) + 1;
-                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 26, start, 355, 71, 96) + 1;
                 }
             }
             return j;
@@ -1333,12 +1343,12 @@ namespace Duan.Xiugang.Tractor
             {
                 if (currentPoker.PeachsNoRank[i] == 1)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start, 355, 71, 96) + 1;
                 }
                 else if (currentPoker.PeachsNoRank[i] == 2)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start + j * 13, 355, 71, 96) + 1;
-                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i + 13, start, 355, 71, 96) + 1;
                 }
             }
             return j;
@@ -1350,27 +1360,27 @@ namespace Duan.Xiugang.Tractor
             {
                 if (currentPoker.HeartsNoRank[i] == 1)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i, start, 355, 71, 96) + 1;
                 }
                 else if (currentPoker.HeartsNoRank[i] == 2)
                 {
-                    j = DrawMyOneOrTwoCards2(g, j, i, start + j * 13, 355, 71, 96) + 1;
-                    j = DrawMyOneOrTwoCards2(g, j, i, start + j * 13, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i, start, 355, 71, 96) + 1;
+                    j = DrawMyOneOrTwoCards2(g, j, i, start, 355, 71, 96) + 1;
                 }
             }
             return j;
         }
 
         //辅助方法
-        private int DrawMyOneOrTwoCards2(Graphics g, int j, int number, int x, int y, int width, int height)
+        private int DrawMyOneOrTwoCards2(Graphics g, int j, int number, int start, int y, int width, int height)
         {
             if ((bool)mainForm.myCardIsReady[mainForm.cardsOrderNumber])
             {
-                g.DrawImage(getPokerImageByNumber(number), x, y, width, height);
+                g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, y + offsetY, width * scaleDividend / scaleDivisor, height * scaleDividend / scaleDivisor);
             }
             else
             {
-                g.DrawImage(getPokerImageByNumber(number), x, y + 20, width, height);
+                g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, y + offsetY + 20, width * scaleDividend / scaleDivisor, height * scaleDividend / scaleDivisor);
             }
 
             mainForm.cardsOrderNumber++;
@@ -1396,9 +1406,9 @@ namespace Duan.Xiugang.Tractor
             }
             else //重新下部空间
             {
-                Rectangle rect = new Rectangle(30, 355, 560, 116);
+                Rectangle rect = new Rectangle(30, 355 + offsetY, 560 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+                g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
                 g.Dispose();
             }
 
@@ -1489,25 +1499,25 @@ namespace Duan.Xiugang.Tractor
             if (winnerPosition == 1) //我
             {
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 437, 310, 33, 53);
+                g.DrawImage(Properties.Resources.Winner, 437 + offsetCenter, 310 + offsetY - offsetWinnerYMe, 33, 53);
                 g.Dispose();
             }
             else if (winnerPosition == 3) //对家
             {
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 437, 120, 33, 53);
+                g.DrawImage(Properties.Resources.Winner, 437 + offsetCenter, 120, 33, 53);
                 g.Dispose();
             }
             else if (winnerPosition == 4) //西家
             {
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 90, 218, 33, 53);
+                g.DrawImage(Properties.Resources.Winner, 90, 218 + offsetCenterHalf, 33, 53);
                 g.Dispose();
             }
             else if (winnerPosition == 2) //东家
             {
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 516, 218, 33, 53);
+                g.DrawImage(Properties.Resources.Winner, 516 + offsetCenter, 218 + offsetCenterHalf, 33, 53);
                 g.Dispose();
             }
 
@@ -1523,10 +1533,10 @@ namespace Duan.Xiugang.Tractor
 
             if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.Starter] == 2 || mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.Starter] == 3)
             {
-                Rectangle rect = new Rectangle(490, 128, 56, 56);
+                Rectangle rect = new Rectangle(offsetSideBar - 56, 128, 56, 56);
                 g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
                 g.DrawImage(bmp, rect);
-                int x = 506;
+                int x = offsetSideBar - 56 + 16;
                 if (scores.ToString().Length == 2)
                 {
                     x -= 4;
@@ -1539,7 +1549,7 @@ namespace Duan.Xiugang.Tractor
             }
             else
             {
-                Rectangle rect = new Rectangle(85, 300, 56, 56);
+                Rectangle rect = new Rectangle(85, 300 + offsetCenter, 56, 56);
                 g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
                 g.DrawImage(bmp, rect);
                 int x = 100;
@@ -1551,7 +1561,7 @@ namespace Duan.Xiugang.Tractor
                 {
                     x -= 8;
                 }
-                g.DrawString(scores + "", font, Brushes.White, x, 310);
+                g.DrawString(scores + "", font, Brushes.White, x, 310 + offsetCenter);
             }
 
             g.Dispose();
@@ -1562,21 +1572,21 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             Pen pen = new Pen(Color.White, 2);
-            g.FillRectangle(new SolidBrush(Color.FromArgb(100, Color.White)), 77, 124, 476, 244);
-            g.DrawRectangle(pen, 77, 124, 476, 244);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(100, Color.White)), 77, 124, 476 + offsetCenter, 244 * scaleDividend / scaleDivisor);
+            g.DrawRectangle(pen, 77, 124, 476 + offsetCenter, 244 * scaleDividend / scaleDivisor);
 
             //画底牌,从169开始画
             for (int i = 0; i < 8; i++)
             {
-                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 230 + i * 14, 130, 71, 96);
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 230 + i * 14 * scaleDividend / scaleDivisor, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
             //画小丫
-            g.DrawImage(global::Duan.Xiugang.Tractor.Properties.Resources.Logo, 160, 237, 110, 112);
+            g.DrawImage(global::Duan.Xiugang.Tractor.Properties.Resources.Logo, 160 + offsetCenterHalf, 237 + offsetCenterHalf, 110, 112);
 
             //画得分
             Font font = new Font("宋体", 16, FontStyle.Bold);
-            g.DrawString("总得分 " + mainForm.ThisPlayer.CurrentHandState.Score, font, Brushes.Blue, 310, 286);
+            g.DrawString("总得分 " + mainForm.ThisPlayer.CurrentHandState.Score, font, Brushes.Blue, 310 + offsetCenterHalf, 286 + offsetCenterHalf);
 
             g.Dispose();
 
@@ -1589,7 +1599,7 @@ namespace Duan.Xiugang.Tractor
             //画底牌,从169开始画
             for (int i = 0; i < 8; i++)
             {
-                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 230 + i * 14, 130, 71, 96);
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 230 + i * 12 * scaleDividend / scaleDivisor, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
             g.Dispose();
@@ -1631,7 +1641,7 @@ namespace Duan.Xiugang.Tractor
         internal void DrawBackground(Graphics g)
         {
             //Bitmap image = global::Kuaff.Tractor.Properties.Resources.Backgroud;
-            g.DrawImage(mainForm.image, mainForm.ClientRectangle, mainForm.ClientRectangle, GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, 0, 0, mainForm.ClientRectangle.Width, mainForm.ClientRectangle.Height);
         }
 
         //画发牌动画，将中间帧动画画好后再去除
@@ -1669,9 +1679,9 @@ namespace Duan.Xiugang.Tractor
                 DrawMySortedCards(mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
             else //所有的牌都出完了
             {
-                Rectangle rect = new Rectangle(30, 355, 560, 116);
+                Rectangle rect = new Rectangle(30, 355 + offsetY, 560 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
                 Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+                g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
                 g.Dispose();
             }
 
@@ -1687,33 +1697,33 @@ namespace Duan.Xiugang.Tractor
             //画8张底牌
             for (int i = 0; i < 8; i++)
             {
-                g.DrawImage(mainForm.gameConfig.BackImage, 200 + i * 2, 186, 71, 96);
+                g.DrawImage(mainForm.gameConfig.BackImage, 200 + offsetCenterHalf + i * 2 * scaleDividend / scaleDivisor, 186 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
             mainForm.Refresh();
             Thread.Sleep(100);
 
             //分发
-            for (int i = 0; i < 8; i++)
+            for (int i = 1; i <= 8; i++)
             {
-                Rectangle rect = new Rectangle(200, 186, 16 + 71, 96);
-                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
-                for (int j = 0; j < 8-(i+1); j++)
+                Rectangle rect = new Rectangle(200 + offsetCenterHalf, 186 + offsetCenterHalf, 16 * scaleDividend / scaleDivisor + 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
+                for (int j = 0; j < 8 - i; j++)
                 {
-                    g.DrawImage(mainForm.gameConfig.BackImage, 200 + j * 2, 186, 71, 96);
+                    g.DrawImage(mainForm.gameConfig.BackImage, 200 + offsetCenterHalf + j * 2 * scaleDividend / scaleDivisor, 186 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 switch (position)
                 {
                     case 2:
                         //画东家的位置
-                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 520, 220 - 12 * 4, 71, 96);
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 520 + offsetCenter, 220 + offsetCenterHalf - 12 * 4, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                         break;
                     case 3:
                         //画对家的位置
-                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 400 - 12 * 13, 60, 71, 96);
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 400 + offsetCenterHalf - 12 * 12, 60, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                         break;
                     case 4:
                         //画西家的位置
-                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 50, 160 + 12 * 4, 71, 96);
+                        DrawAnimatedCard(mainForm.gameConfig.BackImage, 50, 160 + offsetCenterHalf + 12 * 4, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                         break;
                 }
                 mainForm.Refresh();
@@ -1739,14 +1749,14 @@ namespace Duan.Xiugang.Tractor
             if (starterPostion == 1)
             {
 
-                destRect = new Rectangle(548, 45, 20, 20);
+                destRect = new Rectangle(offsetSideBar + 8, 45, 20, 20);
                 srcRect = new Rectangle(120, 0, 20, 20);
 
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }
             else
             {
-                destRect = new Rectangle(548, 45, 20, 20);
+                destRect = new Rectangle(offsetSideBar + 8, 45, 20, 20);
                 srcRect = new Rectangle(40, 0, 20, 20);
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }
@@ -1754,14 +1764,14 @@ namespace Duan.Xiugang.Tractor
             //north
             if (starterPostion == 3)
             {
-                destRect = new Rectangle(580, 45, 20, 20);
+                destRect = new Rectangle(offsetSideBar + 40, 45, 20, 20);
                 srcRect = new Rectangle(140, 0, 20, 20);
 
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }
             else
             {
-                destRect = new Rectangle(580, 45, 20, 20);
+                destRect = new Rectangle(offsetSideBar + 40, 45, 20, 20);
                 srcRect = new Rectangle(60, 0, 20, 20);
                 g.DrawImage(Properties.Resources.Master, destRect, srcRect, GraphicsUnit.Pixel);
             }

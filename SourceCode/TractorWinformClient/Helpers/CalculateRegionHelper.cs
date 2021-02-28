@@ -36,11 +36,11 @@ namespace Duan.Xiugang.Tractor
             {
                 if ((bool)mainForm.myCardIsReady[i])
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
                 else
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
             }
 
@@ -110,11 +110,11 @@ namespace Duan.Xiugang.Tractor
             {
                 if ((bool)mainForm.myCardIsReady[i])
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
                 else
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
             }
 
@@ -168,11 +168,11 @@ namespace Duan.Xiugang.Tractor
             {
                 if ((bool)mainForm.myCardIsReady[i])
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 355 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
                 else
                 {
-                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375, 71, 96));
+                    regions[i] = new Region(new Rectangle((int)mainForm.myCardsLocation[i], 375 + mainForm.drawingFormHelper.offsetY, 71 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor, 96 * mainForm.drawingFormHelper.scaleDividend / mainForm.drawingFormHelper.scaleDivisor));
                 }
             }
 

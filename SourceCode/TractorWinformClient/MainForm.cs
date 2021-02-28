@@ -313,7 +313,7 @@ namespace Duan.Xiugang.Tractor
                 if (e.Button == MouseButtons.Left)
                 {
                     if ((e.X >= (int) myCardsLocation[0] &&
-                         e.X <= ((int) myCardsLocation[myCardsLocation.Count - 1] + 71)) && (e.Y >= 355 && e.Y < 472))
+                         e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor))
                     {
                         if (calculateRegionHelper.CalculateClickedRegion(e, 1))
                         {
@@ -325,7 +325,7 @@ namespace Duan.Xiugang.Tractor
                 else if (e.Button == MouseButtons.Right) //右键
                 {
                     if ((e.X >= (int)myCardsLocation[0] &&
-                         e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71)) && (e.Y >= 355 && e.Y < 472))
+                         e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor))
                     {
                         int i = calculateRegionHelper.CalculateRightClickedRegion(e);
                         if (i > -1 && i < myCardIsReady.Count)
@@ -361,7 +361,7 @@ namespace Duan.Xiugang.Tractor
                                 for (int j = 1; j <= selectMoreCount; j++)
                                 {
                                     //如果候选牌是同一花色
-                                    if ((int)myCardsLocation[i - j] == (x - 13))
+                                    if ((int)myCardsLocation[i - j] == (x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor))
                                     {
                                         //候选牌仅限于对子，拖拉机
                                         if (isLeader)
@@ -381,14 +381,14 @@ namespace Duan.Xiugang.Tractor
                                             {
                                                 break;
                                             }
-                                            x = x - 13;
+                                            x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
                                             j++;
                                         }
                                         else
                                         {
                                             myCardIsReady[i - j] = b;
                                         }
-                                        x = x - 13;
+                                        x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
                                     }
                                     else
                                     {
@@ -400,10 +400,10 @@ namespace Duan.Xiugang.Tractor
                             {
                                 for (int j = 1; j <= i; j++)
                                 {
-                                    if ((int)myCardsLocation[i - j] == (x - 13))
+                                    if ((int)myCardsLocation[i - j] == (x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor))
                                     {
                                         myCardIsReady[i - j] = b;
-                                        x = x - 13;
+                                        x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
                                     }
                                     else
                                     {
@@ -441,7 +441,7 @@ namespace Duan.Xiugang.Tractor
 
 
                 //判断是否点击了小猪*********和以上的点击不同
-                var pigRect = new Rectangle(296, 300, 53, 46);
+                var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
                 var region = new Region(pigRect);
                 if (region.IsVisible(e.X, e.Y))
                 {
@@ -463,15 +463,15 @@ namespace Duan.Xiugang.Tractor
         {
             List<Suit> availableTrumps = ThisPlayer.AvailableTrumps();
             var trumpExposingToolRegion = new Dictionary<Suit, Region>();
-            var spadeRegion = new Region(new Rectangle(443, 327, 25, 25));
+            var spadeRegion = new Region(new Rectangle(443 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
             trumpExposingToolRegion.Add(Suit.Spade, spadeRegion);
-            var heartRegion = new Region(new Rectangle(417, 327, 25, 25));
+            var heartRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
             trumpExposingToolRegion.Add(Suit.Heart, heartRegion);
-            var clubRegion = new Region(new Rectangle(493, 327, 25, 25));
+            var clubRegion = new Region(new Rectangle(493 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
             trumpExposingToolRegion.Add(Suit.Club, clubRegion);
-            var diamondRegion = new Region(new Rectangle(468, 327, 25, 25));
+            var diamondRegion = new Region(new Rectangle(468 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
             trumpExposingToolRegion.Add(Suit.Diamond, diamondRegion);
-            var jokerRegion = new Region(new Rectangle(518, 327, 25, 25));
+            var jokerRegion = new Region(new Rectangle(518 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
             trumpExposingToolRegion.Add(Suit.Joker, jokerRegion);
             foreach (var keyValuePair in trumpExposingToolRegion)
             {
@@ -500,7 +500,8 @@ namespace Duan.Xiugang.Tractor
 
         private void ToDiscard8Cards()
         {
-            var pigRect = new Rectangle(296, 300, 53, 46);
+            var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
+            var pigRectEmpty = new Rectangle(296, 300, 53, 46);
             //判断是否处在扣牌阶段
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
                 ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
@@ -509,7 +510,7 @@ namespace Duan.Xiugang.Tractor
                 {
                     //扣牌,所以擦去小猪
                     Graphics g = Graphics.FromImage(bmp);
-                    g.DrawImage(image, pigRect, pigRect, GraphicsUnit.Pixel);
+                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
                     g.Dispose();
 
                     foreach (int card in SelectedCards)
@@ -526,7 +527,8 @@ namespace Duan.Xiugang.Tractor
 
         private void ToShowCards()
         {
-            var pigRect = new Rectangle(296, 300, 53, 46);
+            var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
+            var pigRectEmpty = new Rectangle(296, 300, 53, 46);
             Graphics g = Graphics.FromImage(bmp);
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
@@ -537,7 +539,7 @@ namespace Duan.Xiugang.Tractor
                 if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
                 {
                     //擦去小猪
-                    g.DrawImage(image, pigRect, pigRect, GraphicsUnit.Pixel);
+                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
 
                     foreach (int card in SelectedCards)
                     {
@@ -550,7 +552,7 @@ namespace Duan.Xiugang.Tractor
                 else if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.TryToDump)
                 {
                     //擦去小猪
-                    g.DrawImage(image, pigRect, pigRect, GraphicsUnit.Pixel);
+                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
 
                     ShowingCardsValidationResult result = ThisPlayer.ValidateDumpingCards(SelectedCards);
                     if (result.ResultType == ShowingCardsValidationResultType.DumpingSuccess) //甩牌成功.
@@ -875,7 +877,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(bmp);
             for (int i = 0; i < 8; i++)
             {
-                g.DrawImage(gameConfig.BackImage, 200 + i*2, 186, 71, 96);
+                g.DrawImage(gameConfig.BackImage, 200 + drawingFormHelper.offsetCenterHalf + i * 2 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 186 + drawingFormHelper.offsetCenterHalf, 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 96 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor);
             }
             Refresh();
             g.Dispose();
@@ -896,7 +898,7 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.ReDrawToolbar();
             Graphics g = Graphics.FromImage(bmp);
 
-            g.DrawImage(image, new Rectangle(200, 186, 85, 96), new Rectangle(200, 186, 85, 96), GraphicsUnit.Pixel);
+            g.DrawImage(image, 200 + drawingFormHelper.offsetCenterHalf, 186 + drawingFormHelper.offsetCenterHalf, 85 * drawingFormHelper.scaleDividend, 96 * drawingFormHelper.scaleDividend);
             Refresh();
             g.Dispose();
         }
