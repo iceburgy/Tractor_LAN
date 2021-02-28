@@ -441,7 +441,7 @@ namespace Duan.Xiugang.Tractor
 
 
                 //判断是否点击了小猪*********和以上的点击不同
-                var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
+                var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
                 var region = new Region(pigRect);
                 if (region.IsVisible(e.X, e.Y))
                 {
@@ -500,7 +500,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ToDiscard8Cards()
         {
-            var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
+            var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
             var pigRectEmpty = new Rectangle(296, 300, 53, 46);
             //判断是否处在扣牌阶段
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
@@ -527,7 +527,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ToShowCards()
         {
-            var pigRect = new Rectangle(296 - drawingFormHelper.offsetCenterHalf, 300 + drawingFormHelper.offsetY, 53, 46);
+            var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
             var pigRectEmpty = new Rectangle(296, 300, 53, 46);
             Graphics g = Graphics.FromImage(bmp);
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
@@ -972,6 +972,14 @@ namespace Duan.Xiugang.Tractor
             Thread.Sleep(200);
             this.lblTheTimer.Text = "";
             this.theTimer.Stop();
+        }
+
+        private void MainForm_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F1)
+            {
+                this.btnReady.PerformClick();
+            }
         }
     }
 }

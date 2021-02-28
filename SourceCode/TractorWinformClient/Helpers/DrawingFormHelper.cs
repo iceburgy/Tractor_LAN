@@ -27,6 +27,7 @@ namespace Duan.Xiugang.Tractor
         public int offsetCenter = 180;
         public int offsetSideBar = 0;
         public int offsetWinnerYMe = 21;
+        public int offsetXPig = 240;
 
         internal DrawingFormHelper(MainForm mainForm)
         {
@@ -909,7 +910,7 @@ namespace Duan.Xiugang.Tractor
 
 
             //判断当前的出的牌是否有效,如果有效，画小猪
-            Rectangle pigRect = new Rectangle(296 - mainForm.drawingFormHelper.offsetCenterHalf, 300 + offsetY, 53, 46);
+            Rectangle pigRect = new Rectangle(296 + mainForm.drawingFormHelper.offsetXPig, 300 + offsetY, 53, 46);
             Rectangle pigRectEmpty = new Rectangle(296, 300, 53, 46);
             if (mainForm.SelectedCards.Count > 0)
             {
@@ -958,7 +959,7 @@ namespace Duan.Xiugang.Tractor
                         total++;
                     }
                 }
-                Rectangle pigRect = new Rectangle(296 - mainForm.drawingFormHelper.offsetCenterHalf, 300 + offsetY, 53, 46);
+                Rectangle pigRect = new Rectangle(296 + mainForm.drawingFormHelper.offsetXPig, 300 + offsetY, 53, 46);
                 Rectangle pigRectEmpty = new Rectangle(296, 300, 53, 46);
                 if (total == 8)
                 {
