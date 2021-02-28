@@ -12,6 +12,7 @@ using Duan.Xiugang.Tractor.Objects;
 using Duan.Xiugang.Tractor.Player;
 using Duan.Xiugang.Tractor.Properties;
 using Kuaff.CardResouces;
+using AutoUpdaterDotNET;
 
 namespace Duan.Xiugang.Tractor
 {
@@ -980,6 +981,15 @@ namespace Duan.Xiugang.Tractor
             {
                 this.btnReady.PerformClick();
             }
+        }
+
+        private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fvi.FileVersion;
+            MessageBox.Show(version);
+            AutoUpdater.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/SourceCode/TractorWinformClient/AutoUpdater.xml");
         }
     }
 }

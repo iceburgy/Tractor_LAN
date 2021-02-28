@@ -53,7 +53,7 @@ namespace Duan.Xiugang.Tractor
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.AboutMeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AutoUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.lblSouthNickName = new System.Windows.Forms.Label();
@@ -247,7 +247,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSeparator5,
-            this.AboutMeToolStripMenuItem});
+            this.AutoUpdaterToolStripMenuItem});
             this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
             this.HelpToolStripMenuItem.Size = new System.Drawing.Size(62, 29);
             this.HelpToolStripMenuItem.Text = "°ïÖú";
@@ -255,12 +255,14 @@ namespace Duan.Xiugang.Tractor
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(69, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(157, 6);
             // 
-            // AboutMeToolStripMenuItem
+            // AutoUpdaterToolStripMenuItem
             // 
-            this.AboutMeToolStripMenuItem.Name = "AboutMeToolStripMenuItem";
-            this.AboutMeToolStripMenuItem.Size = new System.Drawing.Size(72, 22);
+            this.AutoUpdaterToolStripMenuItem.Name = "AutoUpdaterToolStripMenuItem";
+            this.AutoUpdaterToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
+            this.AutoUpdaterToolStripMenuItem.Text = "¼ì²é¸üÐÂ";
+            this.AutoUpdaterToolStripMenuItem.Click += new System.EventHandler(this.AutoUpdaterToolStripMenuItem_Click);
             // 
             // openFileDialog
             // 
@@ -421,6 +423,7 @@ namespace Duan.Xiugang.Tractor
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
@@ -429,7 +432,6 @@ namespace Duan.Xiugang.Tractor
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
-            this.KeyPreview = true;
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
@@ -445,7 +447,6 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem HelpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem StartToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem AboutMeToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
@@ -477,6 +478,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankA;
         private System.Windows.Forms.Label lblTheTimer;
         private System.Windows.Forms.Timer theTimer;
+        private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
     }
 }
 
