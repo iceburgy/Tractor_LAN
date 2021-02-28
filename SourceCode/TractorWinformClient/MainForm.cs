@@ -985,10 +985,6 @@ namespace Duan.Xiugang.Tractor
 
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fvi.FileVersion;
-            MessageBox.Show(version);
             AutoUpdater.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/SourceCode/TractorWinformClient/AutoUpdater.xml");
         }
     }
