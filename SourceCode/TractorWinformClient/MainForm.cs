@@ -14,6 +14,7 @@ using Duan.Xiugang.Tractor.Properties;
 using Kuaff.CardResouces;
 using AutoUpdaterDotNET;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Duan.Xiugang.Tractor
 {
@@ -987,6 +988,8 @@ namespace Duan.Xiugang.Tractor
 
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            MessageBox.Show(string.Format("µ±Ç°°æ±¾£º{0}", assemblyVersion));
             AutoUpdater.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/SourceCode/TractorWinformClient/AutoUpdater.xml");
         }
 
