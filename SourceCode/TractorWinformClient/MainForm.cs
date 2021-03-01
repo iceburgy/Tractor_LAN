@@ -154,6 +154,7 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //≥ı ºªØ
             }
+            AutoUpdater.ReportErrors = true;
         }
 
 
