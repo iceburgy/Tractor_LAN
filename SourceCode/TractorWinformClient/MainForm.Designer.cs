@@ -54,6 +54,7 @@ namespace Duan.Xiugang.Tractor
             this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.AutoUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.lblSouthNickName = new System.Windows.Forms.Label();
@@ -67,7 +68,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter = new System.Windows.Forms.Label();
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
-            this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -87,8 +88,9 @@ namespace Duan.Xiugang.Tractor
             // 
             this.GameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.BeginRankToolStripMenuItem,
-            this.SettingToolStripMenuItem,
             this.RestoreGameStateToolStripMenuItem,
+            this.TeamUpToolStripMenuItem,
+            this.SettingToolStripMenuItem,
             this.StartToolStripMenuItem,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
@@ -266,6 +268,13 @@ namespace Duan.Xiugang.Tractor
             this.AutoUpdaterToolStripMenuItem.Text = "检查更新";
             this.AutoUpdaterToolStripMenuItem.Click += new System.EventHandler(this.AutoUpdaterToolStripMenuItem_Click);
             // 
+            // FeatureOverviewToolStripMenuItem
+            // 
+            this.FeatureOverviewToolStripMenuItem.Name = "FeatureOverviewToolStripMenuItem";
+            this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
+            this.FeatureOverviewToolStripMenuItem.Text = "功能一览";
+            this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
+            // 
             // openFileDialog
             // 
             this.openFileDialog.Filter = "png图片|*.PNG|jpg图片|*.JPG|bmp图片|*.BMP|gif图片|*.GIF|所有文件|*.*";
@@ -406,12 +415,12 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Tag = "";
             this.theTimer.Tick += new System.EventHandler(this.theTimer_Tick);
             // 
-            // FeatureOverviewToolStripMenuItem
+            // TeamUpToolStripMenuItem
             // 
-            this.FeatureOverviewToolStripMenuItem.Name = "FeatureOverviewToolStripMenuItem";
-            this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
-            this.FeatureOverviewToolStripMenuItem.Text = "功能一览";
-            this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
+            this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
+            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.TeamUpToolStripMenuItem.Text = "随机组队";
+            this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -489,6 +498,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Timer theTimer;
         private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FeatureOverviewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem TeamUpToolStripMenuItem;
     }
 }
 

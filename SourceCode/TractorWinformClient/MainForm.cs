@@ -997,5 +997,10 @@ namespace Duan.Xiugang.Tractor
         {
             Process.Start("https://github.com/iceburgy/Tractor_LAN/blob/master/changeLog.md");
         }
+
+        private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.TeamUp();
+        }
     }
 }

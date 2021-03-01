@@ -127,6 +127,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.SetBeginRank(beginRankString);
         }
 
+        public void TeamUp()
+        {
+            _tractorHost.TeamUp();
+        }
+
         public void Ready()
         {
             _tractorHost.PlayerIsReady(this.PlayerId);
@@ -299,10 +304,14 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyGameState(GameState gameState)
         {
             bool teamMade = false;
-            if (gameState.Players[0] != null && gameState.Players[0].Team != GameTeam.None &&
-                (this.CurrentGameState.Players[0] == null || this.CurrentGameState.Players[0].Team == GameTeam.None))
+            for (int i = 0; i < 4; i++)
             {
-                teamMade = true;
+                if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None && this.CurrentGameState.Players[i] != null &&
+                    (this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
+                {
+                    teamMade = true;
+                    break;
+                }
             }
 
             this.CurrentGameState = gameState;

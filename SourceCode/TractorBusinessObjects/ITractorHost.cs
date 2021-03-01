@@ -40,6 +40,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void SetBeginRank(string beginRankString);
 
+        //随机组队
+        [OperationContract(IsOneWay = true)]
+        void TeamUp();
+
         //甩牌检查
         [OperationContract]
         ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId);

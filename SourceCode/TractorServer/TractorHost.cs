@@ -85,6 +85,48 @@ namespace TractorServer
             }
         }
 
+        //随机组队
+        public void TeamUp()
+        {
+            bool isValid = true;
+            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            {
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid)
+            {
+                PublishMessage("随机组队失败：玩家人数不够");
+                return;
+            }
+
+            //create team randomly
+            ShuffleCurrentGameStatePlayers();
+            CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+            CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+            CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+            CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+            log.Debug("restart game");
+            foreach (var p in CurrentGameState.Players)
+            {
+                p.Rank = 0;
+                p.IsReadyToStart = false;
+            }
+            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.Rank = 0;
+            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentHandState.IsFirstHand = true;
+            UpdateGameState();
+            UpdatePlayersCurrentHandState();
+            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+
+            PublishMessage("随机组队成功！请点击就绪开始游戏");
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
 			foreach (PlayerEntity p in CurrentGameState.Players) {
@@ -849,6 +891,23 @@ namespace TractorServer
                 player.NotifyStartTimer(timerLength);
             }
         }
-                        
+
+        public void ShuffleCurrentGameStatePlayers()
+        {
+            List<PlayerEntity> shuffledPlayers = new List<PlayerEntity>();
+            int N = CurrentGameState.Players.Count;
+            for (int i = N; i >= 1; i--)
+            {
+                int r = new Random().Next(i);
+                PlayerEntity curPlayer = CurrentGameState.Players[r];
+                shuffledPlayers.Add(curPlayer);
+                CurrentGameState.Players.Remove(curPlayer);
+            }
+            for (int i = 0; i < N; i++)
+            {
+                CurrentGameState.Players.Add(shuffledPlayers[i]);
+            }
+            shuffledPlayers.Clear();
+        }
     }
 }
