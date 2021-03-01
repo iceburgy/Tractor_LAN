@@ -1002,5 +1002,10 @@ namespace Duan.Xiugang.Tractor
         {
             ThisPlayer.TeamUp();
         }
+
+        private void MoveToNextPositionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.MoveToNextPosition(ThisPlayer.PlayerId);
+        }
     }
 }

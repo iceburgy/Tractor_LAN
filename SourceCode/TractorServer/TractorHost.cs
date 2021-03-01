@@ -127,6 +127,58 @@ namespace TractorServer
             PublishMessage("随机组队成功！请点击就绪开始游戏");
         }
 
+        //和下家互换座位
+        public void MoveToNextPosition(string playerId)
+        {
+            bool isValid = true;
+            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            {
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid)
+            {
+                PublishMessage("和下家互换座位失败：玩家人数不够");
+                return;
+            }
+
+            int meIndex = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                if (CurrentGameState.Players[i].PlayerId == playerId)
+                {
+                    meIndex = i;
+                    break;
+                }
+            }
+
+            int nextIndex = (meIndex + 1) % 4;
+            string nextPlayerId = CurrentGameState.Players[nextIndex].PlayerId;
+            PlayerEntity temp = CurrentGameState.Players[nextIndex];
+            CurrentGameState.Players[nextIndex] = CurrentGameState.Players[meIndex];
+            CurrentGameState.Players[meIndex] = temp;
+
+            log.Debug("restart game");
+            foreach (var p in CurrentGameState.Players)
+            {
+                p.Rank = 0;
+                p.IsReadyToStart = false;
+            }
+            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.Rank = 0;
+            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentHandState.IsFirstHand = true;
+            UpdateGameState();
+            UpdatePlayersCurrentHandState();
+            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+
+            PublishMessage(string.Format("玩家【{0}】和下家【{1}】互换座位成功！请点击就绪开始游戏", playerId, nextPlayerId));
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
 			foreach (PlayerEntity p in CurrentGameState.Players) {

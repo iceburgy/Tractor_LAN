@@ -46,8 +46,9 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankQ = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemBeginRankK = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemBeginRankA = new System.Windows.Forms.ToolStripMenuItem();
-            this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RebootToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,7 +69,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter = new System.Windows.Forms.Label();
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
-            this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MoveToNextPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,6 +90,7 @@ namespace Duan.Xiugang.Tractor
             this.GameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.BeginRankToolStripMenuItem,
             this.RestoreGameStateToolStripMenuItem,
+            this.MoveToNextPositionToolStripMenuItem,
             this.TeamUpToolStripMenuItem,
             this.SettingToolStripMenuItem,
             this.StartToolStripMenuItem,
@@ -115,7 +117,7 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankK,
             this.toolStripMenuItemBeginRankA});
             this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
-            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
             this.BeginRankToolStripMenuItem.Text = "从几打起";
             // 
             // toolStripMenuItemBeginRank2
@@ -209,40 +211,47 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankA.Text = "A";
             this.toolStripMenuItemBeginRankA.Click += new System.EventHandler(this.MenuItem_Click);
             // 
-            // SettingToolStripMenuItem
-            // 
-            this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
-            this.SettingToolStripMenuItem.Text = "设置";
-            this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
-            // 
             // RestoreGameStateToolStripMenuItem
             // 
             this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
-            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
             this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
             this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
+            // 
+            // TeamUpToolStripMenuItem
+            // 
+            this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
+            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.TeamUpToolStripMenuItem.Text = "随机组队";
+            this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
+            // 
+            // SettingToolStripMenuItem
+            // 
+            this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.SettingToolStripMenuItem.Text = "设置";
+            this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
             // StartToolStripMenuItem
             // 
             this.StartToolStripMenuItem.Image = global::Duan.Xiugang.Tractor.Properties.Resources.MenuStart;
             this.StartToolStripMenuItem.Name = "StartToolStripMenuItem";
             this.StartToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.StartToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.StartToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
             this.StartToolStripMenuItem.Text = "加入房间";
             this.StartToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
             this.RebootToolStripMenuItem.Text = "重启游戏";
             this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
             this.ExitToolStripMenuItem.Text = "退出";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
@@ -415,12 +424,12 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Tag = "";
             this.theTimer.Tick += new System.EventHandler(this.theTimer_Tick);
             // 
-            // TeamUpToolStripMenuItem
+            // MoveToNextPositionToolStripMenuItem
             // 
-            this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
-            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(198, 30);
-            this.TeamUpToolStripMenuItem.Text = "随机组队";
-            this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
+            this.MoveToNextPositionToolStripMenuItem.Name = "MoveToNextPositionToolStripMenuItem";
+            this.MoveToNextPositionToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.MoveToNextPositionToolStripMenuItem.Text = "和下家互换座位";
+            this.MoveToNextPositionToolStripMenuItem.Click += new System.EventHandler(this.MoveToNextPositionToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -499,6 +508,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FeatureOverviewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem TeamUpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MoveToNextPositionToolStripMenuItem;
     }
 }
 

@@ -132,6 +132,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.TeamUp();
         }
 
+        public void MoveToNextPosition(string playerId)
+        {
+            _tractorHost.MoveToNextPosition(playerId);
+        }
+
         public void Ready()
         {
             _tractorHost.PlayerIsReady(this.PlayerId);

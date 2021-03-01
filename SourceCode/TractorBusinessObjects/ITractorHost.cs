@@ -44,6 +44,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void TeamUp();
 
+        //和下家互换座位
+        [OperationContract(IsOneWay = true)]
+        void MoveToNextPosition(string playerId);
+
         //甩牌检查
         [OperationContract]
         ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId);
