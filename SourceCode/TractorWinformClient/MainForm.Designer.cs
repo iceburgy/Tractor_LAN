@@ -67,6 +67,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter = new System.Windows.Forms.Label();
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
+            this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -247,7 +248,8 @@ namespace Duan.Xiugang.Tractor
             // 
             this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSeparator5,
-            this.AutoUpdaterToolStripMenuItem});
+            this.AutoUpdaterToolStripMenuItem,
+            this.FeatureOverviewToolStripMenuItem});
             this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
             this.HelpToolStripMenuItem.Size = new System.Drawing.Size(62, 29);
             this.HelpToolStripMenuItem.Text = "∞Ô÷˙";
@@ -404,6 +406,13 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Tag = "";
             this.theTimer.Tick += new System.EventHandler(this.theTimer_Tick);
             // 
+            // FeatureOverviewToolStripMenuItem
+            // 
+            this.FeatureOverviewToolStripMenuItem.Name = "FeatureOverviewToolStripMenuItem";
+            this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
+            this.FeatureOverviewToolStripMenuItem.Text = "π¶ƒ‹“ª¿¿";
+            this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -479,6 +488,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Label lblTheTimer;
         private System.Windows.Forms.Timer theTimer;
         private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem FeatureOverviewToolStripMenuItem;
     }
 }
 
