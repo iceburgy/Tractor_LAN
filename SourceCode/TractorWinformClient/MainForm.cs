@@ -935,6 +935,7 @@ namespace Duan.Xiugang.Tractor
             {
                 drawingFormHelper.DrawPreviousUserSendedCards();
             }
+            ThisPlayer.CurrentTrickState.ShowedCards[result.PlayerId].Clear();
         }
 
         #endregion

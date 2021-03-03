@@ -311,8 +311,8 @@ namespace Duan.Xiugang.Tractor.Player
             bool teamMade = false;
             for (int i = 0; i < 4; i++)
             {
-                if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None && this.CurrentGameState.Players[i] != null &&
-                    (this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
+                if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None &&
+                    (this.CurrentGameState.Players[i] == null || this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
                 {
                     teamMade = true;
                     break;
