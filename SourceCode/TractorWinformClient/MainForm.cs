@@ -33,6 +33,7 @@ namespace Duan.Xiugang.Tractor
         internal CalculateRegionHelper calculateRegionHelper = null;
         internal Bitmap[] cardsImages = new Bitmap[54];
         internal int cardsOrderNumber = 0;
+        internal bool updateOnLoad = false;
 
         internal CurrentPoker[] currentAllSendPokers =
         {
@@ -121,6 +122,7 @@ namespace Duan.Xiugang.Tractor
             {
                 var nickName = (String)myreader.GetValue("nickName", typeof(String));
                 ThisPlayer.PlayerId = nickName;
+                updateOnLoad = (bool)myreader.GetValue("updateOnLoad", typeof(Boolean));
             }
             catch (Exception ex)
             {
@@ -156,7 +158,6 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //初始化
             }
-            AutoUpdater.ReportErrors = true;
         }
 
 
@@ -989,8 +990,7 @@ namespace Duan.Xiugang.Tractor
 
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            MessageBox.Show(string.Format("当前版本：{0}", assemblyVersion));
+            AutoUpdater.ReportErrors = true;
             AutoUpdater.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/SourceCode/TractorWinformClient/AutoUpdater.xml");
         }
 
@@ -1007,6 +1007,21 @@ namespace Duan.Xiugang.Tractor
         private void MoveToNextPositionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ThisPlayer.MoveToNextPosition(ThisPlayer.PlayerId);
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
+            if (this.updateOnLoad)
+            {
+                AutoUpdater.ReportErrors = false;
+                AutoUpdater.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/SourceCode/TractorWinformClient/AutoUpdater.xml");
+            }
+        }
+
+        private void ToolStripMenuItemShowVersion_Click(object sender, EventArgs e)
+        {
+            string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            MessageBox.Show(string.Format("当前版本：{0}", assemblyVersion));
         }
     }
 }

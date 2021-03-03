@@ -34,6 +34,7 @@
             this.tbxNickName = new System.Windows.Forms.TextBox();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.cbxUpdateOnLoad = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblHostName
@@ -70,7 +71,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(70, 201);
+            this.btnOK.Location = new System.Drawing.Point(70, 280);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
             this.btnOK.TabIndex = 4;
@@ -81,7 +82,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(173, 201);
+            this.btnCancel.Location = new System.Drawing.Point(173, 280);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
             this.btnCancel.TabIndex = 5;
@@ -89,13 +90,24 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // cbxUpdateOnLoad
+            // 
+            this.cbxUpdateOnLoad.AutoSize = true;
+            this.cbxUpdateOnLoad.Location = new System.Drawing.Point(70, 194);
+            this.cbxUpdateOnLoad.Name = "cbxUpdateOnLoad";
+            this.cbxUpdateOnLoad.Size = new System.Drawing.Size(147, 24);
+            this.cbxUpdateOnLoad.TabIndex = 6;
+            this.cbxUpdateOnLoad.Text = "启动时检查更新";
+            this.cbxUpdateOnLoad.UseVisualStyleBackColor = true;
+            // 
             // FormSettings
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(422, 298);
+            this.ClientSize = new System.Drawing.Size(422, 390);
+            this.Controls.Add(this.cbxUpdateOnLoad);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.tbxNickName);
@@ -117,5 +129,6 @@
         private System.Windows.Forms.TextBox tbxNickName;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.CheckBox cbxUpdateOnLoad;
     }
 }
