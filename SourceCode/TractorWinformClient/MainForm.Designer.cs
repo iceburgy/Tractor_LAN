@@ -57,6 +57,7 @@ namespace Duan.Xiugang.Tractor
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.AutoUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.lblSouthNickName = new System.Windows.Forms.Label();
@@ -70,7 +71,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter = new System.Windows.Forms.Label();
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
-            this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -95,6 +96,7 @@ namespace Duan.Xiugang.Tractor
             this.TeamUpToolStripMenuItem,
             this.SettingToolStripMenuItem,
             this.StartToolStripMenuItem,
+            this.ToolStripMenuItemGetReady,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.GameToolStripMenuItem.Name = "GameToolStripMenuItem";
@@ -267,9 +269,9 @@ namespace Duan.Xiugang.Tractor
             // 
             this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSeparator5,
+            this.ToolStripMenuItemShowVersion,
             this.AutoUpdaterToolStripMenuItem,
-            this.FeatureOverviewToolStripMenuItem,
-            this.ToolStripMenuItemShowVersion});
+            this.FeatureOverviewToolStripMenuItem});
             this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
             this.HelpToolStripMenuItem.Size = new System.Drawing.Size(62, 29);
             this.HelpToolStripMenuItem.Text = "帮助";
@@ -292,6 +294,13 @@ namespace Duan.Xiugang.Tractor
             this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
             this.FeatureOverviewToolStripMenuItem.Text = "功能一览";
             this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
+            // 
+            // ToolStripMenuItemShowVersion
+            // 
+            this.ToolStripMenuItemShowVersion.Name = "ToolStripMenuItemShowVersion";
+            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(160, 30);
+            this.ToolStripMenuItemShowVersion.Text = "当前版本";
+            this.ToolStripMenuItemShowVersion.Click += new System.EventHandler(this.ToolStripMenuItemShowVersion_Click);
             // 
             // openFileDialog
             // 
@@ -433,12 +442,13 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Tag = "";
             this.theTimer.Tick += new System.EventHandler(this.theTimer_Tick);
             // 
-            // ToolStripMenuItemShowVersion
+            // ToolStripMenuItemGetReady
             // 
-            this.ToolStripMenuItemShowVersion.Name = "ToolStripMenuItemShowVersion";
-            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(160, 30);
-            this.ToolStripMenuItemShowVersion.Text = "当前版本";
-            this.ToolStripMenuItemShowVersion.Click += new System.EventHandler(this.ToolStripMenuItemShowVersion_Click);
+            this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
+            this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemGetReady.Text = "就绪";
+            this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
             // 
             // MainForm
             // 
@@ -459,7 +469,6 @@ namespace Duan.Xiugang.Tractor
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
@@ -468,7 +477,6 @@ namespace Duan.Xiugang.Tractor
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyUp);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
@@ -520,6 +528,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem TeamUpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MoveToNextPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemShowVersion;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemGetReady;
     }
 }
 

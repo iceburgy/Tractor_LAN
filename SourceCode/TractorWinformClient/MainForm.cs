@@ -980,14 +980,6 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Stop();
         }
 
-        private void MainForm_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.F1)
-            {
-                this.btnReady.PerformClick();
-            }
-        }
-
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AutoUpdater.ReportErrors = true;
@@ -1022,6 +1014,11 @@ namespace Duan.Xiugang.Tractor
         {
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             MessageBox.Show(string.Format("µ±Ç°°æ±¾£º{0}", assemblyVersion));
+        }
+
+        private void ToolStripMenuItemGetReady_Click(object sender, EventArgs e)
+        {
+            this.btnReady.PerformClick();
         }
     }
 }
