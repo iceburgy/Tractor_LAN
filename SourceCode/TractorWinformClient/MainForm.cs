@@ -363,21 +363,26 @@ namespace Duan.Xiugang.Tractor
                             }
                             if (b)
                             {
+                                var showingCardsCp = new CurrentPoker();
+                                showingCardsCp.TrumpInt = (int)ThisPlayer.CurrentHandState.Trump;
+                                showingCardsCp.Rank = ThisPlayer.CurrentHandState.Rank;
+
                                 for (int j = 1; j <= selectMoreCount; j++)
                                 {
                                     //如果候选牌是同一花色
                                     if ((int)myCardsLocation[i - j] == (x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor))
                                     {
-                                        //候选牌仅限于对子，拖拉机
                                         if (isLeader)
                                         {
+                                            //第一个出，候选牌为对子，拖拉机
                                             int toAddCardNumber = (int)myCardsNumber[i - j];
                                             int toAddCardNumberOnRight = (int)myCardsNumber[i - j + 1];
-                                            int rankNumber = ThisPlayer.CurrentHandState.Rank + 2;
-                                            //如果候选牌的数值与右键点中的牌的数值差就是它们的间距差/2，或者当前打几的数字落在了中间，则数值差应减去1
-                                            if (toAddCardNumber == toAddCardNumberOnRight && 
-                                                (clickedCardNumber - toAddCardNumber == j / 2 ||
-                                                clickedCardNumber - toAddCardNumber - 1 == j / 2 && (rankNumber > toAddCardNumber && rankNumber < clickedCardNumber)))
+                                            showingCardsCp.AddCard(toAddCardNumberOnRight);
+                                            showingCardsCp.AddCard(toAddCardNumber);
+
+                                            if (showingCardsCp.Count == 2 && (showingCardsCp.GetPairs().Count == 1) || //如果是一对
+                                                ((showingCardsCp.GetTractorOfAnySuit().Count > 1) &&
+                                                showingCardsCp.Count == showingCardsCp.GetTractorOfAnySuit().Count * 2))  //如果是拖拉机
                                             {
                                                 myCardIsReady[i - j] = b;
                                                 myCardIsReady[i - j + 1] = b;
@@ -391,6 +396,7 @@ namespace Duan.Xiugang.Tractor
                                         }
                                         else
                                         {
+                                            //埋底或者跟出
                                             myCardIsReady[i - j] = b;
                                         }
                                         x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
