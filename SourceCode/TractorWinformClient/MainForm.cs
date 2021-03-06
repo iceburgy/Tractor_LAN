@@ -439,7 +439,7 @@ namespace Duan.Xiugang.Tractor
                     else
                     {
                         //允许刚埋完牌后查看底牌
-                        if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count == 25 &&
+                        if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
                             ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
                             ThisPlayer.CurrentHandState.DiscardedCards != null &&
                             ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
