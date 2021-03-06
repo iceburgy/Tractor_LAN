@@ -162,6 +162,11 @@ namespace TractorServer
             CurrentGameState.Players[nextIndex] = CurrentGameState.Players[meIndex];
             CurrentGameState.Players[meIndex] = temp;
 
+            CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+            CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+            CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+            CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+
             log.Debug("restart game");
             foreach (var p in CurrentGameState.Players)
             {
