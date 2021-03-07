@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
@@ -19,5 +20,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         [DataMember]
         public bool IsReadyToStart { get; set; }
+
+        [DataMember]
+        public HashSet<string> Observers { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ServiceModel;
 using Duan.Xiugang.Tractor.Objects;
+using System.Collections;
 
 
 namespace Duan.Xiugang.Tractor.Player
@@ -19,6 +20,8 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void StarterChangedEventHandler();
     public delegate void NotifyMessageEventHandler(string msg);
     public delegate void NotifyStartTimerEventHandler(int timerLength);
+    public delegate void NotifyCardsReadyEventHandler(ArrayList myCardIsReady);
+    public delegate void ResortMyCardsEventHandler();
 
     public delegate void DistributingLast8CardsEventHandler();
     public delegate void DiscardingLast8EventHandler();
@@ -40,6 +43,8 @@ namespace Duan.Xiugang.Tractor.Player
         public string PlayerId { get; set; }
         public string PlayerName { get; set; }
         public int Rank { get; set; }
+        public bool isObserver { get; set; }
+        public string MyOwnId { get; set; }
 
         public GameState CurrentGameState;
         public CurrentPoker CurrentPoker;
@@ -51,7 +56,6 @@ namespace Duan.Xiugang.Tractor.Player
         public event PlayersTeamMadeEventHandler PlayersTeamMade;
         public event GameStartedEventHandler GameOnStarted;
 
-
         public event GetCardEventHandler PlayerOnGetCard;        
         public event TrumpChangedEventHandler TrumpChanged;
         public event DistributingCardsFinishedEventHandler AllCardsGot;
@@ -59,6 +63,8 @@ namespace Duan.Xiugang.Tractor.Player
         public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
         public event NotifyMessageEventHandler NotifyMessageEvent; //广播消息
         public event NotifyStartTimerEventHandler NotifyStartTimerEvent; //广播倒计时
+        public event NotifyCardsReadyEventHandler NotifyCardsReadyEvent; //旁观：选牌
+        public event ResortMyCardsEventHandler ResortMyCardsEvent; //旁观：重新画手牌
         
         public event DistributingLast8CardsEventHandler DistributingLast8Cards;
         public event DiscardingLast8EventHandler DiscardingLast8;
@@ -68,7 +74,6 @@ namespace Duan.Xiugang.Tractor.Player
         public event CurrentTrickStateUpdateEventHandler PlayerShowedCards;
         public event DumpingFailEventHandler DumpingFail; //甩牌失败
         public event TrickFinishedEventHandler TrickFinished;
-
         
         public event HandEndingEventHandler HandEnding;
 
@@ -137,9 +142,19 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.MoveToNextPosition(playerId);
         }
 
+        public void CardsReady(string playerId, ArrayList myCardIsReady)
+        {
+            _tractorHost.CardsReady(playerId, myCardIsReady);
+        }
+
+        public void ObservePlayerById(string playerId, string observerId)
+        {
+            _tractorHost.ObservePlayerById(playerId, observerId);
+        }
+
         public void Ready()
         {
-            _tractorHost.PlayerIsReady(this.PlayerId);
+            _tractorHost.PlayerIsReady(this.MyOwnId);
         }
 
         public void ReadyToStart()
@@ -149,7 +164,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void Quit()
         {
-            _tractorHost.PlayerQuit(this.PlayerId);
+            _tractorHost.PlayerQuit(this.MyOwnId);
             (_tractorHost as IDisposable).Dispose();
         }
 
@@ -286,6 +301,15 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
+            if (this.isObserver &&
+                this.CurrentHandState.PlayerHoldingCards != null &&
+                this.CurrentHandState.PlayerHoldingCards.ContainsKey(this.PlayerId) &&
+                this.CurrentHandState.PlayerHoldingCards[this.PlayerId] != null)
+            {
+                //即时更新旁观手牌
+                this.CurrentPoker = this.CurrentHandState.PlayerHoldingCards[this.PlayerId];
+                ResortMyCardsEvent();
+            }
         }
 
         public void NotifyCurrentTrickState(CurrentTrickState currentTrickState)
@@ -309,13 +333,29 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyGameState(GameState gameState)
         {
             bool teamMade = false;
+            bool observerChanged = false;
+            foreach (PlayerEntity p in gameState.Players)
+            {
+                if (p != null && p.Observers.Contains(this.MyOwnId))
+                {
+                    this.isObserver = true;
+                    this.PlayerId = p.PlayerId;
+                    break;
+                }
+            }
             for (int i = 0; i < 4; i++)
             {
                 if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None &&
                     (this.CurrentGameState.Players[i] == null || this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
                 {
                     teamMade = true;
-                    break;
+                }
+                HashSet<string> oldObs = new HashSet<string>(), newObs = new HashSet<string>();
+                if (gameState.Players[i] != null) oldObs = gameState.Players[i].Observers;
+                if (this.CurrentGameState.Players[i] != null) newObs = this.CurrentGameState.Players[i].Observers;
+                if (!oldObs.SetEquals(newObs))
+                {
+                    observerChanged = true;
                 }
             }
 
@@ -340,7 +380,7 @@ namespace Duan.Xiugang.Tractor.Player
             }
 
 
-            if (teamMade)
+            if (teamMade || observerChanged)
             {
                 if (PlayersTeamMade != null)
                 {
@@ -348,6 +388,14 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
+        }
+
+        public void NotifyCardsReady(ArrayList myCardIsReady)
+        {
+            if (NotifyCardsReadyEvent != null)
+            {
+                NotifyCardsReadyEvent(myCardIsReady);
+            }
         }
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards)

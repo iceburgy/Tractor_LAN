@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="CardsShoe.cs" />
     <Compile Include="CommonMethods.cs" />
+    <Compile Include="ClientInfo.cs" />
     <Compile Include="CurrentPoker.cs" />
     <Compile Include="CurrentHandState.cs" />
     <Compile Include="CurrentTrickState.cs" />

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.ServiceModel;
 
 namespace Duan.Xiugang.Tractor.Objects
@@ -57,6 +58,10 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <param name="result"></param>
         [OperationContract(IsOneWay = true)]
         void NotifyDumpingValidationResult(ShowingCardsValidationResult result);
+
+        //旁观：选牌
+        [OperationContract(IsOneWay = true)]
+        void NotifyCardsReady(ArrayList myCardIsReady);
 
         void DiscardCards(int[] cards);
     }

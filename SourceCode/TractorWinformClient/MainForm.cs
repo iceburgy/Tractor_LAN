@@ -122,6 +122,7 @@ namespace Duan.Xiugang.Tractor
             {
                 var nickName = (String)myreader.GetValue("nickName", typeof(String));
                 ThisPlayer.PlayerId = nickName;
+                ThisPlayer.MyOwnId = nickName;
                 updateOnLoad = (bool)myreader.GetValue("updateOnLoad", typeof(Boolean));
             }
             catch (Exception ex)
@@ -144,6 +145,8 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
             ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
             ThisPlayer.NotifyStartTimerEvent += ThisPlayer_NotifyStartTimerEventHandler;
+            ThisPlayer.NotifyCardsReadyEvent += ThisPlayer_NotifyCardsReadyEventHandler;
+            ThisPlayer.ResortMyCardsEvent += ThisPlayer_ResortMyCardsEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
@@ -310,6 +313,11 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
+            //旁观不能触发点击效果
+            if (ThisPlayer.isObserver)
+            {
+                return;
+            }
             //左键
             //只有发牌时和该我出牌时才能相应鼠标事件
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing ||
@@ -324,6 +332,8 @@ namespace Duan.Xiugang.Tractor
                         {
                             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
                             Refresh();
+
+                            ThisPlayer.CardsReady(ThisPlayer.PlayerId, myCardIsReady);
                         }
                     }
                 }
@@ -434,6 +444,8 @@ namespace Duan.Xiugang.Tractor
 
                             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
                             Refresh();
+
+                            ThisPlayer.CardsReady(ThisPlayer.PlayerId, myCardIsReady);
                         }
                     }
                     else
@@ -622,7 +634,7 @@ namespace Duan.Xiugang.Tractor
                 //初始化
                 init();
             }
-            else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank"))
+            else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank") && !ThisPlayer.isObserver)
             {
                 string beginRankString = menuItem.Name.Substring("toolStripMenuItemBeginRank".Length, 1);
                 ThisPlayer.SetBeginRank(beginRankString);
@@ -705,6 +717,13 @@ namespace Duan.Xiugang.Tractor
 
             if (ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
                 drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+
+            //即时更新旁观手牌
+            if (ThisPlayer.isObserver && ThisPlayer.PlayerId == latestPlayer)
+            {
+                ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
+                ResortMyCards();
+            }
         }
 
         private void ThisPlayer_ShowingCardBegan()
@@ -752,6 +771,11 @@ namespace Duan.Xiugang.Tractor
                 if (curPlayer != null)
                 {
                     nickNameLabels[i].Text = curPlayer.PlayerId;
+                    foreach (string ob in curPlayer.Observers)
+                    {
+                        string newLine = i == 0 ? "" : "\n";
+                        nickNameLabels[i].Text += string.Format("{0}【{1}】", newLine, ob);
+                    }
                 }
                 else
                 {
@@ -881,14 +905,37 @@ namespace Duan.Xiugang.Tractor
         {
             this.lblTheTimer.Text = timerLength.ToString();
             this.theTimer.Start();
-        }     
-        
+        }
+
+        private void ThisPlayer_NotifyCardsReadyEventHandler(ArrayList mcir)
+        {
+            for (int k = 0; k < myCardIsReady.Count; k++)
+            {
+                myCardIsReady[k] = mcir[k];
+            }
+
+            drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+            Refresh();
+        }
+
+        private void ThisPlayer_ResortMyCardsEventHandler()
+        {
+            ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
+            ResortMyCards();
+        }
+
         private void ThisPlayer_Last8Discarded()
         {
             Graphics g = Graphics.FromImage(bmp);
             for (int i = 0; i < 8; i++)
             {
                 g.DrawImage(gameConfig.BackImage, 200 + drawingFormHelper.offsetCenterHalf + i * 2 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 186 + drawingFormHelper.offsetCenterHalf, 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 96 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor);
+            }
+
+            if (ThisPlayer.isObserver && ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId)
+            {
+                ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
+                ResortMyCards();
             }
             Refresh();
             g.Dispose();
@@ -949,6 +996,7 @@ namespace Duan.Xiugang.Tractor
 
         private void btnReady_Click(object sender, EventArgs e)
         {
+            if (ThisPlayer.isObserver) return;
             ThisPlayer.ReadyToStart();
         }
 
@@ -966,6 +1014,7 @@ namespace Duan.Xiugang.Tractor
 
         private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ThisPlayer.isObserver) return;
             ThisPlayer.RestoreGameStateFromFile();
         }
 
@@ -999,11 +1048,13 @@ namespace Duan.Xiugang.Tractor
 
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ThisPlayer.isObserver) return;
             ThisPlayer.TeamUp();
         }
 
         private void MoveToNextPositionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ThisPlayer.isObserver) return;
             ThisPlayer.MoveToNextPosition(ThisPlayer.PlayerId);
         }
 
@@ -1025,6 +1076,14 @@ namespace Duan.Xiugang.Tractor
         private void ToolStripMenuItemGetReady_Click(object sender, EventArgs e)
         {
             this.btnReady.PerformClick();
+        }
+
+        private void ToolStripMenuItemObserverNextPlayer_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver)
+            {
+                ThisPlayer.ObservePlayerById(PositionPlayer[2], ThisPlayer.MyOwnId);
+            }
         }
     }
 }

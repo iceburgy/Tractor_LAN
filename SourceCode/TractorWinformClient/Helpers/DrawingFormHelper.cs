@@ -948,6 +948,7 @@ namespace Duan.Xiugang.Tractor
 
         private void My8CardsIsReady(Graphics g)
         {
+            if (mainForm.ThisPlayer.isObserver) return;
             //如果等我扣牌
             if (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards && mainForm.ThisPlayer.CurrentHandState.Last8Holder == mainForm.ThisPlayer.PlayerId)
             {
@@ -1532,38 +1533,19 @@ namespace Duan.Xiugang.Tractor
             Bitmap bmp = global::Duan.Xiugang.Tractor.Properties.Resources.scores;
             Font font = new Font("宋体", 12, FontStyle.Bold);
 
-            if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.Starter] == 2 || mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.Starter] == 3)
+            Rectangle rect = new Rectangle(offsetSideBar - 56, 128, 56, 56);
+            g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
+            g.DrawImage(bmp, rect);
+            int x = offsetSideBar - 56 + 16;
+            if (scores.ToString().Length == 2)
             {
-                Rectangle rect = new Rectangle(offsetSideBar - 56, 128, 56, 56);
-                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
-                g.DrawImage(bmp, rect);
-                int x = offsetSideBar - 56 + 16;
-                if (scores.ToString().Length == 2)
-                {
-                    x -= 4;
-                }
-                else if (scores.ToString().Length == 3)
-                {
-                    x -= 8;
-                }
-                g.DrawString(scores + "", font, Brushes.White, x, 138);
+                x -= 4;
             }
-            else
+            else if (scores.ToString().Length == 3)
             {
-                Rectangle rect = new Rectangle(85, 300 + offsetCenter, 56, 56);
-                g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
-                g.DrawImage(bmp, rect);
-                int x = 100;
-                if (scores.ToString().Length == 2)
-                {
-                    x -= 4;
-                }
-                else if (scores.ToString().Length == 3)
-                {
-                    x -= 8;
-                }
-                g.DrawString(scores + "", font, Brushes.White, x, 310 + offsetCenter);
+                x -= 8;
             }
+            g.DrawString(scores + "", font, Brushes.White, x, 138);
 
             g.Dispose();
         }

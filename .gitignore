@@ -31,6 +31,30 @@ bld/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+SourceCode/CardSources/bin/
+SourceCode/ConsoleHost/bin/
+SourceCode/ModelResources/bin/
+SourceCode/OperaResources/bin/
+SourceCode/Player/bin/
+SourceCode/TractorBusinessObjects/ClientInfo.cs
+SourceCode/TractorBusinessObjects/bin/
+SourceCode/TractorFere/bin/
+SourceCode/TractorServer/bin/
+SourceCode/TractorWinformClient/Properties/app.manifest
+SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.dll
+SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.xml
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Objects.dll
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Player.dll
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.application
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe.config
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe.manifest
+SourceCode/TractorWinformClient/bin/Debug/Kuaff.CardResources.dll
+SourceCode/TractorWinformClient/bin/Debug/Kuaff.ModelResources.dll
+SourceCode/TractorWinformClient/bin/Debug/Kuaff.OperaResources.dll
+SourceCode/TractorWinformClient/bin/Debug/Kuaff.TractorFere.dll
+SourceCode/UnitTest/bin/
+
 # NUNIT
 *.VisualState.xml
 TestResult.xml

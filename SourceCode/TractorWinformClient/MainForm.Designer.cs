@@ -51,13 +51,15 @@ namespace Duan.Xiugang.Tractor
             this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.StartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemObserverNextPlayer = new System.Windows.Forms.ToolStripMenuItem();
             this.RebootToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.AutoUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.lblSouthNickName = new System.Windows.Forms.Label();
@@ -71,8 +73,9 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter = new System.Windows.Forms.Label();
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
-            this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.menuStrip.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -97,6 +100,7 @@ namespace Duan.Xiugang.Tractor
             this.SettingToolStripMenuItem,
             this.StartToolStripMenuItem,
             this.ToolStripMenuItemGetReady,
+            this.ToolStripMenuItemObserverNextPlayer,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.GameToolStripMenuItem.Name = "GameToolStripMenuItem";
@@ -251,6 +255,22 @@ namespace Duan.Xiugang.Tractor
             this.StartToolStripMenuItem.Text = "加入房间";
             this.StartToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
+            // ToolStripMenuItemGetReady
+            // 
+            this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
+            this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemGetReady.Text = "就绪";
+            this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
+            // 
+            // ToolStripMenuItemObserverNextPlayer
+            // 
+            this.ToolStripMenuItemObserverNextPlayer.Name = "ToolStripMenuItemObserverNextPlayer";
+            this.ToolStripMenuItemObserverNextPlayer.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemObserverNextPlayer.Text = "旁观下家";
+            this.ToolStripMenuItemObserverNextPlayer.Click += new System.EventHandler(this.ToolStripMenuItemObserverNextPlayer_Click);
+            // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
@@ -281,6 +301,13 @@ namespace Duan.Xiugang.Tractor
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(157, 6);
             // 
+            // ToolStripMenuItemShowVersion
+            // 
+            this.ToolStripMenuItemShowVersion.Name = "ToolStripMenuItemShowVersion";
+            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(160, 30);
+            this.ToolStripMenuItemShowVersion.Text = "当前版本";
+            this.ToolStripMenuItemShowVersion.Click += new System.EventHandler(this.ToolStripMenuItemShowVersion_Click);
+            // 
             // AutoUpdaterToolStripMenuItem
             // 
             this.AutoUpdaterToolStripMenuItem.Name = "AutoUpdaterToolStripMenuItem";
@@ -294,13 +321,6 @@ namespace Duan.Xiugang.Tractor
             this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(160, 30);
             this.FeatureOverviewToolStripMenuItem.Text = "功能一览";
             this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
-            // 
-            // ToolStripMenuItemShowVersion
-            // 
-            this.ToolStripMenuItemShowVersion.Name = "ToolStripMenuItemShowVersion";
-            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(160, 30);
-            this.ToolStripMenuItemShowVersion.Text = "当前版本";
-            this.ToolStripMenuItemShowVersion.Click += new System.EventHandler(this.ToolStripMenuItemShowVersion_Click);
             // 
             // openFileDialog
             // 
@@ -328,13 +348,14 @@ namespace Duan.Xiugang.Tractor
             // 
             // lblEastNickName
             // 
-            this.lblEastNickName.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblEastNickName.AutoSize = true;
             this.lblEastNickName.BackColor = System.Drawing.Color.Transparent;
+            this.lblEastNickName.Dock = System.Windows.Forms.DockStyle.Right;
             this.lblEastNickName.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.lblEastNickName.ForeColor = System.Drawing.SystemColors.Control;
-            this.lblEastNickName.Location = new System.Drawing.Point(643, 401);
+            this.lblEastNickName.Location = new System.Drawing.Point(4, 0);
             this.lblEastNickName.Name = "lblEastNickName";
-            this.lblEastNickName.Size = new System.Drawing.Size(177, 37);
+            this.lblEastNickName.Size = new System.Drawing.Size(0, 37);
             this.lblEastNickName.TabIndex = 6;
             this.lblEastNickName.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -442,25 +463,35 @@ namespace Duan.Xiugang.Tractor
             this.theTimer.Tag = "";
             this.theTimer.Tick += new System.EventHandler(this.theTimer_Tick);
             // 
-            // ToolStripMenuItemGetReady
+            // tableLayoutPanel1
             // 
-            this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
-            this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(217, 30);
-            this.ToolStripMenuItemGetReady.Text = "就绪";
-            this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
+            this.tableLayoutPanel1.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel1.BackColor = System.Drawing.Color.Transparent;
+            this.tableLayoutPanel1.ColumnCount = 1;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.Controls.Add(this.lblEastNickName, 0, 0);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(814, 404);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(6, 37);
+            this.tableLayoutPanel1.TabIndex = 16;
             // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.lblTheTimer);
             this.Controls.Add(this.lblEastStarter);
             this.Controls.Add(this.lblNorthStarter);
             this.Controls.Add(this.lblWestStarter);
             this.Controls.Add(this.lblSouthStarter);
-            this.Controls.Add(this.lblEastNickName);
             this.Controls.Add(this.btnReady);
             this.Controls.Add(this.lblWestNickName);
             this.Controls.Add(this.lblNorthNickName);
@@ -480,6 +511,8 @@ namespace Duan.Xiugang.Tractor
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -529,6 +562,8 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem MoveToNextPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemShowVersion;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemGetReady;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserverNextPlayer;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
     }
 }
 

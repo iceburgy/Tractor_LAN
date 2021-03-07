@@ -10,6 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
     {
         //庄
         public string Id;
+        [DataMember]
         public Dictionary<string, CurrentPoker> PlayerHoldingCards;
         [DataMember] private string _last8Holder;
         [DataMember] private int _rank;

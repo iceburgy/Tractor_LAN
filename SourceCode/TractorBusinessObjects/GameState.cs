@@ -7,7 +7,10 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class GameState
     {
-        [DataMember] public readonly List<PlayerEntity> Players;
+        [DataMember]
+        public readonly List<PlayerEntity> Players;
+        [DataMember]
+        public HashSet<string> Clients;
 
         public int nextRestartID = 0;
         public const int RESTART_GAME = 1;
@@ -17,6 +20,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public GameState()
         {
+            Clients = new HashSet<string>();
             Players = new List<PlayerEntity>();
             for (int i = 0; i < 4; i++)
             {
@@ -176,7 +180,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 return null;
             }
 
-			return NextRank(handState.Starter, handState.Score);
+            return NextRank(handState.Starter, handState.Score);
         }
 
         /// <summary>

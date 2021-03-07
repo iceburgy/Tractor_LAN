@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.ServiceModel;
 
 namespace Duan.Xiugang.Tractor.Objects
@@ -47,6 +48,14 @@ namespace Duan.Xiugang.Tractor.Objects
         //和下家互换座位
         [OperationContract(IsOneWay = true)]
         void MoveToNextPosition(string playerId);
+
+        //旁观：选牌
+        [OperationContract(IsOneWay = true)]
+        void CardsReady(string playerId, ArrayList myCardIsReady);
+
+        //旁观玩家 by id
+        [OperationContract(IsOneWay = true)]
+        void ObservePlayerById(string playerId, string observerId);
 
         //甩牌检查
         [OperationContract]
