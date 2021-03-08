@@ -8,7 +8,8 @@ using System.Collections;
 namespace Duan.Xiugang.Tractor.Player
 {
     public delegate void NewPlayerJoinedEventHandler();
-    public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);    
+    public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
+    public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
     public delegate void PlayersTeamMadeEventHandler();
     public delegate void GameStartedEventHandler();
 
@@ -31,6 +32,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void CurrentTrickStateUpdateEventHandler();
     public delegate void DumpingFailEventHandler(ShowingCardsValidationResult result);
     public delegate void TrickFinishedEventHandler();
+    public delegate void TrickStartedEventHandler();
 
     public delegate void HandEndingEventHandler();
     
@@ -53,6 +55,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
         public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
+        public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
         public event PlayersTeamMadeEventHandler PlayersTeamMade;
         public event GameStartedEventHandler GameOnStarted;
 
@@ -74,6 +77,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event CurrentTrickStateUpdateEventHandler PlayerShowedCards;
         public event DumpingFailEventHandler DumpingFail; //甩牌失败
         public event TrickFinishedEventHandler TrickFinished;
+        public event TrickStartedEventHandler TrickStarted;
         
         public event HandEndingEventHandler HandEnding;
 
@@ -160,6 +164,11 @@ namespace Duan.Xiugang.Tractor.Player
         public void ReadyToStart()
         {
             _tractorHost.PlayerIsReadyToStart(this.PlayerId);
+        }
+
+        public void ToggleIsRobot()
+        {
+            _tractorHost.PlayerToggleIsRobot(this.PlayerId);
         }
 
         public void Quit()
@@ -328,6 +337,12 @@ namespace Duan.Xiugang.Tractor.Player
                     TrickFinished();
             }
 
+            if (!this.CurrentTrickState.IsStarted())
+            {
+                if (TrickStarted != null)
+                    TrickStarted();
+            }
+
         }
 
         public void NotifyGameState(GameState gameState)
@@ -369,6 +384,10 @@ namespace Duan.Xiugang.Tractor.Player
                     if (NewPlayerReadyToStart != null)
                     {
                         NewPlayerReadyToStart(p.IsReadyToStart);
+                    }
+                    if (PlayerToggleIsRobot != null)
+                    {
+                        PlayerToggleIsRobot(p.IsRobot);
                     }
                     break;
                 }

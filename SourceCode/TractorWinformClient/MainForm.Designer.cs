@@ -74,6 +74,7 @@ namespace Duan.Xiugang.Tractor
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.ToolStripMenuItemRobot = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -101,6 +102,7 @@ namespace Duan.Xiugang.Tractor
             this.StartToolStripMenuItem,
             this.ToolStripMenuItemGetReady,
             this.ToolStripMenuItemObserverNextPlayer,
+            this.ToolStripMenuItemRobot,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.GameToolStripMenuItem.Name = "GameToolStripMenuItem";
@@ -481,6 +483,14 @@ namespace Duan.Xiugang.Tractor
             this.tableLayoutPanel1.Size = new System.Drawing.Size(6, 37);
             this.tableLayoutPanel1.TabIndex = 16;
             // 
+            // ToolStripMenuItemRobot
+            // 
+            this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
+            this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F3;
+            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemRobot.Text = "ÍÐ¹Ü´ú´ò";
+            this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -564,6 +574,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemGetReady;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserverNextPlayer;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemRobot;
     }
 }
 

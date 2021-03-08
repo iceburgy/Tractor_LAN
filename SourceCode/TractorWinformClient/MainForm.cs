@@ -138,8 +138,10 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
             ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
+            ThisPlayer.PlayerToggleIsRobot += ThisPlayer_PlayerToggleIsRobot;
             ThisPlayer.PlayersTeamMade += ThisPlayer_PlayersTeamMade;
             ThisPlayer.TrickFinished += ThisPlayer_TrickFinished;
+            ThisPlayer.TrickStarted += ThisPlayer_TrickStarted;
             ThisPlayer.HandEnding += ThisPlayer_HandEnding;
             ThisPlayer.StarterFailedForTrump += ThisPlayer_StarterFailedForTrump;
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
@@ -724,6 +726,32 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
                 ResortMyCards();
             }
+
+            //托管代打，跟出
+            if (gameConfig.IsDebug && !ThisPlayer.isObserver &&
+                ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
+                ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentTrickState.IsStarted())
+            {
+                SelectedCards.Clear();
+                Algorithm.MustSelectedCards(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                ShowingCardsValidationResult showingCardsValidationResult =
+                    TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
+                if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
+                {
+                    foreach (int card in SelectedCards)
+                    {
+                        ThisPlayer.CurrentPoker.RemoveCard(card);
+                    }
+                    ThisPlayer.ShowCards(SelectedCards);
+                    drawingFormHelper.DrawMyShowedCards();
+                }
+                else
+                {
+                    MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
+                }
+                SelectedCards.Clear();
+            }
         }
 
         private void ThisPlayer_ShowingCardBegan()
@@ -804,7 +832,51 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer != null && !curPlayer.IsReadyToStart)
+                if (curPlayer != null && curPlayer.IsRobot)
+                {
+                    readyLabels[i].Text = "托管中";
+                }
+                else if (curPlayer != null && !curPlayer.IsReadyToStart)
+                {
+                    readyLabels[i].Text = "思索中";
+                }
+                else if (curPlayer != null && !string.IsNullOrEmpty(ThisPlayer.CurrentHandState.Starter) && curPlayer.PlayerId == ThisPlayer.CurrentHandState.Starter)
+                {
+                    readyLabels[i].Text = "庄家";
+                }
+                else
+                {
+                    readyLabels[i].Text = (curIndex + 1).ToString();
+                }
+                curIndex = (curIndex + 1) % 4;
+            }
+        }
+
+        private void ThisPlayer_PlayerToggleIsRobot(bool isRobot)
+        {
+            this.ToolStripMenuItemRobot.Checked = isRobot;
+            gameConfig.IsDebug = isRobot;
+
+            //看看谁在托管中
+            System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
+            int curIndex = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                var curPlayer = ThisPlayer.CurrentGameState.Players[i];
+                if (curPlayer != null && curPlayer.PlayerId == ThisPlayer.PlayerId)
+                {
+                    curIndex = i;
+                    break;
+                }
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
+                if (curPlayer != null && curPlayer.IsRobot)
+                {
+                    readyLabels[i].Text = "托管中";
+                }
+                else if (curPlayer != null && !curPlayer.IsReadyToStart)
                 {
                     readyLabels[i].Text = "思索中";
                 }
@@ -823,6 +895,34 @@ namespace Duan.Xiugang.Tractor
         private void Mainform_SettingsUpdatedEventHandler()
         {
             Application.Restart();
+        }
+
+        private void ThisPlayer_TrickStarted()
+        {
+            //托管代打，先手
+            if (gameConfig.IsDebug && !ThisPlayer.isObserver &&
+                (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished) &&
+                ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
+                !ThisPlayer.CurrentTrickState.IsStarted())
+            {
+                SelectedCards.Clear();
+                Algorithm.ShouldSelectedCards(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                ShowingCardsValidationResult showingCardsValidationResult =
+                    TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
+                if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
+                {
+                    foreach (int card in SelectedCards)
+                    {
+                        ThisPlayer.CurrentPoker.RemoveCard(card);
+                    }
+                    ThisPlayer.ShowCards(SelectedCards);
+                }
+                else
+                {
+                    MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
+                }
+                SelectedCards.Clear();
+            }
         }
 
         private void ThisPlayer_TrickFinished()
@@ -875,10 +975,15 @@ namespace Duan.Xiugang.Tractor
                     break;
                 }
             }
+            //看看谁是庄家
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer != null && !curPlayer.IsReadyToStart)
+                if (curPlayer != null && curPlayer.IsRobot)
+                {
+                    starterLabels[i].Text = "托管中";
+                }
+                else if (curPlayer != null && !curPlayer.IsReadyToStart)
                 {
                     starterLabels[i].Text = "思索中";
                 }
@@ -1084,6 +1189,12 @@ namespace Duan.Xiugang.Tractor
             {
                 ThisPlayer.ObservePlayerById(PositionPlayer[2], ThisPlayer.MyOwnId);
             }
+        }
+
+        private void ToolStripMenuItemRobot_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver) return;
+            ThisPlayer.ToggleIsRobot();
         }
     }
 }

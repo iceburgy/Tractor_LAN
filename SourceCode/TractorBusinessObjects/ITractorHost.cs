@@ -17,6 +17,9 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerIsReadyToStart(string playerId);
 
         [OperationContract(IsOneWay = true)]
+        void PlayerToggleIsRobot(string playerId);
+
+        [OperationContract(IsOneWay = true)]
         void PlayerQuit(string playerId);
 
         [OperationContract(IsOneWay = true)]

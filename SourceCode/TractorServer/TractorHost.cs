@@ -161,6 +161,19 @@ namespace TractorServer
 			}
         }
 
+        public void PlayerToggleIsRobot(string playerID)
+        {
+            foreach (PlayerEntity p in CurrentGameState.Players)
+            {
+                if (p != null && p.PlayerId == playerID)
+                {
+                    p.IsRobot = !p.IsRobot;
+                    break;
+                }
+            }
+            UpdateGameState();
+        }
+
         //玩家退出
         public void PlayerQuit(string playerId)
         {
@@ -180,6 +193,7 @@ namespace TractorServer
                 {
                     CurrentGameState.Players[i].Rank = 0;
                     CurrentGameState.Players[i].IsReadyToStart = false;
+                    CurrentGameState.Players[i].IsRobot = false;
                     CurrentGameState.Players[i].Team = GameTeam.None;
                     if (CurrentGameState.Players[i].PlayerId == playerId)
                     {
@@ -340,6 +354,7 @@ namespace TractorServer
                         foreach (PlayerEntity p in CurrentGameState.Players)
                         {
                             p.IsReadyToStart = false;
+                            p.IsRobot = false;
                         }
                         this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                         this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
@@ -745,6 +760,7 @@ namespace TractorServer
             {
                 p.Rank = 0;
                 p.IsReadyToStart = false;
+                p.IsRobot = false;
             }
             this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
             this.CurrentHandState.Rank = 0;
@@ -803,6 +819,7 @@ namespace TractorServer
                 if (p == null) continue;
                 p.Rank = 0;
                 p.IsReadyToStart = false;
+                p.IsRobot = false;
             }
             this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
             this.CurrentHandState.Rank = 0;
@@ -941,6 +958,7 @@ namespace TractorServer
                 for (int i = 0; i < 4; i++)
                 {
                     this.CurrentGameState.Players[i].IsReadyToStart = false;
+                    this.CurrentGameState.Players[i].IsRobot = false;
                 }
 
                 UpdateGameState();
@@ -1012,6 +1030,7 @@ namespace TractorServer
             {
                 this.CurrentGameState.Players[i].Rank = beginRank;
                 this.CurrentGameState.Players[i].IsReadyToStart = false;
+                this.CurrentGameState.Players[i].IsRobot = false;
             }
             this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
             this.CurrentHandState.Rank = beginRank;
@@ -1046,10 +1065,6 @@ namespace TractorServer
             //即时更新旁观手牌
             UpdateGameState();
             UpdatePlayersCurrentHandState();
-            if (this.CurrentHandState.CurrentHandStep == HandStep.Playing && this.CurrentTrickState != null)
-            {
-                UpdatePlayerCurrentTrickState();
-            }
         }
 
         private string GetClientIP()

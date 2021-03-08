@@ -22,6 +22,9 @@ namespace Duan.Xiugang.Tractor.Objects
         public bool IsReadyToStart { get; set; }
 
         [DataMember]
+        public bool IsRobot { get; set; }
+
+        [DataMember]
         public HashSet<string> Observers { get; set; }
     }
 }
