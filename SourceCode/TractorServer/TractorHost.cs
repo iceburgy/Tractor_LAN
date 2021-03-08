@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 using System.ServiceModel.Channels;
+using System.Configuration;
 
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
@@ -22,7 +23,8 @@ namespace TractorServer
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
     (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private const bool isDebug = true;
+        private bool allowSameIP = false;
+        public string KeyAllowSameIP = "allowSameIP";
 
         internal GameState CurrentGameState;
         internal CurrentHandState CurrentHandState;
@@ -39,6 +41,16 @@ namespace TractorServer
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
+
+            var myreader = new AppSettingsReader();
+            try
+            {
+                allowSameIP = (bool)myreader.GetValue(KeyAllowSameIP, typeof(bool));
+            }
+            catch (Exception ex) 
+            {
+                log.Debug(string.Format("reading config {0} failed with exception: {1}", KeyAllowSameIP, ex.Message));
+            }
         }
 
         #region implement interface ITractorHost
@@ -52,7 +64,7 @@ namespace TractorServer
                 if (PlayersProxy.Count >= 4)
                 {
                     //防止双开旁观
-                    if (CurrentGameState.Clients.Contains(clientIP) && !isDebug)
+                    if (CurrentGameState.Clients.Contains(clientIP) && !allowSameIP)
                     {
                         LogClientInfo(clientIP, playerID, true);
                         player.NotifyMessage("已在游戏中，请勿双开旁观");
