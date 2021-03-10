@@ -8,6 +8,7 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     public class Algorithm
     {
+        private const int exposeTrumpThreshold = 5;
         //跟出
         public static void MustSelectedCards(List<int> selectedCards, CurrentTrickState currentTrickState, CurrentPoker currentPoker)
         {
@@ -90,7 +91,7 @@ namespace Duan.Xiugang.Tractor.Objects
             //先出A
             foreach (Suit st in Enum.GetValues(typeof(Suit)))
             {
-                if (st == Suit.None || st == currentCards.Trump) continue;
+                if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
                 int maxCards = currentCards.GetMaxCards((int)st);
                 if (maxCards % 13 == 12 && allSuitCards[maxCards] == 1) 
                 {
@@ -100,10 +101,12 @@ namespace Duan.Xiugang.Tractor.Objects
                 //dumping causing concurrency issue, TODO: use timer tick
                 //if (maxCards % 13 == 12)
                 //{
-                //    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 && maxCards != currentTrickState.Rank)
+                //    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 || maxCards == currentTrickState.Rank)
                 //    {
+                //    if(maxCards != currentTrickState.Rank){
                 //        selectedCards.Add(maxCards);
                 //        selectedCards.Add(maxCards);
+                //    }
                 //        maxCards--;
                 //    }
                 //    selectedCards.Add(maxCards);
@@ -114,7 +117,7 @@ namespace Duan.Xiugang.Tractor.Objects
             //再出对子
             foreach (Suit st in Enum.GetValues(typeof(Suit)))
             {
-                if (st == Suit.None || st == currentCards.Trump) continue;
+                if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
                 List<int> currentTractors = currentCards.GetTractor(st);
                 if (currentTractors.Count > 1)
                 {
@@ -171,6 +174,111 @@ namespace Duan.Xiugang.Tractor.Objects
                     return;
                 }
             }
+        }
+
+        //埋底
+        public static void ShouldSelectedLast8Cards(List<int> selectedCards, CurrentPoker currentPoker)
+        {
+            List<int> goodCards = new List<int>();
+            var currentCards = (CurrentPoker)currentPoker.Clone();
+            var badCardsCp = (CurrentPoker)currentPoker.Clone();
+            var allSuitCardsCp = (CurrentPoker)currentPoker.Clone();
+            var allSuitCards = allSuitCardsCp.Cards;
+
+            //副牌里，先挑出好牌来，最好不埋
+            //挑出A及以下的牌
+            foreach (Suit st in Enum.GetValues(typeof(Suit)))
+            {
+                if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
+                int maxCards = currentCards.GetMaxCards((int)st);
+                if (maxCards % 13 == 12)
+                {
+                    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 || maxCards == currentCards.Rank)
+                    {
+                        if (maxCards != currentCards.Rank)
+                        {
+                            goodCards.Add(maxCards);
+                            goodCards.Add(maxCards);
+                            badCardsCp.RemoveCard(maxCards);
+                            badCardsCp.RemoveCard(maxCards);
+                        }
+                        maxCards--;
+                    }
+                    goodCards.Add(maxCards);
+                    badCardsCp.RemoveCard(maxCards);
+                    if (allSuitCards[maxCards] == 2)
+                    {
+                        goodCards.Add(maxCards);
+                        badCardsCp.RemoveCard(maxCards);
+                    }
+                }
+            }
+            //再挑出对子
+            foreach (Suit st in Enum.GetValues(typeof(Suit)))
+            {
+                if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
+                var currentPairs = currentCards.GetPairs((int)st);
+                foreach (int pair in currentPairs)
+                {
+                    goodCards.Add(pair);
+                    goodCards.Add(pair);
+                    badCardsCp.RemoveCard(pair);
+                    badCardsCp.RemoveCard(pair);
+                }
+            }
+
+            //将剩余的差牌按花色排序，少的靠前
+            List<int[]> badCardsBySuit = new List<int[]>();
+            foreach (Suit st in Enum.GetValues(typeof(Suit)))
+            {
+                if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
+                badCardsBySuit.Add(badCardsCp.GetSuitCardsWithJokerAndRank((int)st));
+            }
+            badCardsBySuit.Sort((a, b) => (a.Length - b.Length));
+            var masterCards=badCardsCp.GetSuitCardsWithJokerAndRank((int)currentCards.Trump);
+            badCardsBySuit.Add(masterCards);
+
+            //从差到好选出8张牌
+            foreach (int[] badCards in badCardsBySuit)
+            {
+                foreach (int bc in badCards)
+                {
+                    selectedCards.Add(bc);
+                    if (selectedCards.Count == 8) return;
+                }
+            }
+
+            foreach (int goodCard in goodCards)
+            {
+                selectedCards.Add(goodCard);
+                if (selectedCards.Count == 8) return;
+            }
+        }
+
+        public static Suit TryExposingTrump(List<Suit> availableTrump, CurrentPoker currentPoker)
+        {
+            var currentCards = (CurrentPoker)currentPoker.Clone();
+            foreach (Suit st in availableTrump)
+            {
+                switch (st)
+                {
+                    case Suit.Heart:
+                        if (currentCards.HeartsNoRankTotal >= exposeTrumpThreshold) return st;
+                        break;
+                    case Suit.Spade:
+                        if (currentCards.SpadesNoRankCount >= exposeTrumpThreshold) return st;
+                        break;
+                    case Suit.Diamond:
+                        if (currentCards.DiamondsNoRankTotal >= exposeTrumpThreshold) return st;
+                        break;
+                    case Suit.Club:
+                        if (currentCards.ClubsNoRankTotal >= exposeTrumpThreshold) return st;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return Suit.None;
         }
     }
 }

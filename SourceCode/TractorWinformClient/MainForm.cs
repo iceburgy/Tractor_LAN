@@ -667,6 +667,26 @@ namespace Duan.Xiugang.Tractor
         private void PlayerGetCard(int cardNumber)
         {
             drawingFormHelper.IGetCard(cardNumber);
+
+            //托管代打：亮牌
+            if (gameConfig.IsDebug && !ThisPlayer.isObserver)
+            {
+                var availableTrump = ThisPlayer.AvailableTrumps();
+                Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker);
+                if (trumpToExpose == Suit.None) return;
+
+                var next =
+                    (TrumpExposingPoker)
+                        (Convert.ToInt32(ThisPlayer.CurrentHandState.TrumpExposingPoker) + 1);
+                if (trumpToExpose == Suit.Joker)
+                {
+                    if (ThisPlayer.CurrentPoker.BlackJoker == 2)
+                        next = TrumpExposingPoker.PairBlackJoker;
+                    else if (ThisPlayer.CurrentPoker.RedJoker == 2)
+                        next = TrumpExposingPoker.PairRedJoker;
+                }
+                ThisPlayer.ExposeTrump(next, trumpToExpose);
+            }
         }
 
 
@@ -1064,6 +1084,33 @@ namespace Duan.Xiugang.Tractor
             g.DrawImage(image, 200 + drawingFormHelper.offsetCenterHalf, 186 + drawingFormHelper.offsetCenterHalf, 85 * drawingFormHelper.scaleDividend, 96 * drawingFormHelper.scaleDividend);
             Refresh();
             g.Dispose();
+
+            //托管代打：埋底
+            if (gameConfig.IsDebug && !ThisPlayer.isObserver)
+            {
+                if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
+                    ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
+                {
+                    SelectedCards.Clear();
+                    Algorithm.ShouldSelectedLast8Cards(this.SelectedCards, this.ThisPlayer.CurrentPoker);
+                    if (SelectedCards.Count == 8)
+                    {
+                        foreach (int card in SelectedCards)
+                        {
+                            ThisPlayer.CurrentPoker.RemoveCard(card);
+                        }
+
+                        ThisPlayer.DiscardCards(SelectedCards.ToArray());
+
+                        ResortMyCards();
+                    }
+                    else
+                    {
+                        MessageBox.Show(string.Format("failed to auto select last 8 cards: {0}, please manually select", SelectedCards));
+                    }
+                    SelectedCards.Clear();
+                }
+            }
         }
 
         private void ThisPlayer_DumpingFail(ShowingCardsValidationResult result)
