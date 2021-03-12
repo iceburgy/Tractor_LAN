@@ -32,6 +32,11 @@ namespace Duan.Xiugang.Tractor
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.GameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemEnterHall = new System.Windows.Forms.ToolStripMenuItem();
+            this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RebootToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemInRoom = new System.Windows.Forms.ToolStripMenuItem();
             this.BeginRankToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemBeginRank2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemBeginRank3 = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,12 +54,10 @@ namespace Duan.Xiugang.Tractor
             this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToNextPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.SettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.StartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemRobot = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItemObserve = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemObserverNextPlayer = new System.Windows.Forms.ToolStripMenuItem();
-            this.RebootToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +77,10 @@ namespace Duan.Xiugang.Tractor
             this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.ToolStripMenuItemRobot = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnEnterHall = new System.Windows.Forms.Button();
+            this.btnRobot = new System.Windows.Forms.Button();
+            this.btnObserveNext = new System.Windows.Forms.Button();
+            this.pnlGameRooms = new System.Windows.Forms.Panel();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -83,6 +89,8 @@ namespace Duan.Xiugang.Tractor
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.GameToolStripMenuItem,
+            this.ToolStripMenuItemInRoom,
+            this.ToolStripMenuItemObserve,
             this.HelpToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -94,20 +102,56 @@ namespace Duan.Xiugang.Tractor
             // GameToolStripMenuItem
             // 
             this.GameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.BeginRankToolStripMenuItem,
-            this.RestoreGameStateToolStripMenuItem,
-            this.MoveToNextPositionToolStripMenuItem,
-            this.TeamUpToolStripMenuItem,
+            this.ToolStripMenuItemEnterHall,
             this.SettingToolStripMenuItem,
-            this.StartToolStripMenuItem,
-            this.ToolStripMenuItemGetReady,
-            this.ToolStripMenuItemObserverNextPlayer,
-            this.ToolStripMenuItemRobot,
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.GameToolStripMenuItem.Name = "GameToolStripMenuItem";
             this.GameToolStripMenuItem.Size = new System.Drawing.Size(62, 29);
             this.GameToolStripMenuItem.Text = "游戏";
+            // 
+            // ToolStripMenuItemEnterHall
+            // 
+            this.ToolStripMenuItemEnterHall.Name = "ToolStripMenuItemEnterHall";
+            this.ToolStripMenuItemEnterHall.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(191, 30);
+            this.ToolStripMenuItemEnterHall.Text = "进入大厅";
+            this.ToolStripMenuItemEnterHall.Click += new System.EventHandler(this.ToolStripMenuItemEnterHall_Click);
+            // 
+            // SettingToolStripMenuItem
+            // 
+            this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.SettingToolStripMenuItem.Text = "设置";
+            this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
+            // 
+            // RebootToolStripMenuItem
+            // 
+            this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.RebootToolStripMenuItem.Text = "重启游戏";
+            this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
+            // 
+            // ExitToolStripMenuItem
+            // 
+            this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.ExitToolStripMenuItem.Text = "退出";
+            this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
+            // 
+            // ToolStripMenuItemInRoom
+            // 
+            this.ToolStripMenuItemInRoom.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.BeginRankToolStripMenuItem,
+            this.RestoreGameStateToolStripMenuItem,
+            this.MoveToNextPositionToolStripMenuItem,
+            this.TeamUpToolStripMenuItem,
+            this.ToolStripMenuItemGetReady,
+            this.ToolStripMenuItemRobot});
+            this.ToolStripMenuItemInRoom.Name = "ToolStripMenuItemInRoom";
+            this.ToolStripMenuItemInRoom.Size = new System.Drawing.Size(62, 29);
+            this.ToolStripMenuItemInRoom.Text = "牌局";
+            this.ToolStripMenuItemInRoom.Visible = false;
             // 
             // BeginRankToolStripMenuItem
             // 
@@ -241,22 +285,6 @@ namespace Duan.Xiugang.Tractor
             this.TeamUpToolStripMenuItem.Text = "随机组队";
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
             // 
-            // SettingToolStripMenuItem
-            // 
-            this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
-            this.SettingToolStripMenuItem.Text = "设置";
-            this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
-            // 
-            // StartToolStripMenuItem
-            // 
-            this.StartToolStripMenuItem.Image = global::Duan.Xiugang.Tractor.Properties.Resources.MenuStart;
-            this.StartToolStripMenuItem.Name = "StartToolStripMenuItem";
-            this.StartToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.StartToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
-            this.StartToolStripMenuItem.Text = "加入房间";
-            this.StartToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
-            // 
             // ToolStripMenuItemGetReady
             // 
             this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
@@ -265,27 +293,30 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemGetReady.Text = "就绪";
             this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
             // 
+            // ToolStripMenuItemRobot
+            // 
+            this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
+            this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F3;
+            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemRobot.Text = "托管代打";
+            this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
+            // 
+            // ToolStripMenuItemObserve
+            // 
+            this.ToolStripMenuItemObserve.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolStripMenuItemObserverNextPlayer});
+            this.ToolStripMenuItemObserve.Name = "ToolStripMenuItemObserve";
+            this.ToolStripMenuItemObserve.Size = new System.Drawing.Size(62, 29);
+            this.ToolStripMenuItemObserve.Text = "旁观";
+            this.ToolStripMenuItemObserve.Visible = false;
+            // 
             // ToolStripMenuItemObserverNextPlayer
             // 
             this.ToolStripMenuItemObserverNextPlayer.Name = "ToolStripMenuItemObserverNextPlayer";
             this.ToolStripMenuItemObserverNextPlayer.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(191, 30);
             this.ToolStripMenuItemObserverNextPlayer.Text = "旁观下家";
             this.ToolStripMenuItemObserverNextPlayer.Click += new System.EventHandler(this.ToolStripMenuItemObserverNextPlayer_Click);
-            // 
-            // RebootToolStripMenuItem
-            // 
-            this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
-            this.RebootToolStripMenuItem.Text = "重启游戏";
-            this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
-            // 
-            // ExitToolStripMenuItem
-            // 
-            this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
-            this.ExitToolStripMenuItem.Text = "退出";
-            this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // HelpToolStripMenuItem
             // 
@@ -397,6 +428,7 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.TabIndex = 10;
             this.btnReady.Text = "就绪";
             this.btnReady.UseVisualStyleBackColor = true;
+            this.btnReady.Visible = false;
             this.btnReady.Click += new System.EventHandler(this.btnReady_Click);
             // 
             // lblSouthStarter
@@ -483,19 +515,60 @@ namespace Duan.Xiugang.Tractor
             this.tableLayoutPanel1.Size = new System.Drawing.Size(6, 37);
             this.tableLayoutPanel1.TabIndex = 16;
             // 
-            // ToolStripMenuItemRobot
+            // btnEnterHall
             // 
-            this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
-            this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(217, 30);
-            this.ToolStripMenuItemRobot.Text = "托管代打";
-            this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
+            this.btnEnterHall.Location = new System.Drawing.Point(263, 386);
+            this.btnEnterHall.Name = "btnEnterHall";
+            this.btnEnterHall.Size = new System.Drawing.Size(109, 55);
+            this.btnEnterHall.TabIndex = 21;
+            this.btnEnterHall.Text = "进入大厅";
+            this.btnEnterHall.UseVisualStyleBackColor = true;
+            this.btnEnterHall.Click += new System.EventHandler(this.btnEnterHall_Click);
+            // 
+            // btnRobot
+            // 
+            this.btnRobot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnRobot.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnRobot.Location = new System.Drawing.Point(91, 776);
+            this.btnRobot.Name = "btnRobot";
+            this.btnRobot.Size = new System.Drawing.Size(72, 45);
+            this.btnRobot.TabIndex = 22;
+            this.btnRobot.Text = "托管";
+            this.btnRobot.UseVisualStyleBackColor = true;
+            this.btnRobot.Visible = false;
+            this.btnRobot.Click += new System.EventHandler(this.btnRobot_Click);
+            // 
+            // btnObserveNext
+            // 
+            this.btnObserveNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnObserveNext.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnObserveNext.Location = new System.Drawing.Point(13, 776);
+            this.btnObserveNext.Name = "btnObserveNext";
+            this.btnObserveNext.Size = new System.Drawing.Size(119, 45);
+            this.btnObserveNext.TabIndex = 23;
+            this.btnObserveNext.Text = "旁观下家";
+            this.btnObserveNext.UseVisualStyleBackColor = true;
+            this.btnObserveNext.Visible = false;
+            this.btnObserveNext.Click += new System.EventHandler(this.btnObserveNext_Click);
+            // 
+            // pnlGameRooms
+            // 
+            this.pnlGameRooms.BackColor = System.Drawing.Color.Transparent;
+            this.pnlGameRooms.Location = new System.Drawing.Point(44, 139);
+            this.pnlGameRooms.Name = "pnlGameRooms";
+            this.pnlGameRooms.Size = new System.Drawing.Size(734, 533);
+            this.pnlGameRooms.TabIndex = 24;
+            this.pnlGameRooms.Visible = false;
             // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.pnlGameRooms);
+            this.Controls.Add(this.btnObserveNext);
+            this.Controls.Add(this.btnRobot);
+            this.Controls.Add(this.btnEnterHall);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.lblTheTimer);
             this.Controls.Add(this.lblEastStarter);
@@ -533,7 +606,6 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem GameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem HelpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem StartToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.NotifyIcon notifyIcon;
@@ -575,6 +647,13 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserverNextPlayer;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemRobot;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemEnterHall;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemInRoom;
+        private System.Windows.Forms.Button btnEnterHall;
+        private System.Windows.Forms.Button btnRobot;
+        private System.Windows.Forms.Button btnObserveNext;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserve;
+        private System.Windows.Forms.Panel pnlGameRooms;
     }
 }
 

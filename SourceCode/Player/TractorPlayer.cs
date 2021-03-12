@@ -7,6 +7,7 @@ using System.Collections;
 
 namespace Duan.Xiugang.Tractor.Player
 {
+    public delegate void GameHallUpdatedEventHandler(List<GameRoom> gameRooms);
     public delegate void NewPlayerJoinedEventHandler();
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
@@ -53,6 +54,7 @@ namespace Duan.Xiugang.Tractor.Player
         public CurrentHandState CurrentHandState { get; set; }
         public CurrentTrickState CurrentTrickState { get; set; }
 
+        public event GameHallUpdatedEventHandler GameHallUpdatedEvent;
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
         public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
         public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
@@ -156,9 +158,14 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.ObservePlayerById(playerId, observerId);
         }
 
-        public void Ready()
+        public void PlayerEnterHall(string playerID)
         {
-            _tractorHost.PlayerIsReady(this.MyOwnId);
+            _tractorHost.PlayerEnterHall(this.MyOwnId);
+        }
+
+        public void PlayerEnterRoom(string playerID, int roomID)
+        {
+            _tractorHost.PlayerEnterRoom(this.MyOwnId, roomID);
         }
 
         public void ReadyToStart()
@@ -407,6 +414,14 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
+        }
+
+        public void NotifyGameHall(List<GameRoom> gameRooms)
+        {
+            if (GameHallUpdatedEvent != null)
+            {
+                GameHallUpdatedEvent(gameRooms);
+            }
         }
 
         public void NotifyCardsReady(ArrayList myCardIsReady)

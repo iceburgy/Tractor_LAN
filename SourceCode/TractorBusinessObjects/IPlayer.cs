@@ -10,7 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
         string PlayerId { get; set; }
         int Rank { get; set; }
         void ClearAllCards();
-        void Ready();
+        void PlayerEnterRoom(string playerID, int roomID);
         void ReadyToStart();
         void Quit();
         void ShowCards(List<int> cards);
@@ -51,6 +51,10 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <param name="gameState"></param>
         [OperationContract(IsOneWay = true)]
         void NotifyGameState(GameState gameState);
+
+        ///     更新游戏游戏大厅状态
+        [OperationContract(IsOneWay = true)]
+        void NotifyGameHall(List<GameRoom> gameRooms);
 
         /// <summary>
         ///     甩牌检查结果
