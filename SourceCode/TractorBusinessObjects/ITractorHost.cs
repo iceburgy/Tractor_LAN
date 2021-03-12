@@ -11,7 +11,10 @@ namespace Duan.Xiugang.Tractor.Objects
         Dictionary<string, IPlayer> PlayersProxy { get; set; }
 
         [OperationContract(IsOneWay = true)]
-        void PlayerIsReady(string playerId);
+        void PlayerEnterHall(string playerId);
+
+        [OperationContract(IsOneWay = true)]
+        void PlayerEnterRoom(string playerID, int roomID);
 
         [OperationContract(IsOneWay = true)]
         void PlayerIsReadyToStart(string playerId);

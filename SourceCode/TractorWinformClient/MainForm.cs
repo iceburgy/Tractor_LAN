@@ -136,6 +136,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.AllCardsGot += ResortMyCards;
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
+            ThisPlayer.GameHallUpdatedEvent += ThisPlayer_GameHallUpdatedEventHandler;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
             ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
             ThisPlayer.PlayerToggleIsRobot += ThisPlayer_PlayerToggleIsRobot;
@@ -628,14 +629,6 @@ namespace Duan.Xiugang.Tractor
             {
                 Close();
             }
-            else if (menuItem.Text.Equals("加入房间"))
-            {
-                ThisPlayer.Ready();
-
-
-                //初始化
-                init();
-            }
             else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank") && !ThisPlayer.isObserver)
             {
                 string beginRankString = menuItem.Name.Substring("toolStripMenuItemBeginRank".Length, 1);
@@ -802,10 +795,23 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
+            this.pnlGameRooms.Hide();
+            if (!ThisPlayer.isObserver)
+            {
+                this.btnReady.Show();
+                this.btnRobot.Show();
+                this.ToolStripMenuItemInRoom.Visible = true;
+            }
+            else
+            {
+                this.btnObserveNext.Show();
+                this.ToolStripMenuItemObserve.Visible = true;
+            }
+
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
             {
-                var curPlayer=ThisPlayer.CurrentGameState.Players[i];
+                var curPlayer = ThisPlayer.CurrentGameState.Players[i];
                 if (curPlayer != null && curPlayer.PlayerId == ThisPlayer.PlayerId)
                 {
                     curIndex = i;
@@ -876,6 +882,7 @@ namespace Duan.Xiugang.Tractor
         {
             this.ToolStripMenuItemRobot.Checked = isRobot;
             gameConfig.IsDebug = isRobot;
+            this.btnRobot.Text = isRobot ? "取消" : "托管";
 
             //看看谁在托管中
             System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
@@ -909,6 +916,54 @@ namespace Duan.Xiugang.Tractor
                     readyLabels[i].Text = (curIndex + 1).ToString();
                 }
                 curIndex = (curIndex + 1) % 4;
+            }
+        }
+
+        private void ThisPlayer_GameHallUpdatedEventHandler(List<GameRoom> gameRooms)
+        {
+            this.ToolStripMenuItemEnterHall.Enabled = false;
+            this.btnEnterHall.Hide();
+
+            CreateRoomControls(gameRooms);
+            this.pnlGameRooms.Show();
+        }
+
+        private void CreateRoomControls(List<GameRoom> gameRooms)
+        {
+            int offsetX = 0;
+            int offsetXDelta = 200;
+            foreach (GameRoom room in gameRooms)
+            {
+                Button btnEnterRoom = new Button();
+                btnEnterRoom.Location = new System.Drawing.Point(offsetX, 0);
+
+                btnEnterRoom.Name = string.Format("btnEnterRoom_{0}", room.RoomID);
+                btnEnterRoom.Size = new System.Drawing.Size(109, 55);
+                btnEnterRoom.Text = room.RoomName;
+                btnEnterRoom.UseVisualStyleBackColor = true;
+                btnEnterRoom.Click += new System.EventHandler(this.btnEnterRoom_Click);
+                this.pnlGameRooms.Controls.Add(btnEnterRoom);
+
+                Label labelRoom = new Label();
+                labelRoom.AutoSize = true;
+                labelRoom.BackColor = System.Drawing.Color.Transparent;
+                labelRoom.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+                labelRoom.ForeColor = System.Drawing.SystemColors.Control;
+                labelRoom.Location = new System.Drawing.Point(offsetX, 100);
+                labelRoom.Name = string.Format("lblRoom_{0}", room.RoomID);
+                labelRoom.Size = new System.Drawing.Size(0, 37);
+                this.pnlGameRooms.Controls.Add(labelRoom);
+                
+                List<PlayerEntity> players = room.CurrentGameState.Players;
+                for (int j = 0; j < players.Count; j++)
+                {
+                    if (players[j] == null) continue;
+                    if (j > 0) labelRoom.Text += "\n";
+                    labelRoom.Text += players[j].PlayerId;
+                }
+                if (string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text = "空房间";
+
+                offsetX += offsetXDelta;
             }
         }
 
@@ -1195,7 +1250,7 @@ namespace Duan.Xiugang.Tractor
 
         private void FeatureOverviewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("https://github.com/iceburgy/Tractor_LAN/blob/master/changeLog.md");
+            Process.Start("https://github.com/iceburgy/Tractor_LAN/blob/master/README.md");
         }
 
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1230,18 +1285,53 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.PerformClick();
         }
 
+        private void btnEnterRoom_Click(object sender, EventArgs e)
+        {
+            int roomID;
+            string roomIDString = ((Button)sender).Name.Split('_')[1];
+            if (int.TryParse(roomIDString, out roomID))
+            {
+                ThisPlayer.PlayerEnterRoom(ThisPlayer.MyOwnId, roomID);
+                init();
+            }
+            else
+            {
+                MessageBox.Show(string.Format("failed to click button with a bad ID: {0}", roomIDString));
+            }
+        }
+
+        private void ToolStripMenuItemEnterHall_Click(object sender, EventArgs e)
+        {
+            this.btnEnterHall.PerformClick();
+        }
+
+        private void btnEnterHall_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.PlayerEnterHall(ThisPlayer.MyOwnId);
+        }
+
+        private void ToolStripMenuItemRobot_Click(object sender, EventArgs e)
+        {
+            this.btnRobot.PerformClick();
+        }
+
+        private void btnRobot_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver) return;
+            ThisPlayer.ToggleIsRobot();
+        }
+
         private void ToolStripMenuItemObserverNextPlayer_Click(object sender, EventArgs e)
+        {
+            this.btnObserveNext.PerformClick();
+        }
+
+        private void btnObserveNext_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver)
             {
                 ThisPlayer.ObservePlayerById(PositionPlayer[2], ThisPlayer.MyOwnId);
             }
-        }
-
-        private void ToolStripMenuItemRobot_Click(object sender, EventArgs e)
-        {
-            if (ThisPlayer.isObserver) return;
-            ThisPlayer.ToggleIsRobot();
         }
     }
 }
