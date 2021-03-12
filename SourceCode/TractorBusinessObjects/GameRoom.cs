@@ -14,7 +14,7 @@ namespace Duan.Xiugang.Tractor.Objects
     {
     //    private static readonly log4net.ILog log = log4net.LogManager.GetLogger
     //(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public string LogsFolder = "logs";
+        public static string LogsFolder = "logs";
         public string LogsByRoomFolder;
 
         [DataMember]
@@ -1172,13 +1172,13 @@ namespace Duan.Xiugang.Tractor.Objects
 
         #endregion
 
-        private void LogClientInfo(string clientIP, string playerID, bool isCheating)
+        public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
         {
             Stream streamRW = null;
             try
             {
                 Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
-                string fileName = string.Format("{0}\\clientinfo.xml", this.LogsFolder);
+                string fileName = string.Format("{0}\\clientinfo.xml", LogsFolder);
                 DataContractSerializer ser = new DataContractSerializer(typeof(Dictionary<string, ClientInfo>));
                 if (File.Exists(fileName))
                 {

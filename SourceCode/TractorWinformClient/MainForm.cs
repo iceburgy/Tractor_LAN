@@ -919,19 +919,50 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void ThisPlayer_GameHallUpdatedEventHandler(List<GameRoom> gameRooms)
+        private void ThisPlayer_GameHallUpdatedEventHandler(List<GameRoom> gameRooms, List<string> names)
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
 
-            CreateRoomControls(gameRooms);
+            CreateRoomControls(gameRooms, names);
             this.pnlGameRooms.Show();
         }
 
-        private void CreateRoomControls(List<GameRoom> gameRooms)
+        private void CreateRoomControls(List<GameRoom> gameRooms, List<string> names)
         {
+            this.pnlGameRooms.Controls.Clear();
+
             int offsetX = 0;
             int offsetXDelta = 200;
+
+            Label labelOnline = new Label();
+            labelOnline.AutoSize = true;
+            labelOnline.BackColor = System.Drawing.Color.Transparent;
+            labelOnline.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            labelOnline.ForeColor = System.Drawing.SystemColors.Control;
+            labelOnline.Location = new System.Drawing.Point(offsetX, 0);
+            labelOnline.Name = "lblOnline";
+            labelOnline.Size = new System.Drawing.Size(0, 37);
+            labelOnline.Text = "在线";
+            this.pnlGameRooms.Controls.Add(labelOnline);
+
+            Label labelNames = new Label();
+            labelNames.AutoSize = true;
+            labelNames.BackColor = System.Drawing.Color.Transparent;
+            labelNames.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            labelNames.ForeColor = System.Drawing.SystemColors.Control;
+            labelNames.Location = new System.Drawing.Point(offsetX, 100);
+            labelNames.Name = "lblNames";
+            labelNames.Size = new System.Drawing.Size(0, 37);
+            for (int i = 0; i < names.Count; i++)
+            {
+                if (i > 0) labelNames.Text += "\n";
+                labelNames.Text += names[i];
+            }
+            this.pnlGameRooms.Controls.Add(labelNames);
+
+            offsetX += offsetXDelta;
+
             foreach (GameRoom room in gameRooms)
             {
                 Button btnEnterRoom = new Button();
@@ -958,7 +989,7 @@ namespace Duan.Xiugang.Tractor
                 for (int j = 0; j < players.Count; j++)
                 {
                     if (players[j] == null) continue;
-                    if (j > 0) labelRoom.Text += "\n";
+                    if (!string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text += "\n";
                     labelRoom.Text += players[j].PlayerId;
                 }
                 if (string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text = "空房间";

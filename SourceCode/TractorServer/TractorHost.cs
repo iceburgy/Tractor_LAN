@@ -72,6 +72,8 @@ namespace TractorServer
                 IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} entered hall.", playerID));
+                string clientIP = GetClientIP();
+                GameRoom.LogClientInfo(clientIP, playerID, false);
                 UpdateGameHall();
             }
             else
@@ -100,6 +102,9 @@ namespace TractorServer
                         if (entered)
                         {
                             SessionIDGameRoom[sessionID] = gameRoom;
+                            Thread.Sleep(500);
+                            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                            thr.Start();
                         }
                     }
                 }
@@ -144,15 +149,20 @@ namespace TractorServer
         public void PlayerQuit(string playerID)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom != null)
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
-                gameRoom.PlayerQuit(playerID);
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                if (gameRoom != null)
+                {
+                    gameRoom.PlayerQuit(playerID);
+                }
+                SessionIDGameRoom.Remove(sessionID);
             }
-            SessionIDGameRoom.Remove(sessionID);
             PlayersProxy.Remove(playerID);
             log.Debug(string.Format("player {0} quit hall.", playerID));
-            UpdateGameHall();
+            Thread.Sleep(500);
+            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+            thr.Start();
         }
 
         //player discard last 8 cards
@@ -334,7 +344,12 @@ namespace TractorServer
                         break;
                     }
                 }
-                if (!isInRoom) player.NotifyGameHall(this.GameRooms);
+
+                if (!isInRoom)
+                {
+                    List<string> names = PlayersProxy.Keys.ToList<string>();
+                    player.NotifyGameHall(this.GameRooms, names);
+                }
             }
         }
 
