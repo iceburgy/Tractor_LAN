@@ -742,8 +742,15 @@ namespace Duan.Xiugang.Tractor
                 ResortMyCards();
             }
 
+            //最后一轮自动跟出
+            bool isLastTrick = false;
+            if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
+            {
+                isLastTrick = true;
+            }
+
             //托管代打，跟出
-            if (gameConfig.IsDebug && !ThisPlayer.isObserver &&
+            if ((isLastTrick || gameConfig.IsDebug) && !ThisPlayer.isObserver &&
                 ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentTrickState.IsStarted())
