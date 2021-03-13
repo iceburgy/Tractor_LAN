@@ -355,7 +355,7 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyGameState(GameState gameState)
         {
             bool teamMade = false;
-            bool observerChanged = false;
+            bool observerAdded = false;
             foreach (PlayerEntity p in gameState.Players)
             {
                 if (p != null && p.Observers.Contains(this.MyOwnId))
@@ -365,6 +365,7 @@ namespace Duan.Xiugang.Tractor.Player
                     break;
                 }
             }
+            int totalPlayers = 0;
             for (int i = 0; i < 4; i++)
             {
                 if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None &&
@@ -375,11 +376,17 @@ namespace Duan.Xiugang.Tractor.Player
                 HashSet<string> oldObs = new HashSet<string>(), newObs = new HashSet<string>();
                 if (gameState.Players[i] != null) oldObs = gameState.Players[i].Observers;
                 if (this.CurrentGameState.Players[i] != null) newObs = this.CurrentGameState.Players[i].Observers;
-                if (!oldObs.SetEquals(newObs))
+                newObs.ExceptWith(oldObs);
+                if (newObs.Count>0)
                 {
-                    observerChanged = true;
+                    observerAdded = true;
+                }
+                if (gameState.Players[i] != null)
+                {
+                    totalPlayers++;
                 }
             }
+            observerAdded = observerAdded && totalPlayers == 4;
 
             this.CurrentGameState = gameState;
 
@@ -406,7 +413,7 @@ namespace Duan.Xiugang.Tractor.Player
             }
 
 
-            if (teamMade || observerChanged)
+            if (teamMade || observerAdded)
             {
                 if (PlayersTeamMade != null)
                 {

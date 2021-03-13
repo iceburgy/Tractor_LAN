@@ -208,12 +208,13 @@ namespace Duan.Xiugang.Tractor.Objects
                     CurrentGameState.Players[i].IsReadyToStart = false;
                     CurrentGameState.Players[i].IsRobot = false;
                     CurrentGameState.Players[i].Team = GameTeam.None;
+                    foreach (string ob in CurrentGameState.Players[i].Observers)
+                    {
+                        ObserversProxy.Remove(ob);
+                        // notify exit to hall
+                    }
                     if (CurrentGameState.Players[i].PlayerId == playerId)
                     {
-                        foreach (string ob in CurrentGameState.Players[i].Observers)
-                        {
-                            PlayersProxy.Remove(ob);
-                        }
                         CurrentGameState.Players[i] = null;
                     }
                 }
