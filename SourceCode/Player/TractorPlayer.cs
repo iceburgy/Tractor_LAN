@@ -53,6 +53,7 @@ namespace Duan.Xiugang.Tractor.Player
         public CurrentPoker CurrentPoker;
         public CurrentHandState CurrentHandState { get; set; }
         public CurrentTrickState CurrentTrickState { get; set; }
+        public CurrentTrickState LastTrickState { get; set; }
 
         public event GameHallUpdatedEventHandler GameHallUpdatedEvent;
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
@@ -84,6 +85,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event HandEndingEventHandler HandEnding;
 
         private readonly ITractorHost _tractorHost;
+        private CurrentTrickState tempLastTrickState;
         
 
         public TractorPlayer()
@@ -93,6 +95,8 @@ namespace Duan.Xiugang.Tractor.Player
             CurrentGameState = new GameState();
             CurrentHandState = new CurrentHandState(CurrentGameState);
             CurrentTrickState = new CurrentTrickState();
+            LastTrickState = new CurrentTrickState();
+            tempLastTrickState = new CurrentTrickState();
 
             var instanceContext = new InstanceContext(this);
             var channelFactory = new DuplexChannelFactory<ITractorHost>(instanceContext, "NetTcpBinding_ITractorHost");
@@ -341,10 +345,16 @@ namespace Duan.Xiugang.Tractor.Player
             {
                 if (PlayerShowedCards != null)
                     PlayerShowedCards();
+
+                if (this.CurrentTrickState.CountOfPlayerShowedCards() == 1)
+                {
+                    this.LastTrickState = this.tempLastTrickState;
+                }
             }
 
             if (!string.IsNullOrEmpty(this.CurrentTrickState.Winner))
             {
+                this.tempLastTrickState = this.CurrentTrickState;
                 if (TrickFinished != null)
                     TrickFinished();
             }

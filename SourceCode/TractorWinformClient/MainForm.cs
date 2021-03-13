@@ -460,8 +460,10 @@ namespace Duan.Xiugang.Tractor
                             ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
                         {
                             drawingFormHelper.DrawDiscardedCards();
-                            Refresh();
                         }
+                        //绘制上一轮各家所出的牌，缩小至一半，放在左下角
+                        ThisPlayer_PlayerLastTrickShowedCards();
+                        Refresh();
                     }
                 }
 
@@ -764,6 +766,33 @@ namespace Duan.Xiugang.Tractor
                     MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
                 }
                 SelectedCards.Clear();
+            }
+        }
+
+        //绘制上一轮各家所出的牌，缩小至一半，放在左下角
+        private void ThisPlayer_PlayerLastTrickShowedCards()
+        {
+            if (ThisPlayer.LastTrickState.ShowedCards.Count == 0) return;
+            foreach (var entry in ThisPlayer.LastTrickState.ShowedCards)
+            {
+                string player = entry.Key;
+                int position = PlayerPosition[player];
+                if (position == 1)
+                {
+                    drawingFormHelper.DrawMyLastSendedCardsAction(new ArrayList(entry.Value));
+                }
+                if (position == 2)
+                {
+                    drawingFormHelper.DrawNextUserLastSendedCardsAction(new ArrayList(entry.Value));
+                }
+                if (position == 3)
+                {
+                    drawingFormHelper.DrawFriendUserLastSendedCardsAction(new ArrayList(entry.Value));
+                }
+                if (position == 4)
+                {
+                    drawingFormHelper.DrawPreviousUserLastSendedCardsAction(new ArrayList(entry.Value));
+                }
             }
         }
 
