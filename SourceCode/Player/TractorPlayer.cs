@@ -178,6 +178,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.PlayerToggleIsRobot(this.PlayerId);
         }
 
+        public void ExitRoom(string playerID)
+        {
+            _tractorHost.PlayerExitRoom(this.MyOwnId);
+        }
+
         public void Quit()
         {
             _tractorHost.PlayerQuit(this.MyOwnId);

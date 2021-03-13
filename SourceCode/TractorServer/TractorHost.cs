@@ -115,47 +115,52 @@ namespace TractorServer
             }
         }
 
-        public void PlayerIsReadyToStart(string playerID)
+        //玩家退出房间
+        public void PlayerExitRoom(string playerID)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            IPlayer player = PlayersProxy[playerID];
-            if (gameRoom == null)
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
-                player.NotifyMessage(string.Format("就绪失败，sessionID【{0}】不匹配任何房间", sessionID));
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                //如果退出的是正常玩家，则先将旁观玩家移出房间
+                if (gameRoom.PlayersProxy.ContainsKey(playerID))
+                {
+                    List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
+                    foreach (string ob in obs)
+                    {
+                        gameRoom.PlayerQuit(ob);
+                    }
+                }
+
+                //再将正常玩家移出房间
+                gameRoom.PlayerQuit(playerID);
+                SessionIDGameRoom.Remove(sessionID);
             }
-            else
-            {
-                gameRoom.PlayerIsReadyToStart(playerID);
-            }
+            log.Debug(string.Format("player {0} exited room.", playerID));
+            Thread.Sleep(500);
+            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+            thr.Start();
         }
 
-        public void PlayerToggleIsRobot(string playerID)
-        {
-            string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            IPlayer player = PlayersProxy[playerID];
-            if (gameRoom == null)
-            {
-                player.NotifyMessage(string.Format("托管失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.PlayerToggleIsRobot(playerID);
-            }
-        }
-
-        //玩家退出
+        //玩家退出游戏
         public void PlayerQuit(string playerID)
         {
             string sessionID = GetSessionID();
             if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-                if (gameRoom != null)
+                //如果退出的是正常玩家，则先将旁观玩家移出房间
+                if (gameRoom.PlayersProxy.ContainsKey(playerID))
                 {
-                    gameRoom.PlayerQuit(playerID);
+                    List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
+                    foreach (string ob in obs)
+                    {
+                        gameRoom.PlayerQuit(ob);
+                    }
                 }
+
+                //再将正常玩家移出房间
+                gameRoom.PlayerQuit(playerID);
                 SessionIDGameRoom.Remove(sessionID);
             }
             PlayersProxy.Remove(playerID);
@@ -165,19 +170,42 @@ namespace TractorServer
             thr.Start();
         }
 
+        public void PlayerIsReadyToStart(string playerID)
+        {
+            string sessionID = GetSessionID();
+            if (!this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                IPlayer player = PlayersProxy[playerID];
+                player.NotifyMessage(string.Format("就绪失败，sessionID【{0}】不匹配任何房间", sessionID));
+            }
+            else
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.PlayerIsReadyToStart(playerID);
+            }
+        }
+
+        public void PlayerToggleIsRobot(string playerID)
+        {
+            string sessionID = GetSessionID();
+            if (!this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                IPlayer player = PlayersProxy[playerID];
+                player.NotifyMessage(string.Format("托管失败，sessionID【{0}】不匹配任何房间", sessionID));
+            }
+            else
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.PlayerToggleIsRobot(playerID);
+            }
+        }
+
         //player discard last 8 cards
         public void StoreDiscardedCards(int[] cards)
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("埋底失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.StoreDiscardedCards(cards);
-            }
+            gameRoom.StoreDiscardedCards(cards);
         }
 
         //亮主
@@ -185,57 +213,28 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("亮牌失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
-            }
+            gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
         }
 
         public void PlayerShowCards(CurrentTrickState currentTrickState)
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("出牌失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.PlayerShowCards(currentTrickState);
-            }
+            gameRoom.PlayerShowCards(currentTrickState);
         }
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("甩牌验证失败，sessionID【{0}】不匹配任何房间", sessionID));
-                return null;
-            }
-            else
-            {
-                return gameRoom.ValidateDumpingCards(selectedCards, playerId);
-            }
+            return gameRoom.ValidateDumpingCards(selectedCards, playerId);
         }
 
         public void RefreshPlayersCurrentHandState()
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("RefreshPlayersCurrentHandState失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.RefreshPlayersCurrentHandState();
-            }
+            gameRoom.RefreshPlayersCurrentHandState();
         }
 
         //随机组队
@@ -243,14 +242,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("随机组队失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.TeamUp();
-            }
+            gameRoom.TeamUp();
         }
 
         //和下家互换座位
@@ -258,14 +250,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("和下家互换座位失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.MoveToNextPosition(playerId);
-            }
+            gameRoom.MoveToNextPosition(playerId);
         }
 
         //旁观：选牌
@@ -273,14 +258,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("旁观：选牌失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.CardsReady(playerId, myCardIsReady);
-            }
+            gameRoom.CardsReady(playerId, myCardIsReady);
         }
 
         //读取牌局
@@ -288,14 +266,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("读取牌局失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.RestoreGameStateFromFile();
-            }
+            gameRoom.RestoreGameStateFromFile();
         }
 
         //设置从几打起
@@ -303,14 +274,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("设置从几打起失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.SetBeginRank(beginRankString);
-            }
+            gameRoom.SetBeginRank(beginRankString);
         }
 
         //旁观玩家 by id
@@ -318,14 +282,7 @@ namespace TractorServer
         {
             string sessionID = GetSessionID();
             GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            if (gameRoom == null)
-            {
-                gameRoom.PublishMessage(string.Format("旁观玩家 by id失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
-            {
-                gameRoom.ObservePlayerById(playerId, observerId);
-            }
+            gameRoom.ObservePlayerById(playerId, observerId);
         }
         #endregion
 

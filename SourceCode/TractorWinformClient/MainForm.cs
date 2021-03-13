@@ -807,6 +807,7 @@ namespace Duan.Xiugang.Tractor
                 this.btnObserveNext.Show();
                 this.ToolStripMenuItemObserve.Visible = true;
             }
+            this.btnExitRoom.Show();
 
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
@@ -923,9 +924,33 @@ namespace Duan.Xiugang.Tractor
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
+            ClearRoom();
 
             CreateRoomControls(gameRooms, names);
             this.pnlGameRooms.Show();
+        }
+
+        private void ClearRoom()
+        {
+            ThisPlayer.PlayerId = ThisPlayer.MyOwnId;
+            ThisPlayer.isObserver = false;
+            this.btnReady.Hide();
+            this.btnRobot.Hide();
+            this.btnExitRoom.Hide();
+            this.btnObserveNext.Hide();
+            this.lblEastNickName.Text = "";
+            this.lblNorthNickName.Text = "";
+            this.lblWestNickName.Text = "";
+            this.lblSouthNickName.Text = "";
+            this.lblEastStarter.Text = "";
+            this.lblNorthStarter.Text = "";
+            this.lblWestStarter.Text = "";
+            this.lblSouthStarter.Text = "";
+
+            Graphics g = Graphics.FromImage(bmp);
+            drawingFormHelper.DrawBackground(g);
+            Refresh();
+            g.Dispose();
         }
 
         private void CreateRoomControls(List<GameRoom> gameRooms, List<string> names)
@@ -1363,6 +1388,11 @@ namespace Duan.Xiugang.Tractor
             {
                 ThisPlayer.ObservePlayerById(PositionPlayer[2], ThisPlayer.MyOwnId);
             }
+        }
+
+        private void btnExitRoom_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
         }
     }
 }

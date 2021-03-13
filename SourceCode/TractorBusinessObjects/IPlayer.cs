@@ -12,6 +12,7 @@ namespace Duan.Xiugang.Tractor.Objects
         void ClearAllCards();
         void PlayerEnterRoom(string playerID, int roomID);
         void ReadyToStart();
+        void ExitRoom(string playerID);
         void Quit();
         void ShowCards(List<int> cards);
         void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump);

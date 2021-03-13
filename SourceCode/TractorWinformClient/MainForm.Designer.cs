@@ -81,6 +81,7 @@ namespace Duan.Xiugang.Tractor
             this.btnRobot = new System.Windows.Forms.Button();
             this.btnObserveNext = new System.Windows.Forms.Button();
             this.pnlGameRooms = new System.Windows.Forms.Panel();
+            this.btnExitRoom = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -114,28 +115,28 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemEnterHall.Name = "ToolStripMenuItemEnterHall";
             this.ToolStripMenuItemEnterHall.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(191, 30);
+            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(187, 30);
             this.ToolStripMenuItemEnterHall.Text = "进入大厅";
             this.ToolStripMenuItemEnterHall.Click += new System.EventHandler(this.ToolStripMenuItemEnterHall_Click);
             // 
             // SettingToolStripMenuItem
             // 
             this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
             this.SettingToolStripMenuItem.Text = "设置";
             this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
             this.RebootToolStripMenuItem.Text = "重启游戏";
             this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
             this.ExitToolStripMenuItem.Text = "退出";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
@@ -560,11 +561,25 @@ namespace Duan.Xiugang.Tractor
             this.pnlGameRooms.TabIndex = 24;
             this.pnlGameRooms.Visible = false;
             // 
+            // btnExitRoom
+            // 
+            this.btnExitRoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnExitRoom.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnExitRoom.Location = new System.Drawing.Point(736, 776);
+            this.btnExitRoom.Name = "btnExitRoom";
+            this.btnExitRoom.Size = new System.Drawing.Size(72, 45);
+            this.btnExitRoom.TabIndex = 25;
+            this.btnExitRoom.Text = "退出";
+            this.btnExitRoom.UseVisualStyleBackColor = true;
+            this.btnExitRoom.Visible = false;
+            this.btnExitRoom.Click += new System.EventHandler(this.btnExitRoom_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnExitRoom);
             this.Controls.Add(this.pnlGameRooms);
             this.Controls.Add(this.btnObserveNext);
             this.Controls.Add(this.btnRobot);
@@ -654,6 +669,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnObserveNext;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserve;
         private System.Windows.Forms.Panel pnlGameRooms;
+        private System.Windows.Forms.Button btnExitRoom;
     }
 }
 

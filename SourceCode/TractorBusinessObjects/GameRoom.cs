@@ -135,6 +135,51 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
+        //玩家退出
+        public void PlayerQuit(string playerId)
+        {
+            if (!PlayersProxy.ContainsKey(playerId))
+            {
+                List<string> badObs = new List<string>();
+                badObs.Add(playerId);
+                RemoveObserver(badObs);
+                UpdateGameState();
+                return;
+            }
+            //log.Debug(playerId + " quit.");
+            PlayersProxy.Remove(playerId);
+            for (int i = 0; i < 4; i++)
+            {
+                if (CurrentGameState.Players[i] != null)
+                {
+                    CurrentGameState.Players[i].Rank = 0;
+                    CurrentGameState.Players[i].IsReadyToStart = false;
+                    CurrentGameState.Players[i].IsRobot = false;
+                    CurrentGameState.Players[i].Team = GameTeam.None;
+                    foreach (string ob in CurrentGameState.Players[i].Observers)
+                    {
+                        ObserversProxy.Remove(ob);
+                        // notify exit to hall
+                    }
+                    if (CurrentGameState.Players[i].PlayerId == playerId)
+                    {
+                        CurrentGameState.Players[i] = null;
+                    }
+                }
+            }
+            UpdateGameState();
+
+            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
+            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentHandState.IsFirstHand = true;
+            UpdatePlayersCurrentHandState();
+
+            foreach (var player in PlayersProxy.Values)
+            {
+                player.StartGame();
+            }
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
             foreach (PlayerEntity p in CurrentGameState.Players)
@@ -185,51 +230,6 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
             }
             UpdateGameState();
-        }
-
-        //玩家退出
-        public void PlayerQuit(string playerId)
-        {
-            if (!PlayersProxy.ContainsKey(playerId))
-            {
-                List<string> badObs = new List<string>();
-                badObs.Add(playerId);
-                RemoveObserver(badObs);
-                UpdateGameState();
-                return;
-            }
-            //log.Debug(playerId + " quit.");
-            PlayersProxy.Remove(playerId);
-            for (int i = 0; i < 4; i++)
-            {
-                if (CurrentGameState.Players[i] != null)
-                {
-                    CurrentGameState.Players[i].Rank = 0;
-                    CurrentGameState.Players[i].IsReadyToStart = false;
-                    CurrentGameState.Players[i].IsRobot = false;
-                    CurrentGameState.Players[i].Team = GameTeam.None;
-                    foreach (string ob in CurrentGameState.Players[i].Observers)
-                    {
-                        ObserversProxy.Remove(ob);
-                        // notify exit to hall
-                    }
-                    if (CurrentGameState.Players[i].PlayerId == playerId)
-                    {
-                        CurrentGameState.Players[i] = null;
-                    }
-                }
-            }
-            UpdateGameState();
-
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
-            UpdatePlayersCurrentHandState();
-
-            foreach (var player in PlayersProxy.Values)
-            {
-                player.StartGame();
-            }
         }
 
         //player discard last 8 cards
