@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ServiceModel;
 
@@ -25,8 +26,9 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void PlayerExitRoom(string playerId);
 
-        [OperationContract(IsOneWay = true)]
-        void PlayerQuit(string playerId);
+        [OperationContract(AsyncPattern = true)]
+        IAsyncResult BeginPlayerQuit(string playerId, AsyncCallback callback, object state);
+        string EndPlayerQuit(IAsyncResult ar);
 
         [OperationContract(IsOneWay = true)]
         void PlayerMakeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump, string playerId);

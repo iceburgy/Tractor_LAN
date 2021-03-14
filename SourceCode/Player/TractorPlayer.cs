@@ -189,8 +189,14 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void Quit()
         {
-            _tractorHost.PlayerQuit(this.MyOwnId);
+            _tractorHost.BeginPlayerQuit(this.MyOwnId, PlayerQuitCallback, _tractorHost);
             (_tractorHost as IDisposable).Dispose();
+        }
+
+        public void PlayerQuitCallback(IAsyncResult ar)
+        {
+            //string result = _tractorHost.EndPlayerQuit(ar);
+            //Console.WriteLine("Result: {0}", result);
         }
 
         public void ShowCards(List<int> cards)

@@ -143,7 +143,7 @@ namespace TractorServer
         }
 
         //玩家退出游戏
-        public void PlayerQuit(string playerID)
+        public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
             string sessionID = GetSessionID();
             if (this.SessionIDGameRoom.ContainsKey(sessionID))
@@ -164,10 +164,19 @@ namespace TractorServer
                 SessionIDGameRoom.Remove(sessionID);
             }
             PlayersProxy.Remove(playerID);
-            log.Debug(string.Format("player {0} quit hall.", playerID));
+            string result = string.Format("player {0} quit.", playerID);
+            log.Debug(result);
             Thread.Sleep(500);
             Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
             thr.Start();
+
+            return new CompletedAsyncResult<string>(result);
+        }
+        public string EndPlayerQuit(IAsyncResult ar)
+        {
+            CompletedAsyncResult<string> result = ar as CompletedAsyncResult<string>;
+            log.Debug(string.Format("EndServiceAsyncMethod called with: \"{0}\"", result.Data));
+            return result.Data;
         }
 
         public void PlayerIsReadyToStart(string playerID)
@@ -327,5 +336,31 @@ namespace TractorServer
         {
             return OperationContext.Current.SessionId;
         }
+    }
+
+    // Simple async result implementation.
+    class CompletedAsyncResult<T> : IAsyncResult
+    {
+        T data;
+
+        public CompletedAsyncResult(T data)
+        { this.data = data; }
+
+        public T Data
+        { get { return data; } }
+
+        #region IAsyncResult Members
+        public object AsyncState
+        { get { return (object)data; } }
+
+        public WaitHandle AsyncWaitHandle
+        { get { throw new Exception("The method or operation is not implemented."); } }
+
+        public bool CompletedSynchronously
+        { get { return true; } }
+
+        public bool IsCompleted
+        { get { return true; } }
+        #endregion
     }
 }
