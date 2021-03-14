@@ -60,6 +60,7 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemObserverNextPlayer = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolStripMenuItemUserManual = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemShowVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.AutoUpdaterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FeatureOverviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -115,28 +116,28 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemEnterHall.Name = "ToolStripMenuItemEnterHall";
             this.ToolStripMenuItemEnterHall.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(187, 30);
+            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(191, 30);
             this.ToolStripMenuItemEnterHall.Text = "进入大厅";
             this.ToolStripMenuItemEnterHall.Click += new System.EventHandler(this.ToolStripMenuItemEnterHall_Click);
             // 
             // SettingToolStripMenuItem
             // 
             this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
             this.SettingToolStripMenuItem.Text = "设置";
             this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
             this.RebootToolStripMenuItem.Text = "重启游戏";
             this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(187, 30);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(191, 30);
             this.ExitToolStripMenuItem.Text = "退出";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
@@ -297,7 +298,7 @@ namespace Duan.Xiugang.Tractor
             // ToolStripMenuItemRobot
             // 
             this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
-            this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F3;
+            this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F2;
             this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(217, 30);
             this.ToolStripMenuItemRobot.Text = "托管代打";
             this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
@@ -314,7 +315,7 @@ namespace Duan.Xiugang.Tractor
             // ToolStripMenuItemObserverNextPlayer
             // 
             this.ToolStripMenuItemObserverNextPlayer.Name = "ToolStripMenuItemObserverNextPlayer";
-            this.ToolStripMenuItemObserverNextPlayer.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.ToolStripMenuItemObserverNextPlayer.ShortcutKeys = System.Windows.Forms.Keys.F3;
             this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(191, 30);
             this.ToolStripMenuItemObserverNextPlayer.Text = "旁观下家";
             this.ToolStripMenuItemObserverNextPlayer.Click += new System.EventHandler(this.ToolStripMenuItemObserverNextPlayer_Click);
@@ -323,6 +324,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripSeparator5,
+            this.ToolStripMenuItemUserManual,
             this.ToolStripMenuItemShowVersion,
             this.AutoUpdaterToolStripMenuItem,
             this.FeatureOverviewToolStripMenuItem});
@@ -334,6 +336,13 @@ namespace Duan.Xiugang.Tractor
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(157, 6);
+            // 
+            // ToolStripMenuItemUserManual
+            // 
+            this.ToolStripMenuItemUserManual.Name = "ToolStripMenuItemUserManual";
+            this.ToolStripMenuItemUserManual.Size = new System.Drawing.Size(160, 30);
+            this.ToolStripMenuItemUserManual.Text = "使用说明";
+            this.ToolStripMenuItemUserManual.Click += new System.EventHandler(this.ToolStripMenuItemUserManual_Click);
             // 
             // ToolStripMenuItemShowVersion
             // 
@@ -607,6 +616,7 @@ namespace Duan.Xiugang.Tractor
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
+            this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDoubleClick);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -670,6 +680,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserve;
         private System.Windows.Forms.Panel pnlGameRooms;
         private System.Windows.Forms.Button btnExitRoom;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemUserManual;
     }
 }
 

@@ -453,14 +453,6 @@ namespace Duan.Xiugang.Tractor
                     }
                     else
                     {
-                        //允许刚埋完牌后查看底牌
-                        if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
-                            ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
-                            ThisPlayer.CurrentHandState.DiscardedCards != null &&
-                            ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
-                        {
-                            drawingFormHelper.DrawDiscardedCards();
-                        }
                         //绘制上一轮各家所出的牌，缩小至一半，放在左下角
                         ThisPlayer_PlayerLastTrickShowedCards();
                         Refresh();
@@ -522,6 +514,29 @@ namespace Duan.Xiugang.Tractor
                             ThisPlayer.ExposeTrump(next, trump);
                         }
                     }
+                }
+            }
+        }
+
+        //左键双击空白处查看底牌
+        private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //旁观不能触发点击效果
+            if (ThisPlayer.isObserver)
+            {
+                return;
+            }
+            if ((ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards) &&
+                e.Button == MouseButtons.Left &&
+                !((e.X >= (int)myCardsLocation[0] && e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor)))
+            {
+                if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
+                    ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
+                    ThisPlayer.CurrentHandState.DiscardedCards != null &&
+                    ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
+                {
+                    drawingFormHelper.DrawDiscardedCards();
+                    Refresh();
                 }
             }
         }
@@ -1429,6 +1444,18 @@ namespace Duan.Xiugang.Tractor
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
+        }
+
+        private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)
+        {
+            string userManual = "查看底牌：左键双击空白处（仅限庄家）";
+            userManual += "\n查看上轮出牌：右键单击空白处";
+            userManual += "\n进入大厅：F5";
+            userManual += "\n就绪：F1";
+            userManual += "\n托管：F2";
+            userManual += "\n旁观下家：F3（仅限旁观模式下）";
+
+            MessageBox.Show(userManual);
         }
     }
 }
