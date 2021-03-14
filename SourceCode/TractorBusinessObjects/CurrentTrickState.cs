@@ -70,15 +70,32 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     foreach (int card in cardsList)
                     {
-                        if (card%13 == 3)
+                        if (card % 13 == 3)
                             points += 5;
-                        else if (card%13 == 8)
+                        else if (card % 13 == 8)
                             points += 10;
-                        else if (card%13 == 11)
+                        else if (card % 13 == 11)
                             points += 10;
                     }
                 }
                 return points;
+            }
+        }
+
+        public List<int> ScoreCards
+        {
+            get
+            {
+                List<int> scorecards = new List<int>();
+                foreach (var cardsList in ShowedCards.Values)
+                {
+                    foreach (int card in cardsList)
+                    {
+                        if (card % 13 == 3 || card % 13 == 8 || card % 13 == 11)
+                            scorecards.Add(card);
+                    }
+                }
+                return scorecards;
             }
         }
 

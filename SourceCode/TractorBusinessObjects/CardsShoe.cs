@@ -43,11 +43,53 @@ namespace Duan.Xiugang.Tractor.Objects
             int N = Cards.Length;
             for (int i = 0; i < N; i++)
             {
-                int r = new Random().Next(i + 1);
-                int temp = Cards[r];
-                Cards[r] = Cards[i];
-                Cards[i] = temp;
+                int r = new Random().Next(i, N);
+                Swap(i, r);
             }
+        }
+
+        internal void TestSet()
+        {
+            int rankDelta=2;
+            Suit wantedSuit = Suit.Heart;
+            int wantedRank = 2 - rankDelta;
+            var wantedNumber = ((int)wantedSuit - 1) * 13 + wantedRank;
+            int playerPos = 0;
+            int posDelta = 4;
+            Swap(playerPos, wantedNumber);
+
+            playerPos += posDelta;
+            wantedNumber = 52;
+            Swap(playerPos, wantedNumber);
+
+            playerPos += posDelta;
+            wantedNumber = 52 + 54;
+            Swap(playerPos, wantedNumber);
+
+            playerPos = 1;
+            wantedSuit = Suit.Spade;
+            wantedRank = 2 - rankDelta;
+            wantedNumber = ((int)wantedSuit - 1) * 13 + wantedRank;
+            Swap(playerPos, wantedNumber);
+
+            playerPos += posDelta;
+            wantedNumber = ((int)wantedSuit - 1) * 13 + wantedRank + 54;
+            Swap(playerPos, wantedNumber);
+
+            playerPos += posDelta;
+            wantedNumber = 53;
+            Swap(playerPos, wantedNumber);
+
+            playerPos += posDelta;
+            wantedNumber = 53 + 54;
+            Swap(playerPos, wantedNumber);
+        }
+
+        private void Swap(int i, int r)
+        {
+            int temp = Cards[r];
+            Cards[r] = Cards[i];
+            Cards[i] = temp;
         }
     }
 }

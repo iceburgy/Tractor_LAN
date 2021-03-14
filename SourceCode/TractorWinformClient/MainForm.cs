@@ -328,7 +328,7 @@ namespace Duan.Xiugang.Tractor
             {
                 if (e.Button == MouseButtons.Left)
                 {
-                    if ((e.X >= (int) myCardsLocation[0] &&
+                    if ((e.X >= (int)myCardsLocation[0] &&
                          e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor))
                     {
                         if (calculateRegionHelper.CalculateClickedRegion(e, 1))
@@ -338,6 +338,19 @@ namespace Duan.Xiugang.Tractor
 
                             ThisPlayer.CardsReady(ThisPlayer.PlayerId, myCardIsReady);
                         }
+                    }
+                    else if ((e.X >= 20 && e.X <= (20 + 70) || e.X >= drawingFormHelper.offsetSideBar && e.X <= (drawingFormHelper.offsetSideBar + 70)) && (e.Y >= 30 && e.Y < 30 + 80))
+                    {
+                        //点上方任一亮牌框查看谁亮过什么牌
+                        if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
+                        {
+                            drawingFormHelper.LastTrumpMadeCardsShow();
+                        }
+                    }
+                    else if (e.X >= drawingFormHelper.offsetSideBar - 56 && e.X <= drawingFormHelper.offsetSideBar && e.Y >= 128 && e.Y < 128 + 56)
+                    {
+                        //点得分图标查看得分牌
+                        drawingFormHelper.DrawScoreCards();
                     }
                 }
                 else if (e.Button == MouseButtons.Right) //右键
@@ -518,27 +531,8 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        //左键双击空白处查看底牌
         private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            //旁观不能触发点击效果
-            if (ThisPlayer.isObserver)
-            {
-                return;
-            }
-            if ((ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards) &&
-                e.Button == MouseButtons.Left &&
-                !((e.X >= (int)myCardsLocation[0] && e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor)))
-            {
-                if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
-                    ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
-                    ThisPlayer.CurrentHandState.DiscardedCards != null &&
-                    ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
-                {
-                    drawingFormHelper.DrawDiscardedCards();
-                    Refresh();
-                }
-            }
         }
 
         private void ToDiscard8Cards()
@@ -822,7 +816,9 @@ namespace Duan.Xiugang.Tractor
         {
             ThisPlayer_DiscardingLast8();
             drawingFormHelper.RemoveToolbar();
-            drawingFormHelper.ClearSuitCards();
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImage();
+            Refresh();
         }
 
         private void ThisPlayer_PlayersTeamMade()
@@ -1448,14 +1444,33 @@ namespace Duan.Xiugang.Tractor
 
         private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)
         {
-            string userManual = "查看底牌：左键双击空白处（仅限庄家）";
+            string userManual = "查看底牌：点正下方的【庄家】（仅限庄家）";
             userManual += "\n查看上轮出牌：右键单击空白处";
+            userManual += "\n查看得分牌：点得分图标";
+            userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
             userManual += "\n进入大厅：F5";
             userManual += "\n就绪：F1";
             userManual += "\n托管：F2";
             userManual += "\n旁观下家：F3（仅限旁观模式下）";
 
             MessageBox.Show(userManual);
+        }
+
+        //点自己显示底牌
+        private void lblSouthStarter_Click(object sender, EventArgs e)
+        {
+            //旁观不能触发点击效果
+            if (ThisPlayer.isObserver)
+            {
+                return;
+            }
+            if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
+                ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentHandState.DiscardedCards != null &&
+                ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
+            {
+                drawingFormHelper.DrawDiscardedCards();
+            }
         }
     }
 }

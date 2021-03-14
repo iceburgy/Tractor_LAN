@@ -63,7 +63,7 @@ namespace Duan.Xiugang.Tractor
             {
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294 + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 294 + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
@@ -79,8 +79,8 @@ namespace Duan.Xiugang.Tractor
                 if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 3)
                 {
                     ClearSuitCards(g);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
-                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + 12 * scaleDividend / scaleDivisor + offsetCenterHalf, 80, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                    g.DrawImage(getPokerImageByNumber(trumpMadeCard), 280 + 12 * scaleDividend / scaleDivisor + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
                 else if (mainForm.PlayerPosition[mainForm.ThisPlayer.CurrentHandState.TrumpMaker] == 4)
                 {
@@ -108,16 +108,85 @@ namespace Duan.Xiugang.Tractor
         {
             g.DrawImage(mainForm.image, new Rectangle(80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
             g.DrawImage(mainForm.image, new Rectangle(480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(280 + offsetCenterHalf, 80, 85 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(280 + offsetCenterHalf, 130, 85 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
         }
 
-        //清除亮的牌
-        internal void ClearSuitCards()
+        //查看有谁亮过主，缩小一半
+        internal void LastTrumpMadeCardsShow()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(mainForm.image, new Rectangle(80, 158 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(80, 158, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(480 + offsetCenterHalf, 200 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor), new Rectangle(480, 200, 71, 116), GraphicsUnit.Pixel);
-            g.DrawImage(mainForm.image, new Rectangle(280 + offsetCenterHalf, 80, 85 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor), new Rectangle(280, 80, 85, 96), GraphicsUnit.Pixel);
+            Dictionary<string, Dictionary<Suit, CurrentHandState>> trumpDict = new Dictionary<string, Dictionary<Suit, CurrentHandState>>();
+            foreach (var lastHandState in mainForm.ThisPlayer.LastHandStateTrumpInfo)
+            {
+                string key1 = lastHandState.TrumpMaker;
+                if (!trumpDict.ContainsKey(key1))
+                {
+                    trumpDict[key1] = new Dictionary<Suit, CurrentHandState>();
+                }
+                Dictionary<Suit, CurrentHandState> val1 = trumpDict[key1];
+
+                Suit key2 = lastHandState.Trump;
+                if (!val1.ContainsKey(key2))
+                {
+                    val1[key2] = lastHandState;
+                }
+                CurrentHandState val2 = val1[key2];
+                val2.TrumpExposingPoker = (TrumpExposingPoker)Math.Max((int)val2.TrumpExposingPoker, (int)lastHandState.TrumpExposingPoker);
+            }
+            foreach (var trumpDict2Entry in trumpDict)
+            {
+                string player = trumpDict2Entry.Key;
+                Dictionary<Suit, CurrentHandState> suitToTrumInfo = trumpDict2Entry.Value;
+                int x = 0, y = 0;
+                int wid = 71 * scaleDividend / scaleDivisor / 2;
+                int hei = 96 * scaleDividend / scaleDivisor / 2;
+                switch (mainForm.PlayerPosition[player])
+                {
+                    case 3:
+                        x = 280 + offsetCenterHalf;
+                        y = 130;
+                        break;
+                    case 4:
+                        x = 80;
+                        y = 200 + offsetCenterHalf;
+                        break;
+                    case 2:
+                        x = 480 + offsetCenterHalf;
+                        y = 200 + offsetCenterHalf;
+                        break;
+                    case 1:
+                        x = 280 - offsetCenterHalf;
+                        y = 250 + offsetY;
+                        break;
+                    default:
+                        break;
+                }
+
+                int offset = 0;
+                int offsetDelta = 12 * scaleDividend / scaleDivisor;
+                foreach (var suitToTrumInfoEntry in suitToTrumInfo)
+                {
+                    Suit trump = suitToTrumInfoEntry.Key;
+                    CurrentHandState trumpInfo = suitToTrumInfoEntry.Value;
+
+                    var trumpMadeCard = ((int)trump - 1) * 13 + trumpInfo.Rank;
+                    if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairBlackJoker)
+                        trumpMadeCard = 52;
+                    else if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairRedJoker)
+                        trumpMadeCard = 53;
+                    
+                    int count = 1;
+                    if (trumpInfo.TrumpExposingPoker > TrumpExposingPoker.SingleRank)
+                    {
+                        count = 2;
+                    }
+                    for (int i = 0; i < count; i++)
+                    {
+                        g.DrawImage(getPokerImageByNumber(trumpMadeCard), x + offset, y, wid, hei);
+                        offset += offsetDelta;
+                    }
+                }
+            }
             mainForm.Refresh();
             g.Dispose();
         }
@@ -1587,6 +1656,28 @@ namespace Duan.Xiugang.Tractor
             }
 
             g.Dispose();
+            mainForm.Refresh();
+        }
+
+        //缩小至2/3以免盖住之前出的牌
+        internal void DrawScoreCards()
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            //画得分牌,画在得分图标的左边
+            int wid = 71 * scaleDividend / scaleDivisor * 2 / 3;
+            int hei = 96 * scaleDividend / scaleDivisor * 2 / 3;
+            //间距加2，看得清楚一点
+            int x = offsetSideBar - wid - 5 - (mainForm.ThisPlayer.ScoreCards.Count - 1) * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3);
+
+            int y = 130 + 50;
+            for (int i = 0; i < mainForm.ThisPlayer.ScoreCards.Count; i++)
+            {
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.ScoreCards[i]), x + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), y, wid, hei);
+            }
+
+            g.Dispose();
+            mainForm.Refresh();
         }
 
         //大家都出完牌，则计算得分多少，下次该谁出牌
@@ -1594,6 +1685,7 @@ namespace Duan.Xiugang.Tractor
         {
             DrawCenterImage();
             DrawFinishedScoreImage();
+            DrawScoreCards();
             mainForm.Refresh();
         }
         #endregion // 绘制各家出的牌，并计算结果或者通知下一家

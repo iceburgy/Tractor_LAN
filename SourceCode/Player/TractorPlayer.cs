@@ -83,10 +83,11 @@ namespace Duan.Xiugang.Tractor.Player
         public event TrickStartedEventHandler TrickStarted;
         
         public event HandEndingEventHandler HandEnding;
+        public List<CurrentHandState> LastHandStateTrumpInfo;
+        public List<int> ScoreCards;
 
         private readonly ITractorHost _tractorHost;
         private CurrentTrickState tempLastTrickState;
-        
 
         public TractorPlayer()
         {
@@ -97,6 +98,8 @@ namespace Duan.Xiugang.Tractor.Player
             CurrentTrickState = new CurrentTrickState();
             LastTrickState = new CurrentTrickState();
             tempLastTrickState = new CurrentTrickState();
+            LastHandStateTrumpInfo = new List<CurrentHandState>();
+            ScoreCards = new List<int>();
 
             var instanceContext = new InstanceContext(this);
             var channelFactory = new DuplexChannelFactory<ITractorHost>(instanceContext, "NetTcpBinding_ITractorHost");
@@ -212,6 +215,12 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void StartGame()
         {
+            //游戏开始前，清空缓存变量
+            this.LastTrickState = new CurrentTrickState();
+            this.tempLastTrickState = new CurrentTrickState();
+            this.LastHandStateTrumpInfo = new List<CurrentHandState>();
+            this.ScoreCards = new List<int>();
+
             ClearAllCards();
             this.CurrentPoker.Rank = CurrentHandState.Rank;
 
@@ -245,6 +254,16 @@ namespace Duan.Xiugang.Tractor.Player
             trumpChanged = this.CurrentHandState.Trump != currentHandState.Trump || (this.CurrentHandState.Trump == currentHandState.Trump && this.CurrentHandState.TrumpExposingPoker < currentHandState.TrumpExposingPoker);
             newHandStep = this.CurrentHandState.CurrentHandStep != currentHandState.CurrentHandStep;
             starterChanged = this.CurrentHandState.Starter  != currentHandState.Starter;
+
+            //保存亮过的主的信息，以便游戏时可以随时查看
+            if (trumpChanged)
+            {
+                CurrentHandState tempHandStateTrumpInfo = new CurrentHandState(this.CurrentGameState);
+                tempHandStateTrumpInfo.TrumpExposingPoker = currentHandState.TrumpExposingPoker;
+                tempHandStateTrumpInfo.TrumpMaker = currentHandState.TrumpMaker;
+                tempHandStateTrumpInfo.Trump = currentHandState.Trump;
+                LastHandStateTrumpInfo.Add(tempHandStateTrumpInfo);
+            }
 
             this.CurrentHandState = currentHandState;
             this.CurrentPoker.Trump = this.CurrentHandState.Trump;
@@ -360,7 +379,14 @@ namespace Duan.Xiugang.Tractor.Player
 
             if (!string.IsNullOrEmpty(this.CurrentTrickState.Winner))
             {
+                //收集上轮出牌
                 this.tempLastTrickState = this.CurrentTrickState;
+                //收集得分牌
+                if (!this.CurrentGameState.ArePlayersInSameTeam(CurrentHandState.Starter, this.CurrentTrickState.Winner))
+                {
+                    this.ScoreCards.AddRange(this.CurrentTrickState.ScoreCards);
+                }
+
                 if (TrickFinished != null)
                     TrickFinished();
             }
