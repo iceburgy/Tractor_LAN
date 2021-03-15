@@ -354,9 +354,10 @@ namespace Duan.Xiugang.Tractor.Objects
                         CurrentHandState.Starter = this.CurrentGameState.startNextHandStarter.PlayerId;
 
                         //检查是否本轮游戏结束
+                        StringBuilder sb = null;
                         if (this.CurrentGameState.startNextHandStarter.Rank >= 13)
                         {
-                            StringBuilder sb = new StringBuilder();
+                            sb = new StringBuilder();
                             foreach (PlayerEntity player in CurrentGameState.Players)
                             {
                                 if (player == null) continue;
@@ -366,7 +367,6 @@ namespace Duan.Xiugang.Tractor.Objects
                             }
                             CurrentHandState.Rank = 0;
                             CurrentHandState.Starter = null;
-                            PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
 
                             this.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                             this.CurrentGameState.startNextHandStarter = null;
@@ -376,6 +376,10 @@ namespace Duan.Xiugang.Tractor.Objects
                         UpdateGameState();
 
                         SaveGameStateToFile();
+                        if (sb != null)
+                        {
+                            PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
+                        }
                     }
                 }
                 else
