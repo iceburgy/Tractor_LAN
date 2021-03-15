@@ -75,7 +75,7 @@ namespace Duan.Xiugang.Tractor.Objects
             //其他花色的牌
             for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
-                while (allSuitCards[i] > 0)
+                while (allSuitCards[i] > 0 && selectedCards.Count < leadingCardsCp.Count)
                 {
                     selectedCards.Add(i);
                     allSuitCards[i]--;
