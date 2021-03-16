@@ -967,13 +967,13 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void ThisPlayer_GameHallUpdatedEventHandler(List<GameRoom> gameRooms, List<string> names)
+        private void ThisPlayer_GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names)
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
             ClearRoom();
 
-            CreateRoomControls(gameRooms, names);
+            CreateRoomControls(roomStates, names);
             this.pnlGameRooms.Show();
         }
 
@@ -1000,7 +1000,7 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
-        private void CreateRoomControls(List<GameRoom> gameRooms, List<string> names)
+        private void CreateRoomControls(List<RoomState> roomStates, List<string> names)
         {
             this.pnlGameRooms.Controls.Clear();
 
@@ -1035,7 +1035,7 @@ namespace Duan.Xiugang.Tractor
 
             offsetX += offsetXDelta;
 
-            foreach (GameRoom room in gameRooms)
+            foreach (RoomState room in roomStates)
             {
                 Button btnEnterRoom = new Button();
                 btnEnterRoom.Location = new System.Drawing.Point(offsetX, 0);

@@ -21,8 +21,7 @@ namespace TractorServer
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.Single)]
     public class TractorHost : ITractorHost
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
-    (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly string[] RoomNames = new string[] { "桃园结义", "五谷丰登", "无中生有" };
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
@@ -33,6 +32,7 @@ namespace TractorServer
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public List<GameRoom> GameRooms { get; set; }
+        public List<RoomState> RoomStates { get; set; }
         public Dictionary<string, GameRoom> SessionIDGameRoom { get; set; }
 
         public TractorHost()
@@ -51,9 +51,11 @@ namespace TractorServer
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             GameRooms = new List<GameRoom>();
+            RoomStates = new List<RoomState>();
             for (int i = 0; i < this.MaxRoom; i++)
             {
                 GameRoom gameRoom = new GameRoom(i, RoomNames[i]);
+                RoomStates.Add(gameRoom.CurrentRoomState);
                 GameRooms.Add(gameRoom);
                 if (!Directory.Exists(gameRoom.LogsByRoomFolder))
                 {
@@ -89,7 +91,7 @@ namespace TractorServer
             IPlayer player = PlayersProxy[playerID];
             if (player != null)
             {
-                GameRoom gameRoom = this.GameRooms.Single((room) => room.RoomID == roomID);
+                GameRoom gameRoom = this.GameRooms.Single((room) => room.CurrentRoomState.RoomID == roomID);
                 if (gameRoom == null)
                 {
                     player.NotifyMessage(string.Format("加入房间失败，房间号【{0}】不存在", roomID));
@@ -314,7 +316,7 @@ namespace TractorServer
                 if (!isInRoom)
                 {
                     List<string> names = PlayersProxy.Keys.ToList<string>();
-                    player.NotifyGameHall(this.GameRooms, names);
+                    player.NotifyGameHall(this.RoomStates, names);
                 }
             }
         }

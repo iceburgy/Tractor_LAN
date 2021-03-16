@@ -46,10 +46,10 @@
     <Compile Include="CardsShoe.cs" />
     <Compile Include="CommonMethods.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="RoomState.cs" />
     <Compile Include="CurrentPoker.cs" />
     <Compile Include="CurrentHandState.cs" />
     <Compile Include="CurrentTrickState.cs" />
-    <Compile Include="GameRoom.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="IPlayer.cs" />
     <Compile Include="ITractorHost.cs" />

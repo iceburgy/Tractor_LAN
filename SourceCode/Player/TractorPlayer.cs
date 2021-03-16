@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Duan.Xiugang.Tractor.Player
 {
-    public delegate void GameHallUpdatedEventHandler(List<GameRoom> gameRooms, List<string> names);
+    public delegate void GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names);
     public delegate void NewPlayerJoinedEventHandler();
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
@@ -470,11 +470,11 @@ namespace Duan.Xiugang.Tractor.Player
 
         }
 
-        public void NotifyGameHall(List<GameRoom> gameRooms, List<string> names)
+        public void NotifyGameHall(List<RoomState> roomStates, List<string> names)
         {
             if (GameHallUpdatedEvent != null)
             {
-                GameHallUpdatedEvent(gameRooms, names);
+                GameHallUpdatedEvent(roomStates, names);
             }
         }
 

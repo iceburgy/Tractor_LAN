@@ -69,6 +69,8 @@
   <ItemGroup>
     <Compile Include="DefinedConstant.cs" />
     <Compile Include="GameConfig.cs" />
+    <Compile Include="GameRoom.cs" />
+    <Compile Include="LoggerUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TractorHost.cs" />
   </ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Duan.Xiugang.Tractor.Objects;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,24 +8,15 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 
-namespace Duan.Xiugang.Tractor.Objects
+namespace TractorServer
 {
-    [DataContract]
     public class GameRoom
     {
-    //    private static readonly log4net.ILog log = log4net.LogManager.GetLogger
-    //(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string LogsFolder = "logs";
         public string LogsByRoomFolder;
 
-        [DataMember]
-        public int RoomID;
-        [DataMember]
-        public string RoomName;
-        [DataMember]
-        public GameState CurrentGameState;
-        internal CurrentHandState CurrentHandState;
-        internal CurrentTrickState CurrentTrickState;
+        public RoomState CurrentRoomState;
         public CardsShoe CardsShoe { get; set; }
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
@@ -32,15 +24,11 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public GameRoom(int roomID, string roomName)
         {
-            RoomID = roomID;
-            RoomName = roomName;
+            CurrentRoomState = new RoomState(roomID, roomName);
             LogsByRoomFolder = string.Format("{0}\\{1}", LogsFolder, roomID);
-            CurrentGameState = new GameState();
-            CurrentHandState = new CurrentHandState(this.CurrentGameState);
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
-
         }
 
         #region implement interface ITractorHost
@@ -52,10 +40,10 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     //防止双开旁观
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
-                    if (CurrentGameState.Clients.Contains(clientIP))
+                    if (CurrentRoomState.CurrentGameState.Clients.Contains(clientIP))
                     {
                         LogClientInfo(clientIP, playerID, true);
-                        //log.Debug(string.Format("observer {0}-{1} attempted double observing.", playerID, clientIP));
+                        log.Debug(string.Format("observer {0}-{1} attempted double observing.", playerID, clientIP));
                         if (!allowSameIP)
                         {
                             msg += "？？失败";
@@ -65,7 +53,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                         else
                         {
-                        	msg += "？？";
+                            msg += "？？";
                             PublishMessage(msg);
                         }
                     }
@@ -75,39 +63,39 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
 
                     player.NotifyMessage("房间已满，加入旁观");
-                    //log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
+                    log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
 
                     ObserversProxy.Add(playerID, player);
-                    ObservePlayerById(CurrentGameState.Players[0].PlayerId, playerID);
+                    ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
                     return true;
                 }
 
                 for (int i = 0; i < 4; i++)
                 {
-                    if (CurrentGameState.Players[i] == null)
+                    if (CurrentRoomState.CurrentGameState.Players[i] == null)
                     {
-                        CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+                        CurrentRoomState.CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
                         break;
                     }
                 }
                 LogClientInfo(clientIP, playerID, false);
-                CurrentGameState.Clients.Add(clientIP);
+                CurrentRoomState.CurrentGameState.Clients.Add(clientIP);
                 PlayersProxy.Add(playerID, player);
-                //log.Debug(string.Format("player {0} joined.", playerID));
+                log.Debug(string.Format("player {0} joined.", playerID));
                 if (PlayersProxy.Count == 4)
                 {
                     //create team
-                    CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
-                    CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
-                    CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
-                    CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
-                    //log.Debug("restart game");
-                    foreach (var p in CurrentGameState.Players)
+                    CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+                    CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+                    CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+                    CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+                    log.Debug("restart game");
+                    foreach (var p in CurrentRoomState.CurrentGameState.Players)
                     {
                         p.Rank = 0;
                     }
-                    CurrentHandState.Rank = 0;
-                    CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+                    CurrentRoomState.CurrentHandState.Rank = 0;
+                    CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 }
                 UpdateGameState();
                 return true;
@@ -122,7 +110,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     try
                     {
                         ObserversProxy[playerID].NotifyMessage("已在房间里旁观");
-                        string obeserveeId = CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
+                        string obeserveeId = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
                         ObservePlayerById(obeserveeId, playerID);
                     }
                     catch (Exception)
@@ -146,32 +134,32 @@ namespace Duan.Xiugang.Tractor.Objects
                 UpdateGameState();
                 return;
             }
-            //log.Debug(playerId + " quit.");
+            log.Debug(playerId + " quit.");
             PlayersProxy.Remove(playerId);
             for (int i = 0; i < 4; i++)
             {
-                if (CurrentGameState.Players[i] != null)
+                if (CurrentRoomState.CurrentGameState.Players[i] != null)
                 {
-                    CurrentGameState.Players[i].Rank = 0;
-                    CurrentGameState.Players[i].IsReadyToStart = false;
-                    CurrentGameState.Players[i].IsRobot = false;
-                    CurrentGameState.Players[i].Team = GameTeam.None;
-                    foreach (string ob in CurrentGameState.Players[i].Observers)
+                    CurrentRoomState.CurrentGameState.Players[i].Rank = 0;
+                    CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                    CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                    CurrentRoomState.CurrentGameState.Players[i].Team = GameTeam.None;
+                    foreach (string ob in CurrentRoomState.CurrentGameState.Players[i].Observers)
                     {
                         ObserversProxy.Remove(ob);
                         // notify exit to hall
                     }
-                    if (CurrentGameState.Players[i].PlayerId == playerId)
+                    if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerId)
                     {
-                        CurrentGameState.Players[i] = null;
+                        CurrentRoomState.CurrentGameState.Players[i] = null;
                     }
                 }
             }
             UpdateGameState();
 
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
 
             foreach (var player in PlayersProxy.Values)
@@ -182,7 +170,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public void PlayerIsReadyToStart(string playerID)
         {
-            foreach (PlayerEntity p in CurrentGameState.Players)
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p != null && p.PlayerId == playerID)
                 {
@@ -192,7 +180,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             UpdateGameState();
             int isReadyToStart = 0;
-            foreach (PlayerEntity p in CurrentGameState.Players)
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p != null && p.IsReadyToStart)
                 {
@@ -202,16 +190,16 @@ namespace Duan.Xiugang.Tractor.Objects
 
             if (isReadyToStart == 4)
             {
-                switch (CurrentGameState.nextRestartID)
+                switch (CurrentRoomState.CurrentGameState.nextRestartID)
                 {
                     case GameState.RESTART_GAME:
-                        RestartGame(CurrentHandState.Rank);
+                        RestartGame(CurrentRoomState.CurrentHandState.Rank);
                         break;
                     case GameState.RESTART_CURRENT_HAND:
                         RestartCurrentHand();
                         break;
                     case GameState.START_NEXT_HAND:
-                        StartNextHand(CurrentGameState.startNextHandStarter);
+                        StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         break;
                     default:
                         break;
@@ -221,7 +209,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public void PlayerToggleIsRobot(string playerID)
         {
-            foreach (PlayerEntity p in CurrentGameState.Players)
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p != null && p.PlayerId == playerID)
                 {
@@ -235,30 +223,30 @@ namespace Duan.Xiugang.Tractor.Objects
         //player discard last 8 cards
         public void StoreDiscardedCards(int[] cards)
         {
-            this.CurrentHandState.DiscardedCards = cards;
-            this.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8CardsFinished;
+            CurrentRoomState.CurrentHandState.DiscardedCards = cards;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8CardsFinished;
             foreach (var card in cards)
             {
-                this.CurrentHandState.PlayerHoldingCards[this.CurrentHandState.Last8Holder].RemoveCard(card);
+                CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].RemoveCard(card);
             }
-            var logMsg = "player " + this.CurrentHandState.Last8Holder + " discard 8 cards: ";
+            var logMsg = "player " + CurrentRoomState.CurrentHandState.Last8Holder + " discard 8 cards: ";
             foreach (var card in cards)
             {
                 logMsg += card.ToString() + ", ";
             }
-            //log.Debug(logMsg);
+            log.Debug(logMsg);
 
-            //log.Debug(this.CurrentHandState.Last8Holder + "'s cards after discard 8 cards: " + this.CurrentHandState.PlayerHoldingCards[this.CurrentHandState.Last8Holder].ToString());
+            log.Debug(CurrentRoomState.CurrentHandState.Last8Holder + "'s cards after discard 8 cards: " + CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].ToString());
 
             UpdatePlayersCurrentHandState();
 
             //等待5秒，让玩家反底
-            var trump = CurrentHandState.Trump;
+            var trump = CurrentRoomState.CurrentHandState.Trump;
             Thread.Sleep(2000);
-            if (trump == CurrentHandState.Trump) //没有玩家反
+            if (trump == CurrentRoomState.CurrentHandState.Trump) //没有玩家反
             {
-                BeginNewTrick(this.CurrentHandState.Starter);
-                this.CurrentHandState.CurrentHandStep = HandStep.Playing;
+                BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
+                CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Playing;
                 UpdatePlayersCurrentHandState();
             }
         }
@@ -266,23 +254,23 @@ namespace Duan.Xiugang.Tractor.Objects
         //亮主
         public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
         {
-            lock (CurrentHandState)
+            lock (CurrentRoomState.CurrentHandState)
             {
                 //invalid user;
                 if (PlayersProxy[trumpMaker] == null)
                     return;
-                if (trumpExposingPoker > this.CurrentHandState.TrumpExposingPoker)
+                if (trumpExposingPoker > CurrentRoomState.CurrentHandState.TrumpExposingPoker)
                 {
-                    this.CurrentHandState.TrumpExposingPoker = trumpExposingPoker;
-                    this.CurrentHandState.TrumpMaker = trumpMaker;
-                    this.CurrentHandState.Trump = trump;
-                    if (this.CurrentHandState.IsFirstHand && this.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
-                        this.CurrentHandState.Starter = trumpMaker;
+                    CurrentRoomState.CurrentHandState.TrumpExposingPoker = trumpExposingPoker;
+                    CurrentRoomState.CurrentHandState.TrumpMaker = trumpMaker;
+                    CurrentRoomState.CurrentHandState.Trump = trump;
+                    if (CurrentRoomState.CurrentHandState.IsFirstHand && CurrentRoomState.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
+                        CurrentRoomState.CurrentHandState.Starter = trumpMaker;
                     //反底
-                    if (this.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
+                    if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                     {
-                        this.CurrentHandState.Last8Holder = trumpMaker;
-                        this.CurrentHandState.CurrentHandStep = HandStep.Last8CardsRobbed;
+                        CurrentRoomState.CurrentHandState.Last8Holder = trumpMaker;
+                        CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Last8CardsRobbed;
                         DistributeLast8Cards();
                     }
                     UpdatePlayersCurrentHandState();
@@ -295,81 +283,81 @@ namespace Duan.Xiugang.Tractor.Objects
             string lastestPlayer = currentTrickState.LatestPlayerShowedCard();
             if (PlayersProxy[lastestPlayer] != null)
             {
-                this.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
+                CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
                 string cardsString = "";
-                foreach (var card in this.CurrentTrickState.ShowedCards[lastestPlayer])
+                foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
                 {
                     cardsString += card.ToString() + " ";
                 }
-                //log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
+                log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
                 //更新每个用户手中的牌在SERVER
-                foreach (int card in this.CurrentTrickState.ShowedCards[lastestPlayer])
+                foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
                 {
-                    this.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
+                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
                 }
                 //即时更新旁观手牌
                 UpdatePlayersCurrentHandState();
                 //回合结束
-                if (this.CurrentTrickState.AllPlayedShowedCards())
+                if (CurrentRoomState.CurrentTrickState.AllPlayedShowedCards())
                 {
-                    this.CurrentTrickState.Winner = TractorRules.GetWinner(this.CurrentTrickState);
-                    if (!string.IsNullOrEmpty(this.CurrentTrickState.Winner))
+                    CurrentRoomState.CurrentTrickState.Winner = TractorRules.GetWinner(CurrentRoomState.CurrentTrickState);
+                    if (!string.IsNullOrEmpty(CurrentRoomState.CurrentTrickState.Winner))
                     {
                         if (
-                            !this.CurrentGameState.ArePlayersInSameTeam(CurrentHandState.Starter,
-                                                                        this.CurrentTrickState.Winner))
+                            !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                                                        CurrentRoomState.CurrentTrickState.Winner))
                         {
-                            CurrentHandState.Score += currentTrickState.Points;
+                            CurrentRoomState.CurrentHandState.Score += currentTrickState.Points;
                             UpdatePlayersCurrentHandState();
                         }
 
 
-                        //log.Debug("Winner: " + this.CurrentTrickState.Winner);
+                        log.Debug("Winner: " + CurrentRoomState.CurrentTrickState.Winner);
 
                     }
 
                     UpdatePlayerCurrentTrickState();
 
-                    CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
+                    CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
 
                     //开始新的回合
-                    if (this.CurrentHandState.LeftCardsCount > 0)
+                    if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
                     {
-                        BeginNewTrick(this.CurrentTrickState.Winner);
+                        BeginNewTrick(CurrentRoomState.CurrentTrickState.Winner);
                     }
                     else //所有牌都出完了
                     {
                         //扣底
                         CalculatePointsFromDiscarded8Cards();
                         Thread.Sleep(2000);
-                        this.CurrentHandState.CurrentHandStep = HandStep.Ending;
+                        CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
 
-                        foreach (PlayerEntity p in CurrentGameState.Players)
+                        foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
                         {
                             p.IsReadyToStart = false;
                             p.IsRobot = false;
                         }
-                        this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-                        this.CurrentGameState.startNextHandStarter = this.CurrentGameState.NextRank(this.CurrentHandState, this.CurrentTrickState);
-                        CurrentHandState.Starter = this.CurrentGameState.startNextHandStarter.PlayerId;
+                        CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                        CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState.CurrentHandState, CurrentRoomState.CurrentTrickState);
+                        CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
 
                         //检查是否本轮游戏结束
                         StringBuilder sb = null;
-                        if (this.CurrentGameState.startNextHandStarter.Rank >= 13)
+                        if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
                         {
                             sb = new StringBuilder();
-                            foreach (PlayerEntity player in CurrentGameState.Players)
+                            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
                             {
                                 if (player == null) continue;
                                 player.Rank = 0;
-                                if (player.Team == this.CurrentGameState.startNextHandStarter.Team)
+                                if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
                                     sb.Append(string.Format("【{0}】", player.PlayerId));
                             }
-                            CurrentHandState.Rank = 0;
-                            CurrentHandState.Starter = null;
+                            CurrentRoomState.CurrentHandState.Rank = 0;
+                            CurrentRoomState.CurrentHandState.Starter = null;
 
-                            this.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
-                            this.CurrentGameState.startNextHandStarter = null;
+                            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+                            CurrentRoomState.CurrentGameState.startNextHandStarter = null;
                         }
                         UpdatePlayersCurrentHandState();
 
@@ -390,7 +378,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
-            var result = TractorRules.IsLeadingCardsValid(this.CurrentHandState.PlayerHoldingCards, selectedCards,
+            var result = TractorRules.IsLeadingCardsValid(CurrentRoomState.CurrentHandState.PlayerHoldingCards, selectedCards,
                                                           playerId);
             result.PlayerId = playerId;
 
@@ -399,16 +387,16 @@ namespace Duan.Xiugang.Tractor.Objects
                 //甩牌失败，扣分：牌的张数x10
                 int punishScore = selectedCards.Count * 10;
                 if (
-                    !this.CurrentGameState.ArePlayersInSameTeam(CurrentHandState.Starter,
+                    !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
                                                                 playerId))
                 {
-                    CurrentHandState.Score -= punishScore;
+                    CurrentRoomState.CurrentHandState.Score -= punishScore;
                 }
                 else
                 {
-                    CurrentHandState.Score += punishScore;
+                    CurrentRoomState.CurrentHandState.Score += punishScore;
                 }
-                //log.Debug("tried to dump cards and failed, punish score: " + punishScore);
+                log.Debug("tried to dump cards and failed, punish score: " + punishScore);
                 foreach (var player in PlayersProxy)
                 {
                     if (player.Key != playerId)
@@ -422,7 +410,7 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 cardString += card.ToString() + " ";
             }
-            //log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
+            log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
             return result;
         }
 
@@ -435,7 +423,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public void TeamUp()
         {
             bool isValid = true;
-            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || player.Team == GameTeam.None)
                 {
@@ -452,24 +440,24 @@ namespace Duan.Xiugang.Tractor.Objects
 
             //create team randomly
             ShuffleCurrentGameStatePlayers();
-            CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
-            CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
-            CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
-            CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
-            //log.Debug("restart game");
-            foreach (var p in CurrentGameState.Players)
+            CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+            CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+            log.Debug("restart game");
+            foreach (var p in CurrentRoomState.CurrentGameState.Players)
             {
                 p.Rank = 0;
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.Rank = 0;
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Rank = 0;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdateGameState();
             UpdatePlayersCurrentHandState();
-            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
             PublishMessage("随机组队成功！请点击就绪开始游戏");
         }
@@ -478,7 +466,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public void MoveToNextPosition(string playerId)
         {
             bool isValid = true;
-            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || player.Team == GameTeam.None)
                 {
@@ -496,7 +484,7 @@ namespace Duan.Xiugang.Tractor.Objects
             int meIndex = -1;
             for (int i = 0; i < 4; i++)
             {
-                if (CurrentGameState.Players[i].PlayerId == playerId)
+                if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerId)
                 {
                     meIndex = i;
                     break;
@@ -504,31 +492,31 @@ namespace Duan.Xiugang.Tractor.Objects
             }
 
             int nextIndex = (meIndex + 1) % 4;
-            string nextPlayerId = CurrentGameState.Players[nextIndex].PlayerId;
-            PlayerEntity temp = CurrentGameState.Players[nextIndex];
-            CurrentGameState.Players[nextIndex] = CurrentGameState.Players[meIndex];
-            CurrentGameState.Players[meIndex] = temp;
+            string nextPlayerId = CurrentRoomState.CurrentGameState.Players[nextIndex].PlayerId;
+            PlayerEntity temp = CurrentRoomState.CurrentGameState.Players[nextIndex];
+            CurrentRoomState.CurrentGameState.Players[nextIndex] = CurrentRoomState.CurrentGameState.Players[meIndex];
+            CurrentRoomState.CurrentGameState.Players[meIndex] = temp;
 
-            CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
-            CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
-            CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
-            CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+            CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+            CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
 
-            //log.Debug("restart game");
-            foreach (var p in CurrentGameState.Players)
+            log.Debug("restart game");
+            foreach (var p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p == null) continue;
                 p.Rank = 0;
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.Rank = 0;
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Rank = 0;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdateGameState();
             UpdatePlayersCurrentHandState();
-            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
             PublishMessage(string.Format("玩家【{0}】和下家【{1}】互换座位成功！请点击就绪开始游戏", playerId, nextPlayerId));
         }
@@ -536,7 +524,7 @@ namespace Duan.Xiugang.Tractor.Objects
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
-            PlayerEntity player = this.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerId);
+            PlayerEntity player = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerId);
             List<string> badObs = new List<string>();
             foreach (string ob in player.Observers)
             {
@@ -556,7 +544,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public void RestoreGameStateFromFile()
         {
             bool isValid = true;
-            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || player.Team == GameTeam.None)
                 {
@@ -582,7 +570,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
                 for (int i = 0; i < 4; i++)
                 {
-                    this.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
+                    CurrentRoomState.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
                 }
 
                 string fileNameHandState = string.Format("{0}\\backup_HandState.xml", this.LogsByRoomFolder);
@@ -606,12 +594,12 @@ namespace Duan.Xiugang.Tractor.Objects
                     return;
                 }
 
-                PlayerEntity thisStarter = this.CurrentGameState.Players[lastStarterIndex];
+                PlayerEntity thisStarter = CurrentRoomState.CurrentGameState.Players[lastStarterIndex];
 
-                this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-                this.CurrentHandState.Starter = thisStarter.PlayerId;
-                this.CurrentHandState.Rank = thisStarter.Rank;
-                this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+                CurrentRoomState.CurrentHandState.Starter = thisStarter.PlayerId;
+                CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
+                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
                 if (stream != null)
                 {
@@ -622,13 +610,13 @@ namespace Duan.Xiugang.Tractor.Objects
                     stream2.Close();
                 }
 
-                this.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-                this.CurrentGameState.startNextHandStarter = thisStarter;
+                CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
 
                 for (int i = 0; i < 4; i++)
                 {
-                    this.CurrentGameState.Players[i].IsReadyToStart = false;
-                    this.CurrentGameState.Players[i].IsRobot = false;
+                    CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                    CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
                 }
 
                 UpdateGameState();
@@ -657,7 +645,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public void SetBeginRank(string beginRankString)
         {
             bool isValid = true;
-            foreach (PlayerEntity player in this.CurrentGameState.Players)
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || player.Team == GameTeam.None)
                 {
@@ -698,19 +686,19 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             for (int i = 0; i < 4; i++)
             {
-                this.CurrentGameState.Players[i].Rank = beginRank;
-                this.CurrentGameState.Players[i].IsReadyToStart = false;
-                this.CurrentGameState.Players[i].IsRobot = false;
+                CurrentRoomState.CurrentGameState.Players[i].Rank = beginRank;
+                CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
             }
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.Rank = beginRank;
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Rank = beginRank;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
 
             UpdateGameState();
             UpdatePlayersCurrentHandState();
 
-            CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
             PublishMessage(string.Format("设置从{0}打起成功！请点击就绪开始游戏", beginRankString));
         }
@@ -718,7 +706,7 @@ namespace Duan.Xiugang.Tractor.Objects
         //旁观玩家 by id
         public void ObservePlayerById(string playerId, string observerId)
         {
-            foreach (PlayerEntity player in CurrentGameState.Players)
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
                 if (player != null)
                 {
@@ -741,33 +729,33 @@ namespace Duan.Xiugang.Tractor.Objects
         #region Host Action
         public void RestartGame(int curRank)
         {
-            //log.Debug("restart game with current set rank");
+            log.Debug("restart game with current set rank");
 
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.Rank = curRank;
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
-            CurrentHandState.IsFirstHand = true;
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Rank = curRank;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
-            var currentHandId = this.CurrentHandState.Id;
+            var currentHandId = CurrentRoomState.CurrentHandState.Id;
             DistributeCards();
-            if (this.CurrentHandState.Id != currentHandId)
+            if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
             // reset timer everytime Trump is modified
-            var oldTrump = this.CurrentHandState.Trump;
+            var oldTrump = CurrentRoomState.CurrentHandState.Trump;
             while (true)
             {
                 PublishStartTimer(5);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(5000 + 1000);
-                if (this.CurrentHandState.Trump == oldTrump)
+                if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
                 {
                     break;
                 }
-                oldTrump = this.CurrentHandState.Trump;
+                oldTrump = CurrentRoomState.CurrentHandState.Trump;
             }
 
-            if (this.CurrentHandState.Trump != Suit.None)
+            if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
                 DistributeLast8Cards();
             else if (PlayersProxy.Count == 4)
                 RestartGame(curRank);
@@ -775,67 +763,67 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public void RestartCurrentHand()
         {
-            //log.Debug("restart current hand, starter: " + this.CurrentHandState.Starter + " Rank: " + this.CurrentHandState.Rank.ToString());
-            StartNextHand(this.CurrentGameState.Players.Single(p => p != null && p.PlayerId == this.CurrentHandState.Starter));
+            log.Debug("restart current hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
+            StartNextHand(CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Starter));
         }
 
         public void StartNextHand(PlayerEntity nextStarter)
         {
             UpdateGameState();
-            this.CurrentHandState = new CurrentHandState(this.CurrentGameState);
-            this.CurrentHandState.Starter = nextStarter.PlayerId;
-            this.CurrentHandState.Rank = nextStarter.Rank;
-            this.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Starter = nextStarter.PlayerId;
+            CurrentRoomState.CurrentHandState.Rank = nextStarter.Rank;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
-            //log.Debug("start next hand, starter: " + this.CurrentHandState.Starter + " Rank: " + this.CurrentHandState.Rank.ToString());
+            log.Debug("start next hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
 
             UpdatePlayersCurrentHandState();
 
-            var currentHandId = this.CurrentHandState.Id;
+            var currentHandId = CurrentRoomState.CurrentHandState.Id;
 
             DistributeCards();
-            if (this.CurrentHandState.Id != currentHandId)
+            if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
             // reset timer everytime Trump is modified
-            var oldTrump = this.CurrentHandState.Trump;
+            var oldTrump = CurrentRoomState.CurrentHandState.Trump;
             while (true)
             {
                 PublishStartTimer(5);
                 Thread.Sleep(5000 + 1000);
-                if (this.CurrentHandState.Trump == oldTrump)
+                if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
                 {
                     break;
                 }
-                oldTrump = this.CurrentHandState.Trump;
+                oldTrump = CurrentRoomState.CurrentHandState.Trump;
             }
-            if (this.CurrentHandState.Trump != Suit.None)
+            if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
                 DistributeLast8Cards();
 
             else if (PlayersProxy.Count == 4)
             {
                 //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
-                var nextStarter2 = CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentHandState.Starter);
-                this.CurrentHandState.Starter = nextStarter2.PlayerId;
-                this.CurrentHandState.Rank = nextStarter2.Rank;
-                //log.Debug("starter team fail to make trump, next starter: " + this.CurrentHandState.Starter + " Rank: " + this.CurrentHandState.Rank.ToString());
+                var nextStarter2 = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentRoomState.CurrentHandState.Starter);
+                CurrentRoomState.CurrentHandState.Starter = nextStarter2.PlayerId;
+                CurrentRoomState.CurrentHandState.Rank = nextStarter2.Rank;
+                log.Debug("starter team fail to make trump, next starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
 
                 UpdatePlayersCurrentHandState();
 
                 //10 seconds to make trump
                 // reset timer everytime Trump is modified
-                var oldTrump2 = this.CurrentHandState.Trump;
+                var oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
                 while (true)
                 {
                     PublishStartTimer(5);
                     Thread.Sleep(5000 + 1000);
-                    if (this.CurrentHandState.Trump == oldTrump2)
+                    if (CurrentRoomState.CurrentHandState.Trump == oldTrump2)
                     {
                         break;
                     }
-                    oldTrump2 = this.CurrentHandState.Trump;
+                    oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
                 }
-                if (this.CurrentHandState.Trump != Suit.None)
+                if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
                     DistributeLast8Cards();
                 else if (PlayersProxy.Count == 4)
                 {
@@ -848,11 +836,13 @@ namespace Duan.Xiugang.Tractor.Objects
         //发牌
         public void DistributeCards()
         {
-            CurrentHandState.CurrentHandStep = HandStep.DistributingCards;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCards;
             UpdatePlayersCurrentHandState();
-            string currentHandId = this.CurrentHandState.Id;
-            this.CardsShoe.Shuffle();
-            int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count);
+            string currentHandId = CurrentRoomState.CurrentHandState.Id;
+
+            ShuffleCards(this.CardsShoe);
+            //this.CardsShoe.Shuffle();
+            int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             int j = 0;
 
             var LogList = new Dictionary<string, StringBuilder>();
@@ -866,11 +856,11 @@ namespace Duan.Xiugang.Tractor.Objects
                 foreach (var player in PlayersProxy)
                 {
                     var index = j++;
-                    if (this.CurrentHandState.Id == currentHandId)
+                    if (CurrentRoomState.CurrentHandState.Id == currentHandId)
                     {
                         player.Value.GetDistributedCard(CardsShoe.Cards[index]);
                         //旁观：发牌
-                        PlayerEntity pe = this.CurrentGameState.Players.Single(p => p != null && p.PlayerId == player.Key);
+                        PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == player.Key);
                         List<string> badObs = new List<string>();
                         foreach (string ob in pe.Observers)
                         {
@@ -889,23 +879,23 @@ namespace Duan.Xiugang.Tractor.Objects
                     else
                         return;
 
-                    this.CurrentHandState.PlayerHoldingCards[player.Key].AddCard(CardsShoe.Cards[index]);
+                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[player.Key].AddCard(CardsShoe.Cards[index]);
                 }
                 Thread.Sleep(500);
             }
 
-            //log.Debug("distribute cards to each player: ");
+            log.Debug("distribute cards to each player: ");
             foreach (var logItem in LogList)
             {
-                //log.Debug(logItem.Key + ": " + logItem.Value.ToString());
+                log.Debug(logItem.Key + ": " + logItem.Value.ToString());
             }
 
-            foreach (var keyvalue in this.CurrentHandState.PlayerHoldingCards)
+            foreach (var keyvalue in CurrentRoomState.CurrentHandState.PlayerHoldingCards)
             {
-                //log.Debug(keyvalue.Key + "'s cards:  " + keyvalue.Value.ToString());
+                log.Debug(keyvalue.Key + "'s cards:  " + keyvalue.Value.ToString());
             }
 
-            CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
             UpdatePlayersCurrentHandState();
         }
 
@@ -913,23 +903,23 @@ namespace Duan.Xiugang.Tractor.Objects
         public void DistributeLast8Cards()
         {
             var last8Cards = new int[8];
-            if (CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
+            if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
             {
                 for (int i = 0; i < 8; i++)
                 {
                     last8Cards[i] = CardsShoe.Cards[CardsShoe.Cards.Length - i - 1];
                 }
             }
-            else if (CurrentHandState.CurrentHandStep == HandStep.Last8CardsRobbed)
+            else if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Last8CardsRobbed)
             {
-                last8Cards = CurrentHandState.DiscardedCards;
+                last8Cards = CurrentRoomState.CurrentHandState.DiscardedCards;
             }
 
-            CurrentHandState.CurrentHandStep = HandStep.DistributingLast8Cards;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingLast8Cards;
             UpdatePlayersCurrentHandState();
 
 
-            IPlayer last8Holder = PlayersProxy.SingleOrDefault(p => p.Key == CurrentHandState.Last8Holder).Value;
+            IPlayer last8Holder = PlayersProxy.SingleOrDefault(p => p.Key == CurrentRoomState.CurrentHandState.Last8Holder).Value;
             if (last8Holder != null)
             {
                 for (int i = 0; i < 8; i++)
@@ -937,7 +927,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     var card = last8Cards[i];
                     last8Holder.GetDistributedCard(card);
                     //旁观：发牌
-                    PlayerEntity pe = this.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentHandState.Last8Holder);
+                    PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Last8Holder);
                     List<string> badObs = new List<string>();
                     foreach (string ob in pe.Observers)
                     {
@@ -951,22 +941,22 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                     RemoveObserver(badObs);
-                    this.CurrentHandState.PlayerHoldingCards[CurrentHandState.Last8Holder].AddCard(card);
+                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].AddCard(card);
                 }
             }
 
-            var logMsg = "distribute last 8 cards to " + CurrentHandState.Last8Holder + ", cards: ";
+            var logMsg = "distribute last 8 cards to " + CurrentRoomState.CurrentHandState.Last8Holder + ", cards: ";
             foreach (var card in last8Cards)
             {
                 logMsg += card.ToString() + ", ";
             }
-            //log.Debug(logMsg);
+            log.Debug(logMsg);
 
-            CurrentHandState.CurrentHandStep = HandStep.DistributingLast8CardsFinished;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingLast8CardsFinished;
             UpdatePlayersCurrentHandState();
 
             Thread.Sleep(100);
-            CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8Cards;
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8Cards;
             UpdatePlayersCurrentHandState();
         }
 
@@ -974,37 +964,37 @@ namespace Duan.Xiugang.Tractor.Objects
         private void BeginNewTrick(string leader)
         {
             List<String> playerIDList = new List<string>();
-            foreach (PlayerEntity p in this.CurrentGameState.Players)
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p == null) continue;
                 playerIDList.Add(p.PlayerId);
             }
-            this.CurrentTrickState = new CurrentTrickState(playerIDList);
-            this.CurrentTrickState.Learder = leader;
-            this.CurrentTrickState.Trump = CurrentHandState.Trump;
-            this.CurrentTrickState.Rank = CurrentHandState.Rank;
+            CurrentRoomState.CurrentTrickState = new CurrentTrickState(playerIDList);
+            CurrentRoomState.CurrentTrickState.Learder = leader;
+            CurrentRoomState.CurrentTrickState.Trump = CurrentRoomState.CurrentHandState.Trump;
+            CurrentRoomState.CurrentTrickState.Rank = CurrentRoomState.CurrentHandState.Rank;
             UpdatePlayerCurrentTrickState();
         }
 
         //计算被扣底牌的分数，然后加到CurrentHandState.Score
         private void CalculatePointsFromDiscarded8Cards()
         {
-            if (!this.CurrentTrickState.AllPlayedShowedCards())
+            if (!CurrentRoomState.CurrentTrickState.AllPlayedShowedCards())
                 return;
-            if (this.CurrentHandState.LeftCardsCount > 0)
+            if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
                 return;
 
-            var cards = this.CurrentTrickState.ShowedCards[this.CurrentTrickState.Winner];
-            var cardscp = new CurrentPoker(cards, (int)this.CurrentHandState.Trump,
-                                           this.CurrentHandState.Rank);
+            var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Winner];
+            var cardscp = new CurrentPoker(cards, (int)CurrentRoomState.CurrentHandState.Trump,
+                                           CurrentRoomState.CurrentHandState.Rank);
 
             //最后一把牌的赢家不跟庄家一伙
-            if (!this.CurrentGameState.ArePlayersInSameTeam(this.CurrentHandState.Starter,
-                                                    this.CurrentTrickState.Winner))
+            if (!CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                                    CurrentRoomState.CurrentTrickState.Winner))
             {
 
                 var points = 0;
-                foreach (var card in this.CurrentHandState.DiscardedCards)
+                foreach (var card in CurrentRoomState.CurrentHandState.DiscardedCards)
                 {
                     if (card % 13 == 3)
                         points += 5;
@@ -1027,7 +1017,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     points *= 2;
                 }
 
-                this.CurrentHandState.Score += points;
+                CurrentRoomState.CurrentHandState.Score += points;
 
 
             }
@@ -1036,7 +1026,7 @@ namespace Duan.Xiugang.Tractor.Objects
         //保存牌局
         private void SaveGameStateToFile()
         {
-            if (string.IsNullOrEmpty(this.CurrentHandState.Starter)) return;
+            if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter)) return;
             Stream stream = null;
             Stream stream2 = null;
             try
@@ -1044,12 +1034,12 @@ namespace Duan.Xiugang.Tractor.Objects
                 string fileNameGamestate = string.Format("{0}\\backup_gamestate.xml", this.LogsByRoomFolder);
                 stream = new FileStream(fileNameGamestate, FileMode.Create, FileAccess.Write, FileShare.None);
                 DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
-                ser.WriteObject(stream, this.CurrentGameState);
+                ser.WriteObject(stream, CurrentRoomState.CurrentGameState);
 
                 string fileNameHandState = string.Format("{0}\\backup_HandState.xml", this.LogsByRoomFolder);
                 stream2 = new FileStream(fileNameHandState, FileMode.Create, FileAccess.Write, FileShare.None);
                 DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
-                ser2.WriteObject(stream2, this.CurrentHandState);
+                ser2.WriteObject(stream2, CurrentRoomState.CurrentHandState);
             }
             catch (Exception ex)
             {
@@ -1074,14 +1064,14 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             foreach (IPlayer player in PlayersProxy.Values)
             {
-                player.NotifyGameState(this.CurrentGameState);
+                player.NotifyGameState(CurrentRoomState.CurrentGameState);
             }
             List<string> badObs = new List<string>();
             foreach (var player in ObserversProxy)
             {
                 try
                 {
-                    player.Value.NotifyGameState(this.CurrentGameState);
+                    player.Value.NotifyGameState(CurrentRoomState.CurrentGameState);
                 }
                 catch (Exception)
                 {
@@ -1095,14 +1085,14 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             foreach (IPlayer player in PlayersProxy.Values)
             {
-                player.NotifyCurrentHandState(this.CurrentHandState);
+                player.NotifyCurrentHandState(CurrentRoomState.CurrentHandState);
             }
             List<string> badObs = new List<string>();
             foreach (var player in ObserversProxy)
             {
                 try
                 {
-                    player.Value.NotifyCurrentHandState(this.CurrentHandState);
+                    player.Value.NotifyCurrentHandState(CurrentRoomState.CurrentHandState);
                 }
                 catch (Exception)
                 {
@@ -1116,14 +1106,14 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             foreach (IPlayer player in PlayersProxy.Values)
             {
-                player.NotifyCurrentTrickState(this.CurrentTrickState);
+                player.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
             }
             List<string> badObs = new List<string>();
             foreach (var player in ObserversProxy)
             {
                 try
                 {
-                    player.Value.NotifyCurrentTrickState(this.CurrentTrickState);
+                    player.Value.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
                 }
                 catch (Exception)
                 {
@@ -1206,8 +1196,8 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             catch (Exception ex)
             {
-                //log.Debug(string.Format("failed update clientinfo for {0}-{1}-{2}", clientIP, playerID, isCheating));
-                //log.Debug(string.Format("exception: {0}", ex.Message));
+                log.Debug(string.Format("failed update clientinfo for {0}-{1}-{2}", clientIP, playerID, isCheating));
+                log.Debug(string.Format("exception: {0}", ex.Message));
             }
             finally
             {
@@ -1221,17 +1211,17 @@ namespace Duan.Xiugang.Tractor.Objects
         public void ShuffleCurrentGameStatePlayers()
         {
             List<PlayerEntity> shuffledPlayers = new List<PlayerEntity>();
-            int N = CurrentGameState.Players.Count;
+            int N = CurrentRoomState.CurrentGameState.Players.Count;
             for (int i = N; i >= 1; i--)
             {
                 int r = new Random().Next(i);
-                PlayerEntity curPlayer = CurrentGameState.Players[r];
+                PlayerEntity curPlayer = CurrentRoomState.CurrentGameState.Players[r];
                 shuffledPlayers.Add(curPlayer);
-                CurrentGameState.Players.Remove(curPlayer);
+                CurrentRoomState.CurrentGameState.Players.Remove(curPlayer);
             }
             for (int i = 0; i < N; i++)
             {
-                CurrentGameState.Players.Add(shuffledPlayers[i]);
+                CurrentRoomState.CurrentGameState.Players.Add(shuffledPlayers[i]);
             }
             shuffledPlayers.Clear();
         }
@@ -1240,9 +1230,9 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             foreach (string playerId in badObs)
             {
-                //log.Debug(playerId + " quit as observer.");
+                log.Debug(playerId + " quit as observer.");
                 ObserversProxy.Remove(playerId);
-                foreach (PlayerEntity p in CurrentGameState.Players)
+                foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
                 {
                     if (p == null) continue;
                     if (p.Observers.Contains(playerId))
@@ -1252,6 +1242,27 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
                 }
             }
+        }
+
+        private void ShuffleCards(CardsShoe cardShoe)
+        {
+            Random rand = new Random();
+            int N = cardShoe.Cards.Length;
+            log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
+            for (int i = 0; i < N; i++)
+            {
+                int r = rand.Next(i, N);
+                Swap(cardShoe.Cards, i, r);
+            }
+            log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
+        }
+
+        private void Swap(int[] Cards, int i, int r)
+        {
+            log.Debug(string.Format("swapping: {0} and {1}", i, r));
+            int temp = Cards[r];
+            Cards[r] = Cards[i];
+            Cards[i] = temp;
         }
     }
 }

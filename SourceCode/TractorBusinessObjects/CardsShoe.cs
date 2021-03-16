@@ -38,12 +38,25 @@ namespace Duan.Xiugang.Tractor.Objects
         }
 
         //Knuth shuffle
-        public void Shuffle()
+        public void KnuthShuffle()
         {
+            Random rand = new Random();
             int N = Cards.Length;
             for (int i = 0; i < N; i++)
             {
-                int r = new Random().Next(i, N);
+                int r = rand.Next(i + 1);
+                Swap(i, r);
+            }
+        }
+
+        //Better
+        public void Shuffle()
+        {
+            Random rand = new Random();
+            int N = Cards.Length;
+            for (int i = 0; i < N; i++)
+            {
+                int r = rand.Next(i, N);
                 Swap(i, r);
             }
         }
