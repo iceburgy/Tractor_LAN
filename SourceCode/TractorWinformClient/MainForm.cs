@@ -989,6 +989,8 @@ namespace Duan.Xiugang.Tractor
             this.lblNorthStarter.Text = "";
             this.lblWestStarter.Text = "";
             this.lblSouthStarter.Text = "";
+            this.ToolStripMenuItemInRoom.Visible = false;
+            this.ToolStripMenuItemObserve.Visible = false;
 
             Graphics g = Graphics.FromImage(bmp);
             drawingFormHelper.DrawBackground(g);
