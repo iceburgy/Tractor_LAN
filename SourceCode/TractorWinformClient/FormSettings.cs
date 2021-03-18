@@ -19,16 +19,15 @@ namespace Duan.Xiugang.Tractor
     {
         public event SettingsUpdatedEventHandler SettingsUpdatedEvent;
         public static string regexHostAndPort = @"net.tcp://(?<host>.*):(?<port>\d*)/";
-        AppSettingsReader myreader;
+        static AppSettingsReader myreader = new AppSettingsReader();
 
-        private string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
-        public string KeyNickName = "nickName";
-        public string KeyUpdateOnLoad = "updateOnLoad";
+        private static string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
+        public static string KeyNickName = "nickName";
+        public static string KeyUpdateOnLoad = "updateOnLoad";
 
         public FormSettings()
         {
             InitializeComponent();
-            myreader = new AppSettingsReader();
             string hostName = GetHostAndPortFromConfig();
 
             this.tbxHostName.Text = hostName;
@@ -36,7 +35,7 @@ namespace Duan.Xiugang.Tractor
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
         }
 
-        private string GetHostAndPortFromConfig()
+        public static string GetHostAndPortFromConfig()
         {
             string curHostNameRaw = GetHostName();
 
@@ -46,7 +45,7 @@ namespace Duan.Xiugang.Tractor
             return m.Result("${host}:${port}");
         }
 
-        public string GetHostName()
+        public static string GetHostName()
         {
             return loadConfigDocument().SelectSingleNode(NodePathEndpoint).Attributes["address"].Value;
         }
@@ -76,7 +75,7 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        public XmlDocument loadConfigDocument()
+        public static XmlDocument loadConfigDocument()
         {
             XmlDocument doc = null;
             try
@@ -91,30 +90,30 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private string getConfigFilePath()
+        private static string getConfigFilePath()
         {
             return Assembly.GetExecutingAssembly().Location + ".config";
         }
 
-        public string GetSettingString(string key)
+        public static string GetSettingString(string key)
         {
             try
             {
                 return (String)myreader.GetValue(key, typeof(String));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return "";
             }
         }
 
-        public bool GetSettingBool(string key)
+        public static bool GetSettingBool(string key)
         {
             try
             {
                 return (bool)myreader.GetValue(key, typeof(Boolean));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -130,7 +129,6 @@ namespace Duan.Xiugang.Tractor
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            string oldHostName = GetHostAndPortFromConfig();
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());

@@ -117,19 +117,13 @@ namespace Duan.Xiugang.Tractor
             bmp = new Bitmap(ClientRectangle.Width, ClientRectangle.Height);
             ThisPlayer = new TractorPlayer();
 
-            var myreader = new AppSettingsReader();
-            try
-            {
-                var nickName = (String)myreader.GetValue("nickName", typeof(String));
-                ThisPlayer.PlayerId = nickName;
-                ThisPlayer.MyOwnId = nickName;
-                updateOnLoad = (bool)myreader.GetValue("updateOnLoad", typeof(Boolean));
-            }
-            catch (Exception ex)
-            {
-                
-            }
-
+            //加载当前设置
+            var nickName = FormSettings.GetSettingString(FormSettings.KeyNickName);
+            this.lblSouthNickName.Text = nickName;
+            ThisPlayer.PlayerId = nickName;
+            ThisPlayer.MyOwnId = nickName;
+            updateOnLoad = FormSettings.GetSettingBool("updateOnLoad");
+            
             ThisPlayer.PlayerOnGetCard += PlayerGetCard;
             ThisPlayer.GameOnStarted += StartGame;
             ThisPlayer.TrumpChanged += ThisPlayer_TrumpUpdated;
@@ -843,6 +837,7 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_NewPlayerJoined()
         {
             this.pnlGameRooms.Hide();
+            this.ToolStripMenuItemEnterRoom0.Enabled = false;
             if (!ThisPlayer.isObserver)
             {
                 this.btnReady.Show();
@@ -975,6 +970,7 @@ namespace Duan.Xiugang.Tractor
 
             CreateRoomControls(roomStates, names);
             this.pnlGameRooms.Show();
+            this.ToolStripMenuItemEnterRoom0.Enabled = true;
         }
 
         private void ClearRoom()
@@ -988,7 +984,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastNickName.Text = "";
             this.lblNorthNickName.Text = "";
             this.lblWestNickName.Text = "";
-            this.lblSouthNickName.Text = "";
+            this.lblSouthNickName.Text = ThisPlayer.MyOwnId;
             this.lblEastStarter.Text = "";
             this.lblNorthStarter.Text = "";
             this.lblWestStarter.Text = "";
@@ -1448,10 +1444,11 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n查看上轮出牌：右键单击空白处";
             userManual += "\n查看得分牌：点得分图标";
             userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
-            userManual += "\n进入大厅：F5";
-            userManual += "\n就绪：F1";
-            userManual += "\n托管：F2";
-            userManual += "\n旁观下家：F3（仅限旁观模式下）";
+            userManual += "\n进入大厅：F1";
+            userManual += "\n进入第一个房间：F2";
+            userManual += "\n就绪：F3";
+            userManual += "\n托管：F4";
+            userManual += "\n旁观下家：F5（仅限旁观模式下）";
 
             MessageBox.Show(userManual);
         }
@@ -1470,6 +1467,19 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
             {
                 drawingFormHelper.DrawDiscardedCards();
+            }
+        }
+
+        private void ToolStripMenuItemEnterRoom0_Click(object sender, EventArgs e)
+        {
+            Control[] controls = this.pnlGameRooms.Controls.Find("btnEnterRoom_0", false);
+            if (controls != null && controls.Length > 0)
+            {
+                Button enterRoom0 = ((Button)controls[0]);
+                if (enterRoom0.Visible)
+                {
+                    enterRoom0.PerformClick();
+                }
             }
         }
     }
