@@ -181,6 +181,20 @@ namespace TractorServer
             return result.Data;
         }
 
+        //尝试检测服务器是否在线
+        public IAsyncResult BeginPingHost(string playerID, AsyncCallback callback, object state)
+        {
+            string result = string.Format("player {0} pinged host.", playerID);
+            log.Debug(result);
+            return new CompletedAsyncResult<string>(result);
+        }
+        public string EndPingHost(IAsyncResult ar)
+        {
+            CompletedAsyncResult<string> result = ar as CompletedAsyncResult<string>;
+            log.Debug(string.Format("EndServiceAsyncMethod called with: \"{0}\"", result.Data));
+            return result.Data;
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
             string sessionID = GetSessionID();

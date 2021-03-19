@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using Duan.Xiugang.Tractor.Objects;
 using System.Collections;
+using System.Threading;
 
 
 namespace Duan.Xiugang.Tractor.Player
@@ -13,7 +14,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
     public delegate void PlayersTeamMadeEventHandler();
     public delegate void GameStartedEventHandler();
-
+    public delegate void HostIsOnlineEventHandler(bool success);
 
     public delegate void GetCardEventHandler(int cardNumber);    
     public delegate void TrumpChangedEventHandler(CurrentHandState currentHandState);
@@ -61,7 +62,8 @@ namespace Duan.Xiugang.Tractor.Player
         public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
         public event PlayersTeamMadeEventHandler PlayersTeamMade;
         public event GameStartedEventHandler GameOnStarted;
-
+        public event HostIsOnlineEventHandler HostIsOnline;
+        
         public event GetCardEventHandler PlayerOnGetCard;        
         public event TrumpChangedEventHandler TrumpChanged;
         public event DistributingCardsFinishedEventHandler AllCardsGot;
@@ -200,6 +202,25 @@ namespace Duan.Xiugang.Tractor.Player
         {
             //string result = _tractorHost.EndPlayerQuit(ar);
             //Console.WriteLine("Result: {0}", result);
+        }
+
+        public void PingHost()
+        {
+            _tractorHost.BeginPingHost(this.MyOwnId, PingHostCallback, _tractorHost);
+        }
+
+        public void PingHostCallback(IAsyncResult ar)
+        {
+            bool success = false;
+            try
+            {
+                string result = _tractorHost.EndPingHost(ar);
+                success = !string.IsNullOrEmpty(result);
+                Thread.Sleep(1000);
+            }
+            catch (Exception) { }
+            if (HostIsOnline != null)
+                HostIsOnline(success);
         }
 
         public void ShowCards(List<int> cards)

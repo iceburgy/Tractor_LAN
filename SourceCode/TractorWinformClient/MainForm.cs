@@ -97,6 +97,8 @@ namespace Duan.Xiugang.Tractor
 
         #endregion // 变量声明
 
+        private readonly string roomControlPrefix = "roomControl";
+
         internal MainForm()
         {
             InitializeComponent();
@@ -123,9 +125,17 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.PlayerId = nickName;
             ThisPlayer.MyOwnId = nickName;
             updateOnLoad = FormSettings.GetSettingBool("updateOnLoad");
+
+            //ping host
+            this.progressBarPingHost.Visible = true;
+            this.tmrGeneral.Start();
+            this.lblSouthStarter.Text = "Checking host...";
+            ThisPlayer.PingHost();
             
             ThisPlayer.PlayerOnGetCard += PlayerGetCard;
             ThisPlayer.GameOnStarted += StartGame;
+            ThisPlayer.HostIsOnline += ThisPlayer_HostIsOnlineEventHandler;
+            
             ThisPlayer.TrumpChanged += ThisPlayer_TrumpUpdated;
             ThisPlayer.AllCardsGot += ResortMyCards;
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
@@ -836,8 +846,13 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
-            this.pnlGameRooms.Hide();
-            this.ToolStripMenuItemEnterRoom0.Enabled = false;
+            if (this.ToolStripMenuItemEnterRoom0.Enabled)
+            {
+                this.ToolStripMenuItemEnterRoom0.Enabled = false;
+                List<Control> roomCtrls = new List<Control>();
+                HideRoomControls(roomCtrls);
+                init();
+            }
             if (!ThisPlayer.isObserver)
             {
                 this.btnReady.Show();
@@ -969,7 +984,6 @@ namespace Duan.Xiugang.Tractor
             ClearRoom();
 
             CreateRoomControls(roomStates, names);
-            this.pnlGameRooms.Show();
             this.ToolStripMenuItemEnterRoom0.Enabled = true;
         }
 
@@ -1000,60 +1014,60 @@ namespace Duan.Xiugang.Tractor
 
         private void CreateRoomControls(List<RoomState> roomStates, List<string> names)
         {
-            this.pnlGameRooms.Controls.Clear();
-
-            int offsetX = 0;
+            int offsetX = 50;
             int offsetXDelta = 200;
+            int offsetY = 100;
+            int offsetYLower = offsetY + 100;
 
             Label labelOnline = new Label();
             labelOnline.AutoSize = true;
             labelOnline.BackColor = System.Drawing.Color.Transparent;
             labelOnline.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             labelOnline.ForeColor = System.Drawing.SystemColors.Control;
-            labelOnline.Location = new System.Drawing.Point(offsetX, 0);
-            labelOnline.Name = "lblOnline";
+            labelOnline.Location = new System.Drawing.Point(offsetX, offsetY);
+            labelOnline.Name = string.Format("{0}_Online", roomControlPrefix);
             labelOnline.Size = new System.Drawing.Size(0, 37);
             labelOnline.Text = "在线";
-            this.pnlGameRooms.Controls.Add(labelOnline);
+            this.Controls.Add(labelOnline);
 
             Label labelNames = new Label();
             labelNames.AutoSize = true;
             labelNames.BackColor = System.Drawing.Color.Transparent;
             labelNames.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             labelNames.ForeColor = System.Drawing.SystemColors.Control;
-            labelNames.Location = new System.Drawing.Point(offsetX, 100);
-            labelNames.Name = "lblNames";
+            labelNames.Location = new System.Drawing.Point(offsetX, offsetYLower);
+            labelNames.Name = string.Format("{0}_Names", roomControlPrefix);
             labelNames.Size = new System.Drawing.Size(0, 37);
             for (int i = 0; i < names.Count; i++)
             {
                 if (i > 0) labelNames.Text += "\n";
                 labelNames.Text += names[i];
             }
-            this.pnlGameRooms.Controls.Add(labelNames);
+            this.Controls.Add(labelNames);
 
             offsetX += offsetXDelta;
 
             foreach (RoomState room in roomStates)
             {
                 Button btnEnterRoom = new Button();
-                btnEnterRoom.Location = new System.Drawing.Point(offsetX, 0);
+                btnEnterRoom.Location = new System.Drawing.Point(offsetX, offsetY);
 
-                btnEnterRoom.Name = string.Format("btnEnterRoom_{0}", room.RoomID);
+                btnEnterRoom.Name = string.Format("{0}_btnEnterRoom_{1}", roomControlPrefix, room.RoomID);
                 btnEnterRoom.Size = new System.Drawing.Size(109, 55);
                 btnEnterRoom.Text = room.RoomName;
                 btnEnterRoom.UseVisualStyleBackColor = true;
                 btnEnterRoom.Click += new System.EventHandler(this.btnEnterRoom_Click);
-                this.pnlGameRooms.Controls.Add(btnEnterRoom);
+                this.Controls.Add(btnEnterRoom);
 
                 Label labelRoom = new Label();
                 labelRoom.AutoSize = true;
                 labelRoom.BackColor = System.Drawing.Color.Transparent;
                 labelRoom.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
                 labelRoom.ForeColor = System.Drawing.SystemColors.Control;
-                labelRoom.Location = new System.Drawing.Point(offsetX, 100);
-                labelRoom.Name = string.Format("lblRoom_{0}", room.RoomID);
+                labelRoom.Location = new System.Drawing.Point(offsetX, offsetYLower);
+                labelRoom.Name = string.Format("{0}_lblRoom_{1}", roomControlPrefix, room.RoomID);
                 labelRoom.Size = new System.Drawing.Size(0, 37);
-                this.pnlGameRooms.Controls.Add(labelRoom);
+                this.Controls.Add(labelRoom);
                 
                 List<PlayerEntity> players = room.CurrentGameState.Players;
                 for (int j = 0; j < players.Count; j++)
@@ -1065,6 +1079,21 @@ namespace Duan.Xiugang.Tractor
                 if (string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text = "空房间";
 
                 offsetX += offsetXDelta;
+            }
+        }
+
+        private void HideRoomControls(List<Control> roomCtrls)
+        {
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl.Name.StartsWith(this.roomControlPrefix))
+                {
+                    roomCtrls.Add(ctrl);
+                }
+            }
+            foreach (Control ctrl in roomCtrls)
+            {
+                this.Controls.Remove(ctrl);
             }
         }
 
@@ -1300,6 +1329,16 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.CurrentTrickState.ShowedCards[result.PlayerId].Clear();
         }
 
+        private void ThisPlayer_HostIsOnlineEventHandler(bool success)
+        {
+            string result = success ? "Host online!" : "Host offline";
+            Invoke(new Action(() =>
+            {
+                this.lblSouthStarter.Text = result;
+                this.progressBarPingHost.Value = this.progressBarPingHost.Maximum;
+            }));
+        }
+
         #endregion
 
         private void btnReady_Click(object sender, EventArgs e)
@@ -1389,11 +1428,10 @@ namespace Duan.Xiugang.Tractor
         private void btnEnterRoom_Click(object sender, EventArgs e)
         {
             int roomID;
-            string roomIDString = ((Button)sender).Name.Split('_')[1];
+            string roomIDString = ((Button)sender).Name.Split('_')[2];
             if (int.TryParse(roomIDString, out roomID))
             {
                 ThisPlayer.PlayerEnterRoom(ThisPlayer.MyOwnId, roomID);
-                init();
             }
             else
             {
@@ -1474,7 +1512,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ToolStripMenuItemEnterRoom0_Click(object sender, EventArgs e)
         {
-            Control[] controls = this.pnlGameRooms.Controls.Find("btnEnterRoom_0", false);
+            Control[] controls = this.Controls.Find(string.Format("{0}_btnEnterRoom_0", roomControlPrefix), false);
             if (controls != null && controls.Length > 0)
             {
                 Button enterRoom0 = ((Button)controls[0]);
@@ -1482,6 +1520,21 @@ namespace Duan.Xiugang.Tractor
                 {
                     enterRoom0.PerformClick();
                 }
+            }
+        }
+
+        private void tmrGeneral_Tick(object sender, EventArgs e)
+        {
+            if (this.progressBarPingHost.Visible == true && this.progressBarPingHost.Value < this.progressBarPingHost.Maximum)
+            {
+                this.progressBarPingHost.PerformStep();
+            }
+            else
+            {
+                this.tmrGeneral.Stop();
+                progressBarPingHost.Value = this.progressBarPingHost.Maximum;
+                this.progressBarPingHost.Hide();
+                Refresh();
             }
         }
     }

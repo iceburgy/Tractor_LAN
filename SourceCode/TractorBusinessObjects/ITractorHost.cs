@@ -30,6 +30,10 @@ namespace Duan.Xiugang.Tractor.Objects
         IAsyncResult BeginPlayerQuit(string playerId, AsyncCallback callback, object state);
         string EndPlayerQuit(IAsyncResult ar);
 
+        [OperationContract(AsyncPattern = true)]
+        IAsyncResult BeginPingHost(string playerId, AsyncCallback callback, object state);
+        string EndPingHost(IAsyncResult ar);
+
         [OperationContract(IsOneWay = true)]
         void PlayerMakeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump, string playerId);
 
