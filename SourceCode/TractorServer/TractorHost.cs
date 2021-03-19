@@ -229,85 +229,119 @@ namespace TractorServer
         public void StoreDiscardedCards(int[] cards)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.StoreDiscardedCards(cards);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.StoreDiscardedCards(cards);
+            }
         }
 
         //亮主
         public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
+            }
         }
 
         public void PlayerShowCards(CurrentTrickState currentTrickState)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.PlayerShowCards(currentTrickState);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.PlayerShowCards(currentTrickState);
+            }
         }
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            return gameRoom.ValidateDumpingCards(selectedCards, playerId);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                return gameRoom.ValidateDumpingCards(selectedCards, playerId);
+            }
+            return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Unknown };
         }
 
         public void RefreshPlayersCurrentHandState()
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.RefreshPlayersCurrentHandState();
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.RefreshPlayersCurrentHandState();
+            }
         }
 
         //随机组队
         public void TeamUp()
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.TeamUp();
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.TeamUp();
+            }
         }
 
         //和下家互换座位
         public void MoveToNextPosition(string playerId)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.MoveToNextPosition(playerId);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.MoveToNextPosition(playerId);
+            }
         }
 
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.CardsReady(playerId, myCardIsReady);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.CardsReady(playerId, myCardIsReady);
+            }
         }
 
         //读取牌局
         public void RestoreGameStateFromFile()
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.RestoreGameStateFromFile();
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.RestoreGameStateFromFile();
+            }
         }
 
         //设置从几打起
         public void SetBeginRank(string beginRankString)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.SetBeginRank(beginRankString);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.SetBeginRank(beginRankString);
+            }
         }
 
         //旁观玩家 by id
         public void ObservePlayerById(string playerId, string observerId)
         {
             string sessionID = GetSessionID();
-            GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-            gameRoom.ObservePlayerById(playerId, observerId);
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.ObservePlayerById(playerId, observerId);
+            }
         }
         #endregion
 
