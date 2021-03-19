@@ -19,11 +19,11 @@ namespace Duan.Xiugang.Tractor
     {
         public event SettingsUpdatedEventHandler SettingsUpdatedEvent;
         public static string regexHostAndPort = @"net.tcp://(?<host>.*):(?<port>\d*)/";
-        static AppSettingsReader myreader = new AppSettingsReader();
 
         private static string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
+        public static string KeyIsHelpSeen = "isHelpSeen";
 
         public FormSettings()
         {
@@ -99,6 +99,7 @@ namespace Duan.Xiugang.Tractor
         {
             try
             {
+                AppSettingsReader myreader = new AppSettingsReader();
                 return (String)myreader.GetValue(key, typeof(String));
             }
             catch (Exception)
@@ -111,6 +112,7 @@ namespace Duan.Xiugang.Tractor
         {
             try
             {
+                AppSettingsReader myreader = new AppSettingsReader();
                 return (bool)myreader.GetValue(key, typeof(Boolean));
             }
             catch (Exception)
@@ -119,10 +121,17 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void SetSetting(string key, string value)
+        public static void SetSetting(string key, string value)
         {
             Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            configuration.AppSettings.Settings[key].Value = value;
+            if (configuration.AppSettings.Settings[key] == null)
+            {
+                configuration.AppSettings.Settings.Add(key, value);
+            }
+            else
+            {
+                configuration.AppSettings.Settings[key].Value = value;
+            }  
             configuration.Save(ConfigurationSaveMode.Minimal, true);
             ConfigurationManager.RefreshSection("appSettings");
         }

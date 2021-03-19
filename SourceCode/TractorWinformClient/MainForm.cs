@@ -124,12 +124,12 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthNickName.Text = nickName;
             ThisPlayer.PlayerId = nickName;
             ThisPlayer.MyOwnId = nickName;
-            updateOnLoad = FormSettings.GetSettingBool("updateOnLoad");
+            updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
 
             //ping host
             this.progressBarPingHost.Visible = true;
             this.tmrGeneral.Start();
-            this.lblSouthStarter.Text = "Checking host...";
+            this.lblSouthStarter.Text = "Connecting...";
             ThisPlayer.PingHost();
             
             ThisPlayer.PlayerOnGetCard += PlayerGetCard;
@@ -895,6 +895,13 @@ namespace Duan.Xiugang.Tractor
                 }
                 curIndex = (curIndex + 1) % 4;
             }
+
+            bool isHelpSeen = FormSettings.GetSettingBool(FormSettings.KeyIsHelpSeen);
+            if (!isHelpSeen)
+            {
+                FormSettings.SetSetting(FormSettings.KeyIsHelpSeen, "true");
+                this.ToolStripMenuItemUserManual.PerformClick();
+            }
         }
 
         private void ThisPlayer_NewPlayerReadyToStart(bool readyToStart)
@@ -1484,11 +1491,13 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n查看上轮出牌：右键单击空白处";
             userManual += "\n查看得分牌：点得分图标";
             userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
+            userManual += "\n\n快捷键：";
             userManual += "\n进入大厅：F1";
             userManual += "\n进入第一个房间：F2";
             userManual += "\n就绪：F3";
             userManual += "\n托管：F4";
             userManual += "\n旁观下家：F5（仅限旁观模式下）";
+            userManual += "\n\n此帮助信息可在菜单【帮助】【使用说明】中再次查看";
 
             MessageBox.Show(userManual);
         }
