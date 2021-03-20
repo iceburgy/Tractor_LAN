@@ -136,6 +136,9 @@ namespace TractorServer
                 UpdateGameState();
                 return;
             }
+
+            string clientIP = TractorHost.GetClientIP();
+            CurrentRoomState.CurrentGameState.Clients.Remove(clientIP);
             log.Debug(playerId + " quit.");
             PlayersProxy.Remove(playerId);
             for (int i = 0; i < 4; i++)

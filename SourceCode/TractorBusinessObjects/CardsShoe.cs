@@ -61,7 +61,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
-        internal void TestSet()
+        public void TestSet()
         {
             int rankDelta=2;
             Suit wantedSuit = Suit.Heart;
@@ -96,6 +96,11 @@ namespace Duan.Xiugang.Tractor.Objects
             playerPos += posDelta;
             wantedNumber = 53 + 54;
             Swap(playerPos, wantedNumber);
+        }
+
+        public void TestSet2()
+        {
+            Cards = new int[] { 23, 26, 37, 27, 44, 23, 8, 35, 12, 52, 30, 45, 4, 42, 19, 11, 51, 22, 7, 48, 27, 7, 43, 5, 24, 9, 47, 18, 1, 34, 16, 17, 25, 44, 51, 22, 9, 31, 53, 17, 46, 25, 4, 38, 41, 50, 14, 19, 5, 49, 39, 40, 34, 36, 18, 1, 36, 11, 13, 37, 52, 12, 13, 14, 41, 3, 15, 49, 43, 20, 46, 10, 53, 26, 29, 21, 33, 0, 29, 8, 6, 32, 16, 32, 10, 35, 2, 28, 31, 30, 40, 48, 15, 2, 24, 28, 21, 39, 38, 42, 20, 50, 47, 33, 45, 3, 6, 0 };
         }
 
         private void Swap(int i, int r)

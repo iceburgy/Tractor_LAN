@@ -69,9 +69,9 @@ namespace TractorServer
 
         public void PlayerEnterHall(string playerID)
         {
+            IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
             if (!PlayersProxy.Keys.Contains(playerID))
             {
-                IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} entered hall.", playerID));
                 string clientIP = GetClientIP();
@@ -80,7 +80,7 @@ namespace TractorServer
             }
             else
             {
-                PlayersProxy[playerID].NotifyMessage("已在游戏大厅里或重名");
+                player.NotifyMessage("已在游戏大厅里或重名");
             }
         }
 
@@ -371,7 +371,7 @@ namespace TractorServer
 
         #endregion
 
-        private string GetClientIP()
+        public static string GetClientIP()
         {
             string ip = "";
             OperationContext context = OperationContext.Current;
