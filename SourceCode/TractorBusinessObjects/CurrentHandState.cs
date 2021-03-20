@@ -16,9 +16,15 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember] private int _rank;
         [DataMember] private string _starter;
         [DataMember] private Suit _trump;
+        [DataMember]
+        public List<TrumpState> LastTrumpStates;
+        [DataMember]
+        public List<int> ScoreCards;
 
         public CurrentHandState(GameState gameState)
         {
+            LastTrumpStates = new List<TrumpState>();
+            ScoreCards = new List<int>();
             PlayerHoldingCards = new Dictionary<string, CurrentPoker>();
             foreach (PlayerEntity player in gameState.Players)
             {

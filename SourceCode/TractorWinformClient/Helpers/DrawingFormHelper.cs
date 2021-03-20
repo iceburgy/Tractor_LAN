@@ -115,28 +115,28 @@ namespace Duan.Xiugang.Tractor
         internal void LastTrumpMadeCardsShow()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Dictionary<string, Dictionary<Suit, CurrentHandState>> trumpDict = new Dictionary<string, Dictionary<Suit, CurrentHandState>>();
-            foreach (var lastHandState in mainForm.ThisPlayer.LastHandStateTrumpInfo)
+            Dictionary<string, Dictionary<Suit, TrumpState>> trumpDict = new Dictionary<string, Dictionary<Suit, TrumpState>>();
+            foreach (var lastHandState in mainForm.ThisPlayer.CurrentHandState.LastTrumpStates)
             {
                 string key1 = lastHandState.TrumpMaker;
                 if (!trumpDict.ContainsKey(key1))
                 {
-                    trumpDict[key1] = new Dictionary<Suit, CurrentHandState>();
+                    trumpDict[key1] = new Dictionary<Suit, TrumpState>();
                 }
-                Dictionary<Suit, CurrentHandState> val1 = trumpDict[key1];
+                Dictionary<Suit, TrumpState> val1 = trumpDict[key1];
 
                 Suit key2 = lastHandState.Trump;
                 if (!val1.ContainsKey(key2))
                 {
                     val1[key2] = lastHandState;
                 }
-                CurrentHandState val2 = val1[key2];
+                TrumpState val2 = val1[key2];
                 val2.TrumpExposingPoker = (TrumpExposingPoker)Math.Max((int)val2.TrumpExposingPoker, (int)lastHandState.TrumpExposingPoker);
             }
             foreach (var trumpDict2Entry in trumpDict)
             {
                 string player = trumpDict2Entry.Key;
-                Dictionary<Suit, CurrentHandState> suitToTrumInfo = trumpDict2Entry.Value;
+                Dictionary<Suit, TrumpState> suitToTrumInfo = trumpDict2Entry.Value;
                 int x = 0, y = 0;
                 int wid = 71 * scaleDividend / scaleDivisor / 2;
                 int hei = 96 * scaleDividend / scaleDivisor / 2;
@@ -167,9 +167,9 @@ namespace Duan.Xiugang.Tractor
                 foreach (var suitToTrumInfoEntry in suitToTrumInfo)
                 {
                     Suit trump = suitToTrumInfoEntry.Key;
-                    CurrentHandState trumpInfo = suitToTrumInfoEntry.Value;
+                    TrumpState trumpInfo = suitToTrumInfoEntry.Value;
 
-                    var trumpMadeCard = ((int)trump - 1) * 13 + trumpInfo.Rank;
+                    var trumpMadeCard = ((int)trump - 1) * 13 + mainForm.ThisPlayer.CurrentHandState.Rank;
                     if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairBlackJoker)
                         trumpMadeCard = 52;
                     else if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairRedJoker)
@@ -1659,21 +1659,21 @@ namespace Duan.Xiugang.Tractor
             mainForm.Refresh();
         }
 
-        //缩小至2/3以免盖住之前出的牌
+        //画得分牌,缩小至2/3以免盖住之前出的牌
         internal void DrawScoreCards()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            //画得分牌,画在得分图标的左边
+            //画在得分图标的左边
             int wid = 71 * scaleDividend / scaleDivisor * 2 / 3;
             int hei = 96 * scaleDividend / scaleDivisor * 2 / 3;
             //间距加2，看得清楚一点
-            int x = offsetSideBar - wid - 5 - (mainForm.ThisPlayer.ScoreCards.Count - 1) * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3);
+            int x = offsetSideBar - wid - 5 - (mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count - 1) * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3);
 
             int y = 130 + 50;
-            for (int i = 0; i < mainForm.ThisPlayer.ScoreCards.Count; i++)
+            for (int i = 0; i < mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count; i++)
             {
-                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.ScoreCards[i]), x + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), y, wid, hei);
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.ScoreCards[i]), x + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), y, wid, hei);
             }
 
             g.Dispose();

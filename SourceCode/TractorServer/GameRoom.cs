@@ -21,6 +21,7 @@ namespace TractorServer
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
+        private Dictionary<string, List<int>> lastShowedCards;
 
         public GameRoom(int roomID, string roomName)
         {
@@ -29,6 +30,7 @@ namespace TractorServer
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
+            lastShowedCards = new Dictionary<string, List<int>>();
         }
 
         #region implement interface ITractorHost
@@ -264,6 +266,13 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.TrumpExposingPoker = trumpExposingPoker;
                     CurrentRoomState.CurrentHandState.TrumpMaker = trumpMaker;
                     CurrentRoomState.CurrentHandState.Trump = trump;
+
+                    TrumpState tempLastTrumState = new TrumpState();
+                    tempLastTrumState.TrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
+                    tempLastTrumState.TrumpMaker = CurrentRoomState.CurrentHandState.TrumpMaker;
+                    tempLastTrumState.Trump = CurrentRoomState.CurrentHandState.Trump;
+                    CurrentRoomState.CurrentHandState.LastTrumpStates.Add(tempLastTrumState);
+
                     if (CurrentRoomState.CurrentHandState.IsFirstHand && CurrentRoomState.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
                         CurrentRoomState.CurrentHandState.Starter = trumpMaker;
                     //反底
@@ -308,6 +317,8 @@ namespace TractorServer
                                                                         CurrentRoomState.CurrentTrickState.Winner))
                         {
                             CurrentRoomState.CurrentHandState.Score += currentTrickState.Points;
+                            //收集得分牌
+                            CurrentRoomState.CurrentHandState.ScoreCards.AddRange(currentTrickState.ScoreCards);
                             UpdatePlayersCurrentHandState();
                         }
 
@@ -315,6 +326,7 @@ namespace TractorServer
                         log.Debug("Winner: " + CurrentRoomState.CurrentTrickState.Winner);
 
                     }
+                    lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
 
                     UpdatePlayerCurrentTrickState();
 
@@ -327,6 +339,11 @@ namespace TractorServer
                     }
                     else //所有牌都出完了
                     {
+                        //清空缓存
+                        this.lastShowedCards.Clear();
+                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+                        UpdatePlayerCurrentTrickState();
+
                         //扣底
                         CalculatePointsFromDiscarded8Cards();
                         Thread.Sleep(2000);
@@ -371,8 +388,13 @@ namespace TractorServer
                     }
                 }
                 else
+                {
+                    if (CurrentRoomState.CurrentTrickState.CountOfPlayerShowedCards() == 1)
+                    {
+                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick = lastShowedCards;
+                    }
                     UpdatePlayerCurrentTrickState();
-
+                }
             }
         }
 
@@ -969,7 +991,7 @@ namespace TractorServer
                 if (p == null) continue;
                 playerIDList.Add(p.PlayerId);
             }
-            CurrentRoomState.CurrentTrickState = new CurrentTrickState(playerIDList);
+            CurrentRoomState.CurrentTrickState = new CurrentTrickState(playerIDList, CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick);
             CurrentRoomState.CurrentTrickState.Learder = leader;
             CurrentRoomState.CurrentTrickState.Trump = CurrentRoomState.CurrentHandState.Trump;
             CurrentRoomState.CurrentTrickState.Rank = CurrentRoomState.CurrentHandState.Rank;

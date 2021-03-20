@@ -792,8 +792,8 @@ namespace Duan.Xiugang.Tractor
         //绘制上一轮各家所出的牌，缩小至一半，放在左下角
         private void ThisPlayer_PlayerLastTrickShowedCards()
         {
-            if (ThisPlayer.LastTrickState.ShowedCards.Count == 0) return;
-            foreach (var entry in ThisPlayer.LastTrickState.ShowedCards)
+            if (ThisPlayer.CurrentTrickState.ShowedCardsInLastTrick.Count == 0) return;
+            foreach (var entry in ThisPlayer.CurrentTrickState.ShowedCardsInLastTrick)
             {
                 string player = entry.Key;
                 int position = PlayerPosition[player];
