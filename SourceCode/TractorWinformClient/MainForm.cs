@@ -1279,7 +1279,8 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
 
             //托管代打：埋底
-            if (gameConfig.IsDebug && !ThisPlayer.isObserver)
+            var robotDiscardLast8 = FormSettings.GetSettingBool(FormSettings.KeyRobotDiscardLast8);
+            if (robotDiscardLast8 && gameConfig.IsDebug && !ThisPlayer.isObserver)
             {
                 if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
                     ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
