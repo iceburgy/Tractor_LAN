@@ -8,14 +8,8 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class TrumpState
     {
-        [DataMember] private Suit _trump;
-
         [DataMember]
-        public Suit Trump
-        {
-            get { return _trump; }
-            set { _trump = value; }
-        }
+        public Suit Trump { get; set; }
 
         //亮主的牌
         [DataMember]

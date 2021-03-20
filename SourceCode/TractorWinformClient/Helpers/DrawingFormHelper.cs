@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -170,6 +171,14 @@ namespace Duan.Xiugang.Tractor
                     TrumpState trumpInfo = suitToTrumInfoEntry.Value;
 
                     var trumpMadeCard = ((int)trump - 1) * 13 + mainForm.ThisPlayer.CurrentHandState.Rank;
+                    
+                    //alert if 
+                    int actualRank = mainForm.ThisPlayer.CurrentGameState.Players.Single(p => p != null && p.PlayerId == mainForm.ThisPlayer.CurrentHandState.Starter).Rank;
+                    if (trumpMadeCard % 13 != actualRank)
+                    {
+                        MessageBox.Show(string.Format("bug report: mismatch! display rank: {0}, actual rank: {1}", trumpMadeCard % 13 + 2, actualRank + 2));
+                    }
+
                     if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairBlackJoker)
                         trumpMadeCard = 52;
                     else if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairRedJoker)
@@ -1673,7 +1682,23 @@ namespace Duan.Xiugang.Tractor
             int y = 130 + 50;
             for (int i = 0; i < mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count; i++)
             {
-                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.ScoreCards[i]), x + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), y, wid, hei);
+                g.DrawImage(getPokerImageByNumber(mainForm.ThisPlayer.CurrentHandState.ScoreCards[i]), x + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), y, wid, hei);
+            }
+
+            //alert if score cards does not match actual scores
+            int points = 0;
+            foreach (int card in mainForm.ThisPlayer.CurrentHandState.ScoreCards)
+            {
+                if (card % 13 == 3)
+                    points += 5;
+                else if (card % 13 == 8)
+                    points += 10;
+                else if (card % 13 == 11)
+                    points += 10;
+            }
+            if (points != mainForm.ThisPlayer.CurrentHandState.Score)
+            {
+                MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
             }
 
             g.Dispose();

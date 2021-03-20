@@ -1538,7 +1538,8 @@ namespace Duan.Xiugang.Tractor
         {
             if (this.progressBarPingHost.Visible == true && this.progressBarPingHost.Value < this.progressBarPingHost.Maximum)
             {
-                this.progressBarPingHost.PerformStep();
+                int step = (this.progressBarPingHost.Maximum - this.progressBarPingHost.Value) / 8;
+                this.progressBarPingHost.Increment(step);
             }
             else
             {
