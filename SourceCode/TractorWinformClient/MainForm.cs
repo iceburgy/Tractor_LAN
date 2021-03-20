@@ -849,8 +849,7 @@ namespace Duan.Xiugang.Tractor
             if (this.ToolStripMenuItemEnterRoom0.Enabled)
             {
                 this.ToolStripMenuItemEnterRoom0.Enabled = false;
-                List<Control> roomCtrls = new List<Control>();
-                HideRoomControls(roomCtrls);
+                HideRoomControls();
                 init();
             }
             if (!ThisPlayer.isObserver)
@@ -989,6 +988,7 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
             ClearRoom();
+            HideRoomControls();
 
             CreateRoomControls(roomStates, names);
             this.ToolStripMenuItemEnterRoom0.Enabled = true;
@@ -1089,8 +1089,9 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void HideRoomControls(List<Control> roomCtrls)
+        private void HideRoomControls()
         {
+            List<Control> roomCtrls = new List<Control>();
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl.Name.StartsWith(this.roomControlPrefix))
