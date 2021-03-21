@@ -23,10 +23,12 @@ namespace TractorServer
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly string[] RoomNames = new string[] { "桃园结义", "五谷丰登", "无中生有" };
+        internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
         public string KeyMaxRoom = "maxRoom";
         public string KeyAllowSameIP = "allowSameIP";
+        public string KeyIsFullDebug = "isFullDebug";
 
         public CardsShoe CardsShoe { get; set; }
 
@@ -37,11 +39,13 @@ namespace TractorServer
 
         public TractorHost()
         {
+            gameConfig = new GameConfig();
             var myreader = new AppSettingsReader();
             try
             {
                 MaxRoom = (int)myreader.GetValue(KeyMaxRoom, typeof(int));
                 AllowSameIP = (bool)myreader.GetValue(KeyAllowSameIP, typeof(bool));
+                gameConfig.IsFullDebug = (bool)myreader.GetValue(KeyIsFullDebug, typeof(bool));
             }
             catch (Exception ex)
             {

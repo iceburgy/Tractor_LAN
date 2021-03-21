@@ -352,10 +352,13 @@ namespace TractorServer
                         Thread.Sleep(2000);
                         CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
 
-                        foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+                        if (!TractorHost.gameConfig.IsFullDebug)
                         {
-                            p.IsReadyToStart = false;
-                            p.IsRobot = false;
+                            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+                            {
+                                p.IsReadyToStart = false;
+                                p.IsRobot = false;
+                            }
                         }
                         CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                         CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState.CurrentHandState, CurrentRoomState.CurrentTrickState);
@@ -388,6 +391,11 @@ namespace TractorServer
                         {
                             PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
                         }
+                        else if (TractorHost.gameConfig.IsFullDebug)
+                        {
+                            Thread.Sleep(3000);
+                            StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                        }
                     }
                 }
                 else
@@ -416,10 +424,12 @@ namespace TractorServer
                                                                 playerId))
                 {
                     CurrentRoomState.CurrentHandState.Score -= punishScore;
+                    CurrentRoomState.CurrentHandState.ScoreAdjustment -= punishScore;
                 }
                 else
                 {
                     CurrentRoomState.CurrentHandState.Score += punishScore;
+                    CurrentRoomState.CurrentHandState.ScoreAdjustment += punishScore;
                 }
                 log.Debug("tried to dump cards and failed, punish score: " + punishScore);
                 foreach (var player in PlayersProxy)
@@ -1043,7 +1053,7 @@ namespace TractorServer
                 }
 
                 CurrentRoomState.CurrentHandState.Score += points;
-
+                CurrentRoomState.CurrentHandState.ScoreAdjustment += points;
 
             }
         }

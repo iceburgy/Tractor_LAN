@@ -81,6 +81,13 @@ namespace TractorServer
             set { isDebug = value; }
         }
 
+        //是否在全面调试
+        private bool isFullDebug = false;
+        public bool IsFullDebug
+        {
+            get { return isFullDebug; }
+            set { isFullDebug = value; }
+        }
 
         //扣底算法
         private int bottomAlgorithm = 1;

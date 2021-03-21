@@ -1696,7 +1696,7 @@ namespace Duan.Xiugang.Tractor
                 else if (card % 13 == 11)
                     points += 10;
             }
-            if (points != mainForm.ThisPlayer.CurrentHandState.Score)
+            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreAdjustment != mainForm.ThisPlayer.CurrentHandState.Score)
             {
                 MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
             }

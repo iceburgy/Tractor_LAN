@@ -9,6 +9,7 @@ namespace Duan.Xiugang.Tractor.Objects
     public class Algorithm
     {
         private const int exposeTrumpThreshold = 5;
+        private const int exposeTrumpJokerThreshold = 4;
         //跟出
         public static void MustSelectedCards(List<int> selectedCards, CurrentTrickState currentTrickState, CurrentPoker currentPoker)
         {
@@ -89,19 +90,20 @@ namespace Duan.Xiugang.Tractor.Objects
             var currentCards = (CurrentPoker)currentPoker.Clone();
             var allSuitCardsCp = (CurrentPoker)currentPoker.Clone();
             var allSuitCards = allSuitCardsCp.Cards;
+            var maxValue = currentPoker.Rank == 12 ? 11 : 12;
 
             //先出A
             foreach (Suit st in Enum.GetValues(typeof(Suit)))
             {
                 if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
                 int maxCards = currentCards.GetMaxCards((int)st);
-                if (maxCards % 13 == 12 && allSuitCards[maxCards] == 1) 
+                if (maxCards % 13 == maxValue && allSuitCards[maxCards] == 1) 
                 {
                     selectedCards.Add(maxCards);
                     return;
                 }
                 //dumping causing concurrency issue, TODO: use timer tick
-                //if (maxCards % 13 == 12)
+                //if (maxCards % 13 == maxValue)
                 //{
                 //    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 || maxCards == currentTrickState.Rank)
                 //    {
@@ -186,6 +188,7 @@ namespace Duan.Xiugang.Tractor.Objects
             var badCardsCp = (CurrentPoker)currentPoker.Clone();
             var allSuitCardsCp = (CurrentPoker)currentPoker.Clone();
             var allSuitCards = allSuitCardsCp.Cards;
+            var maxValue = currentPoker.Rank == 12 ? 11 : 12;
 
             //副牌里，先挑出好牌来，最好不埋
             //挑出A及以下的牌
@@ -193,9 +196,9 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
                 int maxCards = currentCards.GetMaxCards((int)st);
-                if (maxCards % 13 == 12)
+                if (maxCards % 13 == maxValue)
                 {
-                    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 || maxCards == currentCards.Rank)
+                    while (maxCards % 13 > 0 && allSuitCards[maxCards] == 2 || maxCards == currentCards.Rank) //保证打几的牌没有对子，也不会打断继续往下找大牌对子
                     {
                         if (maxCards != currentCards.Rank)
                         {
@@ -257,7 +260,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
-        public static Suit TryExposingTrump(List<Suit> availableTrump, CurrentPoker currentPoker)
+        public static Suit TryExposingTrump(List<Suit> availableTrump, CurrentPoker currentPoker, bool fullDebug)
         {
             var currentCards = (CurrentPoker)currentPoker.Clone();
             foreach (Suit st in availableTrump)
@@ -275,6 +278,9 @@ namespace Duan.Xiugang.Tractor.Objects
                         break;
                     case Suit.Club:
                         if (currentCards.ClubsNoRankTotal >= exposeTrumpThreshold) return st;
+                        break;
+                    case Suit.Joker:
+                        if (fullDebug && currentCards.GetSuitCardsWithJokerAndRank((int)Suit.Joker).Length >= exposeTrumpJokerThreshold) return st;
                         break;
                     default:
                         break;

@@ -680,7 +680,8 @@ namespace Duan.Xiugang.Tractor
             if (gameConfig.IsDebug && !ThisPlayer.isObserver)
             {
                 var availableTrump = ThisPlayer.AvailableTrumps();
-                Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker);
+                var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
+                Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker, fullDebug);
                 if (trumpToExpose == Suit.None) return;
 
                 var next =
@@ -1279,8 +1280,8 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
 
             //托管代打：埋底
-            var robotDiscardLast8 = FormSettings.GetSettingBool(FormSettings.KeyRobotDiscardLast8);
-            if (robotDiscardLast8 && gameConfig.IsDebug && !ThisPlayer.isObserver)
+            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
+            if (fullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver)
             {
                 if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
                     ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
