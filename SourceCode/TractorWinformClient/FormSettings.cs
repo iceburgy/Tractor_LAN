@@ -23,7 +23,7 @@ namespace Duan.Xiugang.Tractor
         private static string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
-        public static string KeyIsHelpSeen = "isHelpSeen";
+        public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyFullDebug = "fullDebug";
 
         public FormSettings()
