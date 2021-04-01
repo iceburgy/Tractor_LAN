@@ -899,7 +899,6 @@ namespace Duan.Xiugang.Tractor
             bool isHelpSeen = FormSettings.GetSettingBool(FormSettings.KeyIsHelpSeen);
             if (!isHelpSeen)
             {
-                FormSettings.SetSetting(FormSettings.KeyIsHelpSeen, "true");
                 this.ToolStripMenuItemUserManual.PerformClick();
             }
         }
@@ -1490,19 +1489,30 @@ namespace Duan.Xiugang.Tractor
 
         private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)
         {
-            string userManual = "查看底牌：点正下方的【庄家】（仅限庄家）";
+            string userManual = "【隐藏技】";
+            userManual += "\n右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
+            userManual += "\n查看底牌：点正下方的【庄家】（仅限庄家）";
             userManual += "\n查看上轮出牌：右键单击空白处";
             userManual += "\n查看得分牌：点得分图标";
             userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
-            userManual += "\n\n快捷键：";
+            userManual += "\n\n【快捷键】";
             userManual += "\n进入大厅：F1";
             userManual += "\n进入第一个房间：F2";
             userManual += "\n就绪：F3";
             userManual += "\n托管：F4";
             userManual += "\n旁观下家：F5（仅限旁观模式下）";
             userManual += "\n\n此帮助信息可在菜单【帮助】【使用说明】中再次查看";
+            userManual += "\n\n不再提示？";
 
-            MessageBox.Show(userManual);
+            DialogResult dialogResult = MessageBox.Show(userManual, "使用说明", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                FormSettings.SetSetting(FormSettings.KeyIsHelpSeen, "true");
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                FormSettings.SetSetting(FormSettings.KeyIsHelpSeen, "false");
+            }
         }
 
         //点自己显示底牌

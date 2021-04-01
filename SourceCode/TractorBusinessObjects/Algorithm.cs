@@ -66,6 +66,25 @@ namespace Duan.Xiugang.Tractor.Objects
                 selectedCards.Add(currentSuitCards[i]);
                 allSuitCards[(int)currentSuitCards[i]]--;
             }
+            //其他花色的牌先跳过所有主牌，和副牌对子，即副牌单张
+            for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                bool isITrump = PokerHelper.IsTrump(i, currentCards.Trump, currentCards.Rank);
+                if (isITrump || allSuitCards[i] <= 0 || allSuitCards[i] == 2) continue;
+                selectedCards.Add(i);
+                allSuitCards[i]--;
+            }
+            //其他花色的牌跳过所有主牌
+            for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                bool isITrump = PokerHelper.IsTrump(i, currentCards.Trump, currentCards.Rank);
+                if (isITrump || allSuitCards[i] <= 0) continue;
+                while (allSuitCards[i] > 0 && selectedCards.Count < leadingCardsCp.Count)
+                {
+                    selectedCards.Add(i);
+                    allSuitCards[i]--;
+                }
+            }
             //其他花色的牌先跳过对子
             for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
