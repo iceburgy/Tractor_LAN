@@ -105,13 +105,13 @@ namespace TractorServer
             else
             {
                 if (PlayersProxy.Keys.Contains(playerID))
-                    PlayersProxy[playerID].NotifyMessage("已在房间里");
+                    IPlayerInvoke(playerID, PlayersProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
                 else if (ObserversProxy.Keys.Contains(playerID))
                 {
                     List<string> badObs = new List<string>();
                     try
                     {
-                        ObserversProxy[playerID].NotifyMessage("已在房间里旁观");
+                        IPlayerInvoke(playerID, ObserversProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
                         string obeserveeId = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
                         ObservePlayerById(obeserveeId, playerID);
                     }
@@ -126,21 +126,42 @@ namespace TractorServer
         }
 
         //玩家退出
-        public void PlayerQuit(string playerId)
+        public void PlayerQuit(List<string> playerIDs)
         {
-            if (!PlayersProxy.ContainsKey(playerId))
+            bool needsRestart = false;
+            foreach (string playerID in playerIDs)
+            {
+                needsRestart = needsRestart || PlayerQuitWorker(playerID);
+            }
+            if (!needsRestart)
+            {
+                return;
+            }
+            UpdateGameState();
+
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
+            UpdatePlayersCurrentHandState();
+
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
+        }
+
+        public bool PlayerQuitWorker(string playerID)
+        {
+            if (!PlayersProxy.ContainsKey(playerID))
             {
                 List<string> badObs = new List<string>();
-                badObs.Add(playerId);
+                badObs.Add(playerID);
                 RemoveObserver(badObs);
                 UpdateGameState();
-                return;
+                return false;
             }
 
             string clientIP = TractorHost.GetClientIP();
             CurrentRoomState.CurrentGameState.Clients.Remove(clientIP);
-            log.Debug(playerId + " quit.");
-            PlayersProxy.Remove(playerId);
+            log.Debug(playerID + " quit.");
+            PlayersProxy.Remove(playerID);
             for (int i = 0; i < 4; i++)
             {
                 if (CurrentRoomState.CurrentGameState.Players[i] != null)
@@ -154,23 +175,13 @@ namespace TractorServer
                         ObserversProxy.Remove(ob);
                         // notify exit to hall
                     }
-                    if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerId)
+                    if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                     {
                         CurrentRoomState.CurrentGameState.Players[i] = null;
                     }
                 }
             }
-            UpdateGameState();
-
-            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-            CurrentRoomState.CurrentHandState.IsFirstHand = true;
-            UpdatePlayersCurrentHandState();
-
-            foreach (var player in PlayersProxy.Values)
-            {
-                player.StartGame();
-            }
+            return true;
         }
 
         public void PlayerIsReadyToStart(string playerID)
@@ -432,12 +443,17 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.ScoreAdjustment += punishScore;
                 }
                 log.Debug("tried to dump cards and failed, punish score: " + punishScore);
+                List<string> playersIDToCall = new List<string>();
                 foreach (var player in PlayersProxy)
                 {
                     if (player.Key != playerId)
                     {
-                        player.Value.NotifyDumpingValidationResult(result);
+                        playersIDToCall.Add(player.Key);
                     }
+                }
+                if (playersIDToCall.Count>0)
+                {
+                    IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyDumpingValidationResult", new List<object>() { result });
                 }
             }
             var cardString = "";
@@ -560,23 +576,11 @@ namespace TractorServer
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
             PlayerEntity player = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerId);
-            List<string> badObs = new List<string>();
-            foreach (string ob in player.Observers)
-            {
-                try
-                {
-                    this.ObserversProxy[ob].NotifyCardsReady(myCardIsReady);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(ob);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(ObserversProxy, player.Observers.ToList<string>(), "NotifyCardsReady", new List<object>() { myCardIsReady });
         }
 
         //读取牌局
-        public void RestoreGameStateFromFile()
+        public void RestoreGameStateFromFile(bool restoreCardsShoe)
         {
             bool isValid = true;
             foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
@@ -637,29 +641,6 @@ namespace TractorServer
                 CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
                 CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
-                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                if (File.Exists(fileNameCardsShoe))
-                {
-                    DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
-                    stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
-                    this.CardsShoe.IsCardsRestored = true;
-                    this.CardsShoe.Cards = cs.Cards;
-                }
-
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-                if (stream2 != null)
-                {
-                    stream2.Close();
-                }
-                if (stream3 != null)
-                {
-                    stream3.Close();
-                }
-
                 CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                 CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
 
@@ -671,6 +652,19 @@ namespace TractorServer
 
                 UpdateGameState();
                 UpdatePlayersCurrentHandState();
+
+                if (restoreCardsShoe)
+                {
+                    string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
+                    if (File.Exists(fileNameCardsShoe))
+                    {
+                        DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
+                        stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
+                        this.CardsShoe.IsCardsRestored = true;
+                        this.CardsShoe.Cards = cs.Cards;
+                    }
+                }
 
                 PublishMessage("读取牌局成功！请点击就绪继续上盘游戏");
             }
@@ -791,7 +785,7 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
-            DistributeCards();
+            if (!DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
@@ -835,7 +829,7 @@ namespace TractorServer
 
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
 
-            DistributeCards();
+            if (!DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
@@ -888,7 +882,7 @@ namespace TractorServer
         }
 
         //发牌
-        public void DistributeCards()
+        public bool DistributeCards()
         {
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCards;
             UpdatePlayersCurrentHandState();
@@ -912,35 +906,24 @@ namespace TractorServer
                 LogList[player.Key] = new StringBuilder();
             }
 
+            List<string> playerIDs = PlayersProxy.Keys.ToList<string>();
             for (int i = 0; i < cardNumberofEachPlayer; i++)
             {
-                foreach (var player in PlayersProxy)
+                foreach (var playerID in playerIDs)
                 {
                     var index = j++;
                     if (CurrentRoomState.CurrentHandState.Id == currentHandId)
                     {
-                        player.Value.GetDistributedCard(CardsShoe.Cards[index]);
+                        if (!string.IsNullOrEmpty(IPlayerInvoke(playerID, PlayersProxy[playerID], "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] }, true))) return false;
                         //旁观：发牌
-                        PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == player.Key);
-                        List<string> badObs = new List<string>();
-                        foreach (string ob in pe.Observers)
-                        {
-                            try
-                            {
-                                ObserversProxy[ob].GetDistributedCard(CardsShoe.Cards[index]);
-                            }
-                            catch (Exception)
-                            {
-                                badObs.Add(ob);
-                            }
-                        }
-                        RemoveObserver(badObs);
-                        LogList[player.Key].Append(CardsShoe.Cards[index].ToString() + ", ");
+                        PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerID);
+                        if(!IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] })) return false;
+                        LogList[playerID].Append(CardsShoe.Cards[index].ToString() + ", ");
                     }
                     else
-                        return;
+                        return false;
 
-                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[player.Key].AddCard(CardsShoe.Cards[index]);
+                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[playerID].AddCard(CardsShoe.Cards[index]);
                 }
                 Thread.Sleep(500);
             }
@@ -959,7 +942,10 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
             UpdatePlayersCurrentHandState();
 
+            SaveGameStateToFile();
             SaveCardsShoeToFile();
+
+            return true;
         }
 
         //发底牌
@@ -988,22 +974,10 @@ namespace TractorServer
                 for (int i = 0; i < 8; i++)
                 {
                     var card = last8Cards[i];
-                    last8Holder.GetDistributedCard(card);
+                    IPlayerInvoke(CurrentRoomState.CurrentHandState.Last8Holder, last8Holder, "GetDistributedCard", new List<object>() { card }, true);
                     //旁观：发牌
                     PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Last8Holder);
-                    List<string> badObs = new List<string>();
-                    foreach (string ob in pe.Observers)
-                    {
-                        try
-                        {
-                            ObserversProxy[ob].GetDistributedCard(card);
-                        }
-                        catch (Exception)
-                        {
-                            badObs.Add(ob);
-                        }
-                    }
-                    RemoveObserver(badObs);
+                    IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { card });
                     CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].AddCard(card);
                 }
             }
@@ -1155,110 +1129,102 @@ namespace TractorServer
         #region Update Client State
         public void UpdateGameState()
         {
-            foreach (IPlayer player in PlayersProxy.Values)
-            {
-                player.NotifyGameState(CurrentRoomState.CurrentGameState);
-            }
-            List<string> badObs = new List<string>();
-            foreach (var player in ObserversProxy)
-            {
-                try
-                {
-                    player.Value.NotifyGameState(CurrentRoomState.CurrentGameState);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(player.Key);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState });
         }
 
         public void UpdatePlayersCurrentHandState()
         {
-            foreach (IPlayer player in PlayersProxy.Values)
-            {
-                player.NotifyCurrentHandState(CurrentRoomState.CurrentHandState);
-            }
-            List<string> badObs = new List<string>();
-            foreach (var player in ObserversProxy)
-            {
-                try
-                {
-                    player.Value.NotifyCurrentHandState(CurrentRoomState.CurrentHandState);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(player.Key);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyCurrentHandState", new List<object>() { CurrentRoomState.CurrentHandState });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyCurrentHandState", new List<object>() { CurrentRoomState.CurrentHandState });
         }
 
         public void UpdatePlayerCurrentTrickState()
         {
-            foreach (IPlayer player in PlayersProxy.Values)
-            {
-                player.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
-            }
-            List<string> badObs = new List<string>();
-            foreach (var player in ObserversProxy)
-            {
-                try
-                {
-                    player.Value.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(player.Key);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState });
         }
 
         public void PublishMessage(string msg)
         {
-            foreach (IPlayer player in PlayersProxy.Values)
-            {
-                player.NotifyMessage(msg);
-            }
-            List<string> badObs = new List<string>();
-            foreach (var player in ObserversProxy)
-            {
-                try
-                {
-                    player.Value.NotifyMessage(msg);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(player.Key);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });
         }
 
         public void PublishStartTimer(int timerLength)
         {
-            foreach (IPlayer player in PlayersProxy.Values)
-            {
-                player.NotifyStartTimer(timerLength);
-            }
-            List<string> badObs = new List<string>();
-            foreach (var player in ObserversProxy)
-            {
-                try
-                {
-                    player.Value.NotifyStartTimer(timerLength);
-                }
-                catch (Exception)
-                {
-                    badObs.Add(player.Key);
-                }
-            }
-            RemoveObserver(badObs);
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
         }
 
         #endregion
+
+        // IPlayer method invoker
+        public bool IPlayerInvokeForAll(Dictionary<string, IPlayer> PlayersProxyToCall, List<string> playerIDs, string methodName, List<object> args)
+        {
+            List<string> badPlayerIDs = new List<string>();
+            foreach (var playerID in playerIDs)
+            {
+                string badPlayerID = IPlayerInvoke(playerID, PlayersProxyToCall[playerID], methodName, args, false);
+                if (!string.IsNullOrEmpty(badPlayerID))
+                {
+                    badPlayerIDs.Add(badPlayerID);
+                }
+            }
+            if (badPlayerIDs.Count > 0)
+            {
+                PerformProxyCleanupRestart(badPlayerIDs);
+                return false;
+            }
+            return true;
+        }
+
+        public string IPlayerInvoke(string playerID, IPlayer playerProxy, string methodName, List<object> args, bool performDelete)
+        {
+            string badPlayerID = null;
+            try
+            {
+                playerProxy.GetType().GetMethod(methodName).Invoke(playerProxy, args.ToArray());
+            }
+            catch (Exception)
+            {
+                badPlayerID = playerID;
+            }
+
+            if (performDelete && !string.IsNullOrEmpty(badPlayerID))
+            {
+                PerformProxyCleanupRestart(new List<string> { badPlayerID });
+            }
+
+            return badPlayerID;
+        }
+
+        private void PerformProxyCleanupRestart(List<string> allBadPlayerIDs)
+        {
+            StringBuilder sb = new StringBuilder();
+            List<string> badPlayers = new List<string>();
+            foreach (string badID in allBadPlayerIDs)
+            {
+                if (PlayersProxy.ContainsKey(badID))
+                {
+                    badPlayers.Add(badID);
+                    sb.Append(string.Format("【{0}】", badID));
+                }
+            }
+
+            if (badPlayers.Count > 0)
+            {
+                string msg = string.Format("玩家{0}断线，该玩家需重启游戏后重新开始", sb.ToString());
+                foreach (var entry in PlayersProxy)
+                {
+                    if (!allBadPlayerIDs.Contains(entry.Key))
+                    {
+                        IPlayerInvoke(entry.Key, entry.Value, "NotifyMessage", new List<object>() { msg }, false);
+                    }
+                }
+            }
+            PlayerQuit(allBadPlayerIDs);
+        }
 
         public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
         {

@@ -129,9 +129,9 @@ namespace Duan.Xiugang.Tractor.Player
             this.CurrentPoker.Clear();
         }
 
-        public void RestoreGameStateFromFile()
+        public void RestoreGameStateFromFile(bool restoreCardsShoe)
         {
-            _tractorHost.RestoreGameStateFromFile();
+            _tractorHost.RestoreGameStateFromFile(restoreCardsShoe);
         }
 
         public void SetBeginRank(string beginRankString)

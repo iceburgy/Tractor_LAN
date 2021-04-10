@@ -50,7 +50,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //读取牌局
         [OperationContract(IsOneWay = true)]
-        void RestoreGameStateFromFile();
+        void RestoreGameStateFromFile(bool restoreCardsShoe);
 
         //设置从几打起
         [OperationContract(IsOneWay = true)]

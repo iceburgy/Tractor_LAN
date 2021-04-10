@@ -53,6 +53,7 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankK = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemBeginRankA = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RestoreGameStateCardsShoeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveToNextPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
@@ -158,6 +159,7 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemInRoom.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.BeginRankToolStripMenuItem,
             this.RestoreGameStateToolStripMenuItem,
+            this.RestoreGameStateCardsShoeToolStripMenuItem,
             this.MoveToNextPositionToolStripMenuItem,
             this.TeamUpToolStripMenuItem,
             this.ToolStripMenuItemGetReady,
@@ -184,7 +186,7 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankK,
             this.toolStripMenuItemBeginRankA});
             this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
-            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.BeginRankToolStripMenuItem.Text = "从几打起";
             // 
             // toolStripMenuItemBeginRank2
@@ -281,21 +283,28 @@ namespace Duan.Xiugang.Tractor
             // RestoreGameStateToolStripMenuItem
             // 
             this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
-            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
             this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
+            // 
+            // RestoreGameStateCardsShoeToolStripMenuItem
+            // 
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Name = "RestoreGameStateCardsShoeToolStripMenuItem";
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Text = "读取上盘牌局并还原手牌";
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateCardsShoeToolStripMenuItem_Click);
             // 
             // MoveToNextPositionToolStripMenuItem
             // 
             this.MoveToNextPositionToolStripMenuItem.Name = "MoveToNextPositionToolStripMenuItem";
-            this.MoveToNextPositionToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.MoveToNextPositionToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.MoveToNextPositionToolStripMenuItem.Text = "和下家互换座位";
             this.MoveToNextPositionToolStripMenuItem.Click += new System.EventHandler(this.MoveToNextPositionToolStripMenuItem_Click);
             // 
             // TeamUpToolStripMenuItem
             // 
             this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
-            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(217, 30);
+            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.TeamUpToolStripMenuItem.Text = "随机组队";
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
             // 
@@ -303,7 +312,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
             this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(293, 30);
             this.ToolStripMenuItemGetReady.Text = "就绪";
             this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
             // 
@@ -311,7 +320,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
             this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F4;
-            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(217, 30);
+            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(293, 30);
             this.ToolStripMenuItemRobot.Text = "托管代打";
             this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
             // 
@@ -701,6 +710,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemEnterRoom0;
         private System.Windows.Forms.ProgressBar progressBarPingHost;
         private System.Windows.Forms.Timer tmrGeneral;
+        private System.Windows.Forms.ToolStripMenuItem RestoreGameStateCardsShoeToolStripMenuItem;
     }
 }
 

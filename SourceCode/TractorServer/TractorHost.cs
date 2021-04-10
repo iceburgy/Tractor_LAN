@@ -32,6 +32,7 @@ namespace TractorServer
 
         public CardsShoe CardsShoe { get; set; }
 
+        public Dictionary<string, string> PlayerToIP { get; set; }
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public List<GameRoom> GameRooms { get; set; }
         public List<RoomState> RoomStates { get; set; }
@@ -53,6 +54,7 @@ namespace TractorServer
             }
 
             CardsShoe = new CardsShoe();
+            PlayerToIP = new Dictionary<string, string>();
             PlayersProxy = new Dictionary<string, IPlayer>();
             GameRooms = new List<GameRoom>();
             RoomStates = new List<RoomState>();
@@ -73,18 +75,23 @@ namespace TractorServer
 
         public void PlayerEnterHall(string playerID)
         {
+            string clientIP = GetClientIP();
             IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
             if (!PlayersProxy.Keys.Contains(playerID))
             {
+                this.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} entered hall.", playerID));
-                string clientIP = GetClientIP();
                 GameRoom.LogClientInfo(clientIP, playerID, false);
                 UpdateGameHall();
             }
+            else if (this.PlayerToIP.ContainsValue(clientIP))
+            {
+                player.NotifyMessage("之前非正常退出，请重启游戏后再尝试进入大厅");
+            }
             else
             {
-                player.NotifyMessage("已在游戏大厅里或重名");
+                player.NotifyMessage("玩家昵称重名，请更改昵称后重试");
             }
         }
 
@@ -134,12 +141,12 @@ namespace TractorServer
                     List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
                     foreach (string ob in obs)
                     {
-                        gameRoom.PlayerQuit(ob);
+                        gameRoom.PlayerQuit(new List<string>() { ob });
                     }
                 }
 
                 //再将正常玩家移出房间
-                gameRoom.PlayerQuit(playerID);
+                gameRoom.PlayerQuit(new List<string>() { playerID });
                 SessionIDGameRoom.Remove(sessionID);
             }
             log.Debug(string.Format("player {0} exited room.", playerID));
@@ -151,7 +158,9 @@ namespace TractorServer
         //玩家退出游戏
         public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
+            string clientIP = GetClientIP();
             string sessionID = GetSessionID();
+            if (!this.PlayerToIP.ContainsValue(clientIP)) return new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
             if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
@@ -161,22 +170,29 @@ namespace TractorServer
                     List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
                     foreach (string ob in obs)
                     {
-                        gameRoom.PlayerQuit(ob);
+                        gameRoom.PlayerQuit(new List<string>() { ob });
                     }
                 }
 
                 //再将正常玩家移出房间
-                gameRoom.PlayerQuit(playerID);
+                gameRoom.PlayerQuit(new List<string>() { playerID });
                 SessionIDGameRoom.Remove(sessionID);
             }
+            string result = PlayerExitHall(playerID);
+
+            return new CompletedAsyncResult<string>(result);
+        }
+
+        private string PlayerExitHall(string playerID)
+        {
+            PlayerToIP.Remove(playerID);
             PlayersProxy.Remove(playerID);
             string result = string.Format("player {0} quit.", playerID);
             log.Debug(result);
             Thread.Sleep(500);
             Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
             thr.Start();
-
-            return new CompletedAsyncResult<string>(result);
+            return result;
         }
         public string EndPlayerQuit(IAsyncResult ar)
         {
@@ -202,12 +218,7 @@ namespace TractorServer
         public void PlayerIsReadyToStart(string playerID)
         {
             string sessionID = GetSessionID();
-            if (!this.SessionIDGameRoom.ContainsKey(sessionID))
-            {
-                IPlayer player = PlayersProxy[playerID];
-                player.NotifyMessage(string.Format("就绪失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
                 gameRoom.PlayerIsReadyToStart(playerID);
@@ -217,12 +228,7 @@ namespace TractorServer
         public void PlayerToggleIsRobot(string playerID)
         {
             string sessionID = GetSessionID();
-            if (!this.SessionIDGameRoom.ContainsKey(sessionID))
-            {
-                IPlayer player = PlayersProxy[playerID];
-                player.NotifyMessage(string.Format("托管失败，sessionID【{0}】不匹配任何房间", sessionID));
-            }
-            else
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
                 gameRoom.PlayerToggleIsRobot(playerID);
@@ -316,13 +322,13 @@ namespace TractorServer
         }
 
         //读取牌局
-        public void RestoreGameStateFromFile()
+        public void RestoreGameStateFromFile(bool restoreCardsShoe)
         {
             string sessionID = GetSessionID();
             if (this.SessionIDGameRoom.ContainsKey(sessionID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-                gameRoom.RestoreGameStateFromFile();
+                gameRoom.RestoreGameStateFromFile(restoreCardsShoe);
             }
         }
 
@@ -352,13 +358,15 @@ namespace TractorServer
         #region Update Client State
         public void UpdateGameHall()
         {
-            foreach (IPlayer player in PlayersProxy.Values)
+            List<string> names = PlayersProxy.Keys.ToList<string>();
+            List<string> namesToCall = new List<string>();
+            foreach (var name in names)
             {
                 bool isInRoom = false;
                 foreach (GameRoom room in this.GameRooms)
                 {
-                    if (room.PlayersProxy.ContainsValue(player) ||
-                        room.ObserversProxy.ContainsValue(player))
+                    if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
+                        room.ObserversProxy.ContainsValue(PlayersProxy[name]))
                     {
                         isInRoom = true;
                         break;
@@ -367,14 +375,55 @@ namespace TractorServer
 
                 if (!isInRoom)
                 {
-                    List<string> names = PlayersProxy.Keys.ToList<string>();
-                    player.NotifyGameHall(this.RoomStates, names);
+                    namesToCall.Add(name);
                 }
+            }
+            if (namesToCall.Count > 0)
+            {
+                IPlayerInvokeForAll(PlayersProxy, namesToCall, "NotifyGameHall", new List<object>() { this.RoomStates, names });
             }
         }
 
         #endregion
+        public void IPlayerInvokeForAll(Dictionary<string, IPlayer> PlayersProxyToCall, List<string> playerIDs, string methodName, List<object> args)
+        {
+            List<string> badPlayerIDs = new List<string>();
+            foreach (var playerID in playerIDs)
+            {
+                string badPlayerID = IPlayerInvoke(playerID, PlayersProxyToCall[playerID], methodName, args, false);
+                if (!string.IsNullOrEmpty(badPlayerID))
+                {
+                    badPlayerIDs.Add(badPlayerID);
+                }
+            }
+            if (badPlayerIDs.Count > 0)
+            {
+                foreach (string badID in badPlayerIDs)
+                {
+                    PlayerExitHall(badID);
+                }
+            }
+        }
 
+        public string IPlayerInvoke(string playerID, IPlayer playerProxy, string methodName, List<object> args, bool performDelete)
+        {
+            string badPlayerID = null;
+            try
+            {
+                playerProxy.GetType().GetMethod(methodName).Invoke(playerProxy, args.ToArray());
+            }
+            catch (Exception)
+            {
+                badPlayerID = playerID;
+            }
+
+            if (performDelete && !string.IsNullOrEmpty(badPlayerID))
+            {
+                PlayerExitHall(badPlayerID);
+            }
+            return badPlayerID;
+        }
+        
         public static string GetClientIP()
         {
             string ip = "";

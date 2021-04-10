@@ -1371,7 +1371,13 @@ namespace Duan.Xiugang.Tractor
         private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
-            ThisPlayer.RestoreGameStateFromFile();
+            ThisPlayer.RestoreGameStateFromFile(false);
+        }
+
+        private void RestoreGameStateCardsShoeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver) return;
+            ThisPlayer.RestoreGameStateFromFile(true);
         }
 
         private void theTimer_Tick(object sender, EventArgs e)
