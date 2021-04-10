@@ -637,12 +637,15 @@ namespace TractorServer
                 CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
                 CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
-                DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
                 string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
-                CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
-                this.CardsShoe.IsCardsRestored = true;
-                this.CardsShoe.Cards = cs.Cards;
+                if (File.Exists(fileNameCardsShoe))
+                {
+                    DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
+                    stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
+                    this.CardsShoe.IsCardsRestored = true;
+                    this.CardsShoe.Cards = cs.Cards;
+                }
 
                 if (stream != null)
                 {
@@ -1100,6 +1103,12 @@ namespace TractorServer
                 stream2 = new FileStream(fileNameHandState, FileMode.Create, FileAccess.Write, FileShare.None);
                 DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
                 ser2.WriteObject(stream2, CurrentRoomState.CurrentHandState);
+
+                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
+                if (File.Exists(fileNameCardsShoe))
+                {
+                    File.Delete(fileNameCardsShoe);
+                }
             }
             catch (Exception ex)
             {
