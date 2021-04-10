@@ -596,6 +596,7 @@ namespace TractorServer
 
             Stream stream = null;
             Stream stream2 = null;
+            Stream stream3 = null;
             try
             {
                 DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
@@ -636,6 +637,13 @@ namespace TractorServer
                 CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
                 CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
+                DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
+                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
+                stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
+                CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
+                this.CardsShoe.IsCardsRestored = true;
+                this.CardsShoe.Cards = cs.Cards;
+
                 if (stream != null)
                 {
                     stream.Close();
@@ -643,6 +651,10 @@ namespace TractorServer
                 if (stream2 != null)
                 {
                     stream2.Close();
+                }
+                if (stream3 != null)
+                {
+                    stream3.Close();
                 }
 
                 CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
@@ -672,6 +684,10 @@ namespace TractorServer
                 if (stream2 != null)
                 {
                     stream2.Close();
+                }
+                if (stream3 != null)
+                {
+                    stream3.Close();
                 }
             }
         }
@@ -875,8 +891,15 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
             string currentHandId = CurrentRoomState.CurrentHandState.Id;
 
-            ShuffleCards(this.CardsShoe);
-            //this.CardsShoe.Shuffle();
+            if (this.CardsShoe.IsCardsRestored)
+            {
+                this.CardsShoe.IsCardsRestored = false;
+            }
+            else
+            {
+                ShuffleCards(this.CardsShoe);
+                //this.CardsShoe.Shuffle();
+            }
             int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             int j = 0;
 
@@ -932,6 +955,8 @@ namespace TractorServer
 
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
             UpdatePlayersCurrentHandState();
+
+            SaveCardsShoeToFile();
         }
 
         //发底牌
@@ -1089,6 +1114,30 @@ namespace TractorServer
                 if (stream2 != null)
                 {
                     stream2.Close();
+                }
+            }
+        }
+
+        //保存手牌
+        private void SaveCardsShoeToFile()
+        {
+            Stream stream = null;
+            try
+            {
+                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
+                stream = new FileStream(fileNameCardsShoe, FileMode.Create, FileAccess.Write, FileShare.None);
+                DataContractSerializer ser = new DataContractSerializer(typeof(CardsShoe));
+                ser.WriteObject(stream, this.CardsShoe);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
                 }
             }
         }

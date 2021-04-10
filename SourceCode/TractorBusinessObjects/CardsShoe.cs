@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
+    [DataContract]
     public class CardsShoe
     {
+        [DataMember]
         public int[] Cards = null;
         private int _deckNumber;
 
@@ -13,6 +16,8 @@ namespace Duan.Xiugang.Tractor.Objects
             Cards = new int[54*DeckNumber];
             FillNewCards();
         }
+
+        public bool IsCardsRestored { get; set; }
 
         public int DeckNumber
         {
