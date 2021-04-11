@@ -42,7 +42,7 @@ namespace TractorServer
                 {
                     //防止双开旁观
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
-                    if (CurrentRoomState.CurrentGameState.Clients.Contains(clientIP))
+                    if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
                     {
                         LogClientInfo(clientIP, playerID, true);
                         log.Debug(string.Format("observer {0}-{1} attempted double observing.", playerID, clientIP));
@@ -81,7 +81,7 @@ namespace TractorServer
                     }
                 }
                 LogClientInfo(clientIP, playerID, false);
-                CurrentRoomState.CurrentGameState.Clients.Add(clientIP);
+                CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
                 if (PlayersProxy.Count == 4)
@@ -126,7 +126,8 @@ namespace TractorServer
         }
 
         //玩家退出
-        public void PlayerQuit(List<string> playerIDs)
+        // returns: needRestart
+        public bool PlayerQuit(List<string> playerIDs)
         {
             bool needsRestart = false;
             foreach (string playerID in playerIDs)
@@ -135,7 +136,7 @@ namespace TractorServer
             }
             if (!needsRestart)
             {
-                return;
+                return false;
             }
             UpdateGameState();
 
@@ -145,8 +146,10 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
 
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
+            return true;
         }
 
+        // returns: needRestart
         public bool PlayerQuitWorker(string playerID)
         {
             if (!PlayersProxy.ContainsKey(playerID))
@@ -158,8 +161,7 @@ namespace TractorServer
                 return false;
             }
 
-            string clientIP = TractorHost.GetClientIP();
-            CurrentRoomState.CurrentGameState.Clients.Remove(clientIP);
+            CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
             log.Debug(playerID + " quit.");
             PlayersProxy.Remove(playerID);
             for (int i = 0; i < 4; i++)
@@ -294,7 +296,7 @@ namespace TractorServer
                     {
                         CurrentRoomState.CurrentHandState.Last8Holder = trumpMaker;
                         CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Last8CardsRobbed;
-                        DistributeLast8Cards();
+                        if (DistributeLast8Cards()) return;
                     }
                     UpdatePlayersCurrentHandState();
                 }
@@ -785,7 +787,7 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
-            if (!DistributeCards()) return;
+            if (DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
@@ -804,7 +806,9 @@ namespace TractorServer
             }
 
             if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
-                DistributeLast8Cards();
+            {
+                if (DistributeLast8Cards()) return;
+            }
             else if (PlayersProxy.Count == 4)
                 RestartGame(curRank);
         }
@@ -829,7 +833,7 @@ namespace TractorServer
 
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
 
-            if (!DistributeCards()) return;
+            if (DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
 
@@ -846,8 +850,9 @@ namespace TractorServer
                 oldTrump = CurrentRoomState.CurrentHandState.Trump;
             }
             if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
-                DistributeLast8Cards();
-
+            {
+                if (DistributeLast8Cards()) return;
+            }
             else if (PlayersProxy.Count == 4)
             {
                 //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
@@ -872,7 +877,9 @@ namespace TractorServer
                     oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
                 }
                 if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
-                    DistributeLast8Cards();
+                {
+                    if (DistributeLast8Cards()) return;
+                }
                 else if (PlayersProxy.Count == 4)
                 {
                     //如果下家也亮不起，重新发牌
@@ -882,6 +889,7 @@ namespace TractorServer
         }
 
         //发牌
+        // returns: needRestart
         public bool DistributeCards()
         {
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCards;
@@ -914,14 +922,14 @@ namespace TractorServer
                     var index = j++;
                     if (CurrentRoomState.CurrentHandState.Id == currentHandId)
                     {
-                        if (!string.IsNullOrEmpty(IPlayerInvoke(playerID, PlayersProxy[playerID], "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] }, true))) return false;
+                        if (!string.IsNullOrEmpty(IPlayerInvoke(playerID, PlayersProxy[playerID], "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] }, true))) return true;
                         //旁观：发牌
                         PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerID);
-                        if(!IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] })) return false;
+                        if (IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] })) return true;
                         LogList[playerID].Append(CardsShoe.Cards[index].ToString() + ", ");
                     }
                     else
-                        return false;
+                        return true;
 
                     CurrentRoomState.CurrentHandState.PlayerHoldingCards[playerID].AddCard(CardsShoe.Cards[index]);
                 }
@@ -945,11 +953,12 @@ namespace TractorServer
             SaveGameStateToFile();
             SaveCardsShoeToFile();
 
-            return true;
+            return false;
         }
 
         //发底牌
-        public void DistributeLast8Cards()
+        // returns: needRestart
+        public bool DistributeLast8Cards()
         {
             var last8Cards = new int[8];
             if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
@@ -974,10 +983,10 @@ namespace TractorServer
                 for (int i = 0; i < 8; i++)
                 {
                     var card = last8Cards[i];
-                    IPlayerInvoke(CurrentRoomState.CurrentHandState.Last8Holder, last8Holder, "GetDistributedCard", new List<object>() { card }, true);
+                    if(!string.IsNullOrEmpty(IPlayerInvoke(CurrentRoomState.CurrentHandState.Last8Holder, last8Holder, "GetDistributedCard", new List<object>() { card }, true))) return true;
                     //旁观：发牌
                     PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Last8Holder);
-                    IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { card });
+                    if(IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { card })) return true;
                     CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].AddCard(card);
                 }
             }
@@ -995,6 +1004,8 @@ namespace TractorServer
             Thread.Sleep(100);
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8Cards;
             UpdatePlayersCurrentHandState();
+
+            return false;
         }
 
         //begin new trick
@@ -1160,6 +1171,7 @@ namespace TractorServer
         #endregion
 
         // IPlayer method invoker
+        // returns: needRestart
         public bool IPlayerInvokeForAll(Dictionary<string, IPlayer> PlayersProxyToCall, List<string> playerIDs, string methodName, List<object> args)
         {
             List<string> badPlayerIDs = new List<string>();
@@ -1173,12 +1185,12 @@ namespace TractorServer
             }
             if (badPlayerIDs.Count > 0)
             {
-                PerformProxyCleanupRestart(badPlayerIDs);
-                return false;
+                return PerformProxyCleanupRestart(badPlayerIDs);
             }
-            return true;
+            return false;
         }
 
+        // returns: needRestart if string is not empty
         public string IPlayerInvoke(string playerID, IPlayer playerProxy, string methodName, List<object> args, bool performDelete)
         {
             string badPlayerID = null;
@@ -1199,7 +1211,8 @@ namespace TractorServer
             return badPlayerID;
         }
 
-        private void PerformProxyCleanupRestart(List<string> allBadPlayerIDs)
+        // returns: needRestart
+        private bool PerformProxyCleanupRestart(List<string> allBadPlayerIDs)
         {
             StringBuilder sb = new StringBuilder();
             List<string> badPlayers = new List<string>();
@@ -1223,7 +1236,7 @@ namespace TractorServer
                     }
                 }
             }
-            PlayerQuit(allBadPlayerIDs);
+            return PlayerQuit(allBadPlayerIDs);
         }
 
         public static void LogClientInfo(string clientIP, string playerID, bool isCheating)

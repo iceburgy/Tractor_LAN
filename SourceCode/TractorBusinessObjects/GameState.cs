@@ -10,7 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public readonly List<PlayerEntity> Players;
         [DataMember]
-        public HashSet<string> Clients;
+        public Dictionary<string, string> PlayerToIP;
 
         public int nextRestartID = 0;
         public const int RESTART_GAME = 1;
@@ -20,7 +20,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public GameState()
         {
-            Clients = new HashSet<string>();
+            PlayerToIP = new Dictionary<string, string>();
             Players = new List<PlayerEntity>();
             for (int i = 0; i < 4; i++)
             {
