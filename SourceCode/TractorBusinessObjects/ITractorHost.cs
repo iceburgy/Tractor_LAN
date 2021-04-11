@@ -15,7 +15,7 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerEnterHall(string playerId);
 
         [OperationContract(IsOneWay = true)]
-        void PlayerEnterRoom(string playerID, int roomID);
+        void PlayerEnterRoom(string playerID, int roomID, int posID);
 
         [OperationContract(IsOneWay = true)]
         void PlayerIsReadyToStart(string playerId);

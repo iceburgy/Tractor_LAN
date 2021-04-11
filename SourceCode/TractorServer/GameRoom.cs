@@ -34,7 +34,7 @@ namespace TractorServer
         }
 
         #region implement interface ITractorHost
-        public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP)
+        public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
         {
             if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
@@ -72,12 +72,19 @@ namespace TractorServer
                     return true;
                 }
 
-                for (int i = 0; i < 4; i++)
+                if (posID>=0 && CurrentRoomState.CurrentGameState.Players[posID] == null)
                 {
-                    if (CurrentRoomState.CurrentGameState.Players[i] == null)
+                    CurrentRoomState.CurrentGameState.Players[posID] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+                }
+                else
+                {
+                    for (int i = 0; i < 4; i++)
                     {
-                        CurrentRoomState.CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
-                        break;
+                        if (CurrentRoomState.CurrentGameState.Players[i] == null)
+                        {
+                            CurrentRoomState.CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+                            break;
+                        }
                     }
                 }
                 LogClientInfo(clientIP, playerID, false);

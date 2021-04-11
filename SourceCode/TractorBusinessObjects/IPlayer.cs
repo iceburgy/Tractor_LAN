@@ -10,7 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
         string PlayerId { get; set; }
         int Rank { get; set; }
         void ClearAllCards();
-        void PlayerEnterRoom(string playerID, int roomID);
+        void PlayerEnterRoom(string playerID, int roomID, int posID);
         void ReadyToStart();
         void ExitRoom(string playerID);
         void Quit();

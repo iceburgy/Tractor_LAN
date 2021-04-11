@@ -95,7 +95,7 @@ namespace TractorServer
             }
         }
 
-        public void PlayerEnterRoom(string playerID, int roomID)
+        public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
             string clientIP = GetClientIP();
             string sessionID = GetSessionID();
@@ -111,7 +111,7 @@ namespace TractorServer
                 {
                     lock (gameRoom)
                     {
-                        bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP);
+                        bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, posID);
                         if (entered)
                         {
                             SessionIDGameRoom[sessionID] = gameRoom;

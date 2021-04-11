@@ -1053,9 +1053,11 @@ namespace Duan.Xiugang.Tractor
             this.Controls.Add(labelNames);
 
             offsetX += offsetXDelta;
+            int posControlHeight = 30;
 
             foreach (RoomState room in roomStates)
             {
+                int startY = offsetYLower;
                 Button btnEnterRoom = new Button();
                 btnEnterRoom.Location = new System.Drawing.Point(offsetX, offsetY);
 
@@ -1065,25 +1067,39 @@ namespace Duan.Xiugang.Tractor
                 btnEnterRoom.UseVisualStyleBackColor = true;
                 btnEnterRoom.Click += new System.EventHandler(this.btnEnterRoom_Click);
                 this.Controls.Add(btnEnterRoom);
-
-                Label labelRoom = new Label();
-                labelRoom.AutoSize = true;
-                labelRoom.BackColor = System.Drawing.Color.Transparent;
-                labelRoom.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-                labelRoom.ForeColor = System.Drawing.SystemColors.Control;
-                labelRoom.Location = new System.Drawing.Point(offsetX, offsetYLower);
-                labelRoom.Name = string.Format("{0}_lblRoom_{1}", roomControlPrefix, room.RoomID);
-                labelRoom.Size = new System.Drawing.Size(0, 37);
-                this.Controls.Add(labelRoom);
                 
                 List<PlayerEntity> players = room.CurrentGameState.Players;
                 for (int j = 0; j < players.Count; j++)
                 {
-                    if (players[j] == null) continue;
-                    if (!string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text += "\n";
-                    labelRoom.Text += players[j].PlayerId;
+                    if (players[j] == null)
+                    {
+                        Button btnEnterRoomByPos = new Button();
+                        btnEnterRoomByPos.Location = new System.Drawing.Point(offsetX, startY);
+
+                        btnEnterRoomByPos.Name = string.Format("{0}_btnEnterRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
+                        btnEnterRoomByPos.Size = new System.Drawing.Size(109, posControlHeight);
+                        btnEnterRoomByPos.Text = (j + 1).ToString();
+                        btnEnterRoomByPos.UseVisualStyleBackColor = true;
+                        btnEnterRoomByPos.Click += new System.EventHandler(this.btnEnterRoom_Click);
+                        this.Controls.Add(btnEnterRoomByPos);
+                    }
+                    else
+                    {
+                        Label labelRoomByPos = new Label();
+                        labelRoomByPos.AutoSize = true;
+                        labelRoomByPos.BackColor = System.Drawing.Color.Transparent;
+                        labelRoomByPos.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+                        labelRoomByPos.ForeColor = System.Drawing.SystemColors.Control;
+                        labelRoomByPos.Location = new System.Drawing.Point(offsetX, startY);
+                        labelRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
+                        labelRoomByPos.Size = new System.Drawing.Size(0, posControlHeight);
+                        this.Controls.Add(labelRoomByPos);
+
+                        labelRoomByPos.Text += players[j].PlayerId;
+                    }
+
+                    startY += (posControlHeight + 10);
                 }
-                if (string.IsNullOrEmpty(labelRoom.Text)) labelRoom.Text = "¿Õ·¿¼ä";
 
                 offsetX += offsetXDelta;
             }
@@ -1443,10 +1459,17 @@ namespace Duan.Xiugang.Tractor
         private void btnEnterRoom_Click(object sender, EventArgs e)
         {
             int roomID;
-            string roomIDString = ((Button)sender).Name.Split('_')[2];
+            int posID = -1;
+            string[] nameParts = ((Button)sender).Name.Split('_');
+            string roomIDString = nameParts[2];
             if (int.TryParse(roomIDString, out roomID))
             {
-                ThisPlayer.PlayerEnterRoom(ThisPlayer.MyOwnId, roomID);
+                if (nameParts.Length >= 4)
+                {
+                    string posIDString = nameParts[3];
+                    int.TryParse(posIDString, out posID);
+                }
+                ThisPlayer.PlayerEnterRoom(ThisPlayer.MyOwnId, roomID, posID);
             }
             else
             {

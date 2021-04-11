@@ -164,9 +164,9 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.PlayerEnterHall(this.MyOwnId);
         }
 
-        public void PlayerEnterRoom(string playerID, int roomID)
+        public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
-            _tractorHost.PlayerEnterRoom(this.MyOwnId, roomID);
+            _tractorHost.PlayerEnterRoom(this.MyOwnId, roomID, posID);
         }
 
         public void ReadyToStart()
