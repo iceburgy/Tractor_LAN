@@ -180,7 +180,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
             }
 
-            if (tractor.Count > 1)
+            while (tractor.Count > 1)
             {
                 int myMax = tractor[0];
                 foreach (int card in tractor)
@@ -193,7 +193,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     if (keyValue.Key != player)
                     {
-                        List<int> tractor1 = keyValue.Value.GetTractor((Suit) selectedCardSuit);
+                        List<int> tractor1 = keyValue.Value.GetTractor((Suit)selectedCardSuit);
                         if (tractor1.Count < tractor.Count)
                             continue;
                         int max = tractor1[0];
@@ -213,6 +213,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
+                tractor = selectedCardsCp.GetTractorOfAnySuit();
             }
 
             if (selectedCardsCp.GetPairs().Count > 0)

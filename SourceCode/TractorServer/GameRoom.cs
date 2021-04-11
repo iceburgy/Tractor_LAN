@@ -921,7 +921,11 @@ namespace TractorServer
                 LogList[player.Key] = new StringBuilder();
             }
 
-            List<string> playerIDs = PlayersProxy.Keys.ToList<string>();
+            List<string> playerIDs = new List<string>();
+            for (int i = 0; i < 4; i++)
+            {
+                playerIDs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
+            }
             for (int i = 0; i < cardNumberofEachPlayer; i++)
             {
                 foreach (var playerID in playerIDs)
