@@ -139,25 +139,37 @@ namespace TractorServer
             bool needsRestart = false;
             foreach (string playerID in playerIDs)
             {
-                needsRestart = needsRestart || PlayerQuitWorker(playerID);
+                if (PlayersProxy.ContainsKey(playerID))
+                {
+                    needsRestart = true;
+                    break;
+                }
             }
-            if (!needsRestart)
+
+            if (needsRestart)
             {
-                return false;
+                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+                CurrentRoomState.CurrentHandState.IsFirstHand = true;
+                UpdatePlayersCurrentHandState();
             }
-            UpdateGameState();
 
-            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-            CurrentRoomState.CurrentHandState.IsFirstHand = true;
-            UpdatePlayersCurrentHandState();
+            foreach (string playerID in playerIDs)
+            {
+                PlayerQuitWorker(playerID);
+            }
 
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
-            return true;
+            if (needsRestart)
+            {
+                UpdateGameState();
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
+            }
+
+            return needsRestart;
         }
 
         // returns: needRestart
-        public bool PlayerQuitWorker(string playerID)
+        public void PlayerQuitWorker(string playerID)
         {
             if (!PlayersProxy.ContainsKey(playerID))
             {
@@ -165,7 +177,7 @@ namespace TractorServer
                 badObs.Add(playerID);
                 RemoveObserver(badObs);
                 UpdateGameState();
-                return false;
+                return;
             }
 
             CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
@@ -190,7 +202,6 @@ namespace TractorServer
                     }
                 }
             }
-            return true;
         }
 
         public void PlayerIsReadyToStart(string playerID)
