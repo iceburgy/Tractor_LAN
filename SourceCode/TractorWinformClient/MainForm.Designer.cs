@@ -549,12 +549,13 @@ namespace Duan.Xiugang.Tractor
             // 
             // btnEnterHall
             // 
+            this.btnEnterHall.BackColor = System.Drawing.Color.Plum;
             this.btnEnterHall.Location = new System.Drawing.Point(372, 386);
             this.btnEnterHall.Name = "btnEnterHall";
             this.btnEnterHall.Size = new System.Drawing.Size(109, 55);
             this.btnEnterHall.TabIndex = 21;
             this.btnEnterHall.Text = "½øÈë´óÌü";
-            this.btnEnterHall.UseVisualStyleBackColor = true;
+            this.btnEnterHall.UseVisualStyleBackColor = false;
             this.btnEnterHall.Click += new System.EventHandler(this.btnEnterHall_Click);
             // 
             // btnRobot

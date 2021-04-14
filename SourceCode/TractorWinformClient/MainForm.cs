@@ -1022,7 +1022,6 @@ namespace Duan.Xiugang.Tractor
         private void CreateRoomControls(List<RoomState> roomStates, List<string> names)
         {
             int offsetX = 50;
-            int offsetXDelta = 200;
             int offsetY = 100;
             int offsetYLower = offsetY + 100;
 
@@ -1052,51 +1051,46 @@ namespace Duan.Xiugang.Tractor
             }
             this.Controls.Add(labelNames);
 
-            offsetX += offsetXDelta;
+            offsetX += 200;
             int seatSize = 40;
             int tableSize = seatSize * 2;
 
             for (int roomInd = 0; roomInd < roomStates.Count; roomInd++)
             {
-                int roomOffsetX = offsetX + seatSize * 7 * (roomInd % 2);
-                int roomOffsetY = offsetY + seatSize * 7 * (roomInd / 2);
+                int roomOffsetX = offsetX + seatSize * 8 * (roomInd % 2);
+                int roomOffsetY = offsetY + seatSize * 8 * (roomInd / 2);
 
                 RoomState room = roomStates[roomInd];
                 Button btnEnterRoom = new Button();
-                btnEnterRoom.Location = new System.Drawing.Point(roomOffsetX + seatSize * 3 / 2, roomOffsetY + seatSize * 3 / 2);
+                btnEnterRoom.Location = new System.Drawing.Point(roomOffsetX + seatSize * 5 / 4, roomOffsetY + seatSize * 5 / 4);
 
                 btnEnterRoom.Name = string.Format("{0}_btnEnterRoom_{1}", roomControlPrefix, room.RoomID);
                 btnEnterRoom.Size = new System.Drawing.Size(tableSize, tableSize);
+                btnEnterRoom.BackColor = System.Drawing.Color.LightBlue;
                 btnEnterRoom.Text = room.RoomName;
-                btnEnterRoom.UseVisualStyleBackColor = true;
                 btnEnterRoom.Click += new System.EventHandler(this.btnEnterRoom_Click);
                 this.Controls.Add(btnEnterRoom);
 
                 List<PlayerEntity> players = room.CurrentGameState.Players;
                 for (int j = 0; j < players.Count; j++)
                 {
-                    int offsetXSeat = roomOffsetX + seatSize / 2;
+                    int offsetXSeat = roomOffsetX;
+                    int offsetYSeat = roomOffsetY;
                     switch (j)
                     {
                         case 0:
-                        case 2:
-                            offsetXSeat += seatSize * 2 - seatSize / 2;
+                            offsetXSeat += seatSize * 7 / 4;
                             break;
-                        case 3:
-                            offsetXSeat += seatSize * 3;
-                            break;
-                        default:
-                            break;
-                    }
-                    int offsetYSeat = roomOffsetY + seatSize / 2;
-                    switch (j)
-                    {
                         case 1:
-                        case 3:
-                            offsetYSeat += seatSize * 2 - seatSize / 2;
+                            offsetYSeat += seatSize * 7 / 4;
                             break;
                         case 2:
-                            offsetYSeat += seatSize * 3;
+                            offsetXSeat += seatSize * 7 / 4;
+                            offsetYSeat += seatSize * 7 / 2;
+                            break;
+                        case 3:
+                            offsetXSeat += seatSize * 7 / 2;
+                            offsetYSeat += seatSize * 7 / 4;
                             break;
                         default:
                             break;
@@ -1108,21 +1102,48 @@ namespace Duan.Xiugang.Tractor
 
                         btnEnterRoomByPos.Name = string.Format("{0}_btnEnterRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
                         btnEnterRoomByPos.Size = new System.Drawing.Size(seatSize, seatSize);
+                        btnEnterRoomByPos.BackColor = System.Drawing.Color.LightPink;
                         btnEnterRoomByPos.Text = (j + 1).ToString();
-                        btnEnterRoomByPos.UseVisualStyleBackColor = true;
                         btnEnterRoomByPos.Click += new System.EventHandler(this.btnEnterRoom_Click);
                         this.Controls.Add(btnEnterRoomByPos);
                     }
                     else
                     {
+                        int labelOffsetX = 0;
+                        int labelOffsetY = 0;
+                        switch (j)
+                        {
+                            case 0:
+                                labelOffsetY = seatSize / 4;
+                                break;
+                            case 1:
+                                labelOffsetX = seatSize / 4;
+                                break;
+                            case 2:
+                                labelOffsetY = -seatSize / 4;
+                                break;
+                            case 3:
+                                labelOffsetX = -seatSize / 4;
+                                break;
+                            default:
+                                break;
+                        }
                         Label labelRoomByPos = new Label();
                         labelRoomByPos.AutoSize = true;
                         labelRoomByPos.BackColor = System.Drawing.Color.Transparent;
                         labelRoomByPos.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
                         labelRoomByPos.ForeColor = System.Drawing.SystemColors.Control;
-                        labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat, offsetYSeat);
+                        labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat + labelOffsetX, offsetYSeat + labelOffsetY);
                         labelRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
                         labelRoomByPos.Size = new System.Drawing.Size(seatSize, seatSize);
+
+                        if (j % 2 == 0)
+                        {
+                            labelRoomByPos.AutoSize = false;
+                            labelRoomByPos.Size = new System.Drawing.Size(seatSize * 9 / 2, seatSize);
+                            labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat - seatSize * 7 / 4 + labelOffsetX, offsetYSeat + labelOffsetY);
+                            labelRoomByPos.TextAlign = ContentAlignment.MiddleCenter;
+                        }
 
                         if (j == 1)
                         {
@@ -1144,7 +1165,7 @@ namespace Duan.Xiugang.Tractor
                             tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
                             tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
                             tlpRoomByPos.Controls.Add(labelRoomByPos, 0, 0);
-                            tlpRoomByPos.Location = new System.Drawing.Point(offsetXSeat + seatSize, offsetYSeat);
+                            tlpRoomByPos.Location = new System.Drawing.Point(offsetXSeat + seatSize + labelOffsetX, offsetYSeat + labelOffsetY);
                             tlpRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}_tlp", roomControlPrefix, room.RoomID, j);
                             tlpRoomByPos.RowCount = 1;
                             tlpRoomByPos.RowStyles.Add(new System.Windows.Forms.RowStyle());
