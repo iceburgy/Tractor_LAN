@@ -1075,28 +1075,28 @@ namespace Duan.Xiugang.Tractor
                 List<PlayerEntity> players = room.CurrentGameState.Players;
                 for (int j = 0; j < players.Count; j++)
                 {
-                    int offsetXSeat = roomOffsetX;
+                    int offsetXSeat = roomOffsetX + seatSize / 2;
                     switch (j)
                     {
                         case 0:
                         case 2:
-                            offsetXSeat += seatSize * 2;
+                            offsetXSeat += seatSize * 2 - seatSize / 2;
                             break;
                         case 3:
-                            offsetXSeat += seatSize * 4;
+                            offsetXSeat += seatSize * 3;
                             break;
                         default:
                             break;
                     }
-                    int offsetYSeat = roomOffsetY;
+                    int offsetYSeat = roomOffsetY + seatSize / 2;
                     switch (j)
                     {
                         case 1:
                         case 3:
-                            offsetYSeat += seatSize * 2;
+                            offsetYSeat += seatSize * 2 - seatSize / 2;
                             break;
                         case 2:
-                            offsetYSeat += seatSize * 4;
+                            offsetYSeat += seatSize * 3;
                             break;
                         default:
                             break;
@@ -1116,14 +1116,49 @@ namespace Duan.Xiugang.Tractor
                     else
                     {
                         Label labelRoomByPos = new Label();
-                        labelRoomByPos.AutoSize = false;
+                        labelRoomByPos.AutoSize = true;
                         labelRoomByPos.BackColor = System.Drawing.Color.Transparent;
                         labelRoomByPos.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
                         labelRoomByPos.ForeColor = System.Drawing.SystemColors.Control;
                         labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat, offsetYSeat);
                         labelRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
                         labelRoomByPos.Size = new System.Drawing.Size(seatSize, seatSize);
-                        this.Controls.Add(labelRoomByPos);
+
+                        if (j == 1)
+                        {
+                            labelRoomByPos.Location = new System.Drawing.Point(0, 0);
+                            labelRoomByPos.Size = new System.Drawing.Size(0, seatSize);
+
+                            labelRoomByPos.Dock = System.Windows.Forms.DockStyle.Right;
+                            labelRoomByPos.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+
+                            TableLayoutPanel tlpRoomByPos = new TableLayoutPanel();
+                            tlpRoomByPos.SuspendLayout();
+
+                            tlpRoomByPos.Anchor = System.Windows.Forms.AnchorStyles.Right;
+                            tlpRoomByPos.Size = new System.Drawing.Size(0, seatSize);
+                            tlpRoomByPos.AutoSize = true;
+                            tlpRoomByPos.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+                            tlpRoomByPos.BackColor = System.Drawing.Color.Transparent;
+                            tlpRoomByPos.ColumnCount = 1;
+                            tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+                            tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+                            tlpRoomByPos.Controls.Add(labelRoomByPos, 0, 0);
+                            tlpRoomByPos.Location = new System.Drawing.Point(offsetXSeat + seatSize, offsetYSeat);
+                            tlpRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}_tlp", roomControlPrefix, room.RoomID, j);
+                            tlpRoomByPos.RowCount = 1;
+                            tlpRoomByPos.RowStyles.Add(new System.Windows.Forms.RowStyle());
+                            tlpRoomByPos.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+
+                            this.Controls.Add(tlpRoomByPos);
+
+                            tlpRoomByPos.ResumeLayout(false);
+                            tlpRoomByPos.PerformLayout();
+                        }
+                        else
+                        {
+                            this.Controls.Add(labelRoomByPos);
+                        }
 
                         labelRoomByPos.Text += players[j].PlayerId;
                     }
