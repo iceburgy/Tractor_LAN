@@ -204,6 +204,48 @@ namespace TractorServer
             }
         }
 
+        //清理断线玩家
+        // returns: needRestart
+        public bool PlayerQuitFromCleanup(List<string> playerIDs)
+        {
+            bool needsRestart = false;
+            foreach (string playerID in playerIDs)
+            {
+                if (!PlayersProxy.ContainsKey(playerID))
+                {
+                    List<string> badObs = new List<string>();
+                    badObs.Add(playerID);
+                    RemoveObserver(badObs);
+                    continue;
+                }
+
+                needsRestart = true;
+                CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
+                log.Debug(playerID + " quit.");
+                PlayersProxy.Remove(playerID);
+                for (int i = 0; i < 4; i++)
+                {
+                    if (CurrentRoomState.CurrentGameState.Players[i] != null)
+                    {
+                        CurrentRoomState.CurrentGameState.Players[i].Rank = 0;
+                        CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                        CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                        CurrentRoomState.CurrentGameState.Players[i].Team = GameTeam.None;
+                        foreach (string ob in CurrentRoomState.CurrentGameState.Players[i].Observers)
+                        {
+                            ObserversProxy.Remove(ob);
+                            // notify exit to hall
+                        }
+                        if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
+                        {
+                            CurrentRoomState.CurrentGameState.Players[i] = null;
+                        }
+                    }
+                }
+            }
+            return needsRestart;
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
             foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
@@ -1258,7 +1300,18 @@ namespace TractorServer
                     }
                 }
             }
-            return PlayerQuit(allBadPlayerIDs);
+            bool needsRestart = PlayerQuitFromCleanup(allBadPlayerIDs);
+            if (needsRestart)
+            {
+                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+                CurrentRoomState.CurrentHandState.IsFirstHand = true;
+                UpdatePlayersCurrentHandState();
+
+                UpdateGameState();
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
+            }
+            return needsRestart;
         }
 
         public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
