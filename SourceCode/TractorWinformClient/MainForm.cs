@@ -494,6 +494,12 @@ namespace Duan.Xiugang.Tractor
             {
                 ExposeTrump(e);
             }
+            //一局结束时右键查看最后一轮各家所出的牌，缩小至一半，放在左下角
+            else if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Ending && e.Button == MouseButtons.Right) //右键
+            {
+                ThisPlayer_PlayerLastTrickShowedCards();
+                Refresh();
+            }
         }
 
         private void ExposeTrump(MouseEventArgs e)
@@ -1353,12 +1359,26 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
                 ResortMyCards();
             }
+            if (!ThisPlayer.isObserver && 
+                ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
+                ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentHandState.DiscardedCards != null &&
+                ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
+            {
+                drawingFormHelper.DrawDiscardedCards();
+            }
             Refresh();
             g.Dispose();
         }
 
         private void ThisPlayer_DistributingLast8Cards()
         {
+            //摸牌结束，如果处于托管状态，则取消托管
+            if (!ThisPlayer.isObserver && gameConfig.IsDebug && !FormSettings.GetSettingBool(FormSettings.KeyFullDebug))
+            {
+                this.btnRobot.PerformClick();
+            }
+
             int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
             //自己摸底不用画
             if (position > 1)
@@ -1601,8 +1621,8 @@ namespace Duan.Xiugang.Tractor
         private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)
         {
             string userManual = "【隐藏技】";
+            userManual += "\n摸牌时开启托管可在达到5张时自动亮牌";
             userManual += "\n右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
-            userManual += "\n查看底牌：点正下方的【庄家】（仅限庄家）";
             userManual += "\n查看上轮出牌：右键单击空白处";
             userManual += "\n查看得分牌：点得分图标";
             userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
@@ -1623,23 +1643,6 @@ namespace Duan.Xiugang.Tractor
             else if (dialogResult == DialogResult.No)
             {
                 FormSettings.SetSetting(FormSettings.KeyIsHelpSeen, "false");
-            }
-        }
-
-        //点自己显示底牌
-        private void lblSouthStarter_Click(object sender, EventArgs e)
-        {
-            //旁观不能触发点击效果
-            if (ThisPlayer.isObserver)
-            {
-                return;
-            }
-            if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
-                ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
-                ThisPlayer.CurrentHandState.DiscardedCards != null &&
-                ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
-            {
-                drawingFormHelper.DrawDiscardedCards();
             }
         }
 

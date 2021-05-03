@@ -277,6 +277,10 @@ namespace TractorServer
                         RestartCurrentHand();
                         break;
                     case GameState.START_NEXT_HAND:
+                        //清空缓存
+                        this.lastShowedCards.Clear();
+                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+
                         StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         break;
                     default:
@@ -415,14 +419,15 @@ namespace TractorServer
                     }
                     else //所有牌都出完了
                     {
-                        //清空缓存
-                        this.lastShowedCards.Clear();
-                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
-                        UpdatePlayerCurrentTrickState();
-
                         //扣底
                         CalculatePointsFromDiscarded8Cards();
-                        Thread.Sleep(2000);
+                        PublishStartTimer(5);
+                        Thread.Sleep(5000 + 1000);
+
+                        //本局结束画面，更新最后一轮出的牌
+                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick = lastShowedCards;
+                        UpdatePlayerCurrentTrickState();
+
                         CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
 
                         if (!TractorHost.gameConfig.IsFullDebug)

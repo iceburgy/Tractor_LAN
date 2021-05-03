@@ -1655,13 +1655,12 @@ namespace Duan.Xiugang.Tractor
         //缩小至2/3以免盖住之前出的牌
         internal void DrawDiscardedCards()
         {
-            int aThirdHeigh = 96 * scaleDividend / scaleDivisor / 3;
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            //画底牌,从169开始画
+            //画底牌
             for (int i = 0; i < 8; i++)
             {
-                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 80 + i * 12 * scaleDividend / scaleDivisor, 130 + aThirdHeigh, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                g.DrawImage(getPokerImageByNumber((int)mainForm.ThisPlayer.CurrentHandState.DiscardedCards[i]), 100 + i * 12, 30, 70, 89);
             }
 
             g.Dispose();

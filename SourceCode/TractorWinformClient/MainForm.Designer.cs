@@ -473,7 +473,6 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthStarter.Size = new System.Drawing.Size(203, 39);
             this.lblSouthStarter.TabIndex = 11;
             this.lblSouthStarter.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lblSouthStarter.Click += new System.EventHandler(this.lblSouthStarter_Click);
             // 
             // lblWestStarter
             // 
