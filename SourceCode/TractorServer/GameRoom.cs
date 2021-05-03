@@ -424,6 +424,12 @@ namespace TractorServer
                         PublishStartTimer(5);
                         Thread.Sleep(5000 + 1000);
 
+                        //如果有人退出，则停止游戏
+                        if (this.PlayersProxy.Count < 4)
+                        {
+                            return;
+                        }
+
                         //本局结束画面，更新最后一轮出的牌
                         CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick = lastShowedCards;
                         UpdatePlayerCurrentTrickState();
