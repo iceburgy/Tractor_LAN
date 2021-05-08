@@ -296,6 +296,9 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
                 gameRoom.TeamUp();
+                Thread.Sleep(500);
+                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                thr.Start();
             }
         }
 
@@ -307,6 +310,9 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
                 gameRoom.MoveToNextPosition(playerId);
+                Thread.Sleep(500);
+                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                thr.Start();
             }
         }
 
