@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -98,7 +99,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 nextStarter = GetNextPlayerAfterThePlayer(false, starter);
                 foreach (PlayerEntity player in Players)
                 {
-                    int scoreCopy = score;
+                    int scoreCopy = Math.Min(200, score);
                     while (scoreCopy >= 120)
                     {
                         //5,10,K必打
@@ -115,7 +116,7 @@ namespace Duan.Xiugang.Tractor.Objects
             else
             {
                 nextStarter = GetNextPlayerAfterThePlayer(true, starter);
-                if (score == 0)
+                if (score <= 0)
                 {
                     foreach (PlayerEntity player in Players)
                     {

@@ -421,8 +421,8 @@ namespace TractorServer
                     {
                         //扣底
                         CalculatePointsFromDiscarded8Cards();
-                        PublishStartTimer(5);
-                        Thread.Sleep(5000 + 1000);
+                        PublishStartTimer(2);
+                        Thread.Sleep(2000 + 1000);
 
                         //如果有人退出，则停止游戏
                         if (this.PlayersProxy.Count < 4)
