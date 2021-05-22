@@ -77,7 +77,6 @@ namespace Duan.Xiugang.Tractor
             this.lblWestStarter = new System.Windows.Forms.Label();
             this.lblNorthStarter = new System.Windows.Forms.Label();
             this.lblEastStarter = new System.Windows.Forms.Label();
-            this.lblTheTimer = new System.Windows.Forms.Label();
             this.theTimer = new System.Windows.Forms.Timer(this.components);
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btnEnterHall = new System.Windows.Forms.Button();
@@ -510,18 +509,6 @@ namespace Duan.Xiugang.Tractor
             this.lblEastStarter.TabIndex = 14;
             this.lblEastStarter.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblTheTimer
-            // 
-            this.lblTheTimer.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.lblTheTimer.BackColor = System.Drawing.Color.Transparent;
-            this.lblTheTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.lblTheTimer.ForeColor = System.Drawing.Color.Yellow;
-            this.lblTheTimer.Location = new System.Drawing.Point(726, 541);
-            this.lblTheTimer.Name = "lblTheTimer";
-            this.lblTheTimer.Size = new System.Drawing.Size(82, 57);
-            this.lblTheTimer.TabIndex = 15;
-            this.lblTheTimer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // theTimer
             // 
             this.theTimer.Interval = 1000;
@@ -621,7 +608,6 @@ namespace Duan.Xiugang.Tractor
             this.Controls.Add(this.btnRobot);
             this.Controls.Add(this.btnEnterHall);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.lblTheTimer);
             this.Controls.Add(this.lblEastStarter);
             this.Controls.Add(this.lblNorthStarter);
             this.Controls.Add(this.lblWestStarter);
@@ -688,7 +674,6 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankQ;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankK;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemBeginRankA;
-        private System.Windows.Forms.Label lblTheTimer;
         private System.Windows.Forms.Timer theTimer;
         private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FeatureOverviewToolStripMenuItem;

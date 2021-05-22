@@ -87,11 +87,11 @@ namespace TractorServer
             }
             else if (this.PlayerToIP.ContainsValue(clientIP))
             {
-                player.NotifyMessage("之前非正常退出，请重启游戏后再尝试进入大厅");
+                player.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
             }
             else
             {
-                player.NotifyMessage("玩家昵称重名，请更改昵称后重试");
+                player.NotifyMessage(new string[] { "玩家昵称重名", "请更改昵称后重试" });
             }
         }
 
@@ -105,7 +105,7 @@ namespace TractorServer
                 GameRoom gameRoom = this.GameRooms.Single((room) => room.CurrentRoomState.RoomID == roomID);
                 if (gameRoom == null)
                 {
-                    player.NotifyMessage(string.Format("加入房间失败，房间号【{0}】不存在", roomID));
+                    player.NotifyMessage(new string[] { "加入房间失败", string.Format("房间号【{0}】不存在", roomID) });
                 }
                 else
                 {

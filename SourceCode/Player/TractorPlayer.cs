@@ -21,7 +21,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void DistributingCardsFinishedEventHandler();
     public delegate void StarterFailedForTrumpEventHandler();
     public delegate void StarterChangedEventHandler();
-    public delegate void NotifyMessageEventHandler(string msg);
+    public delegate void NotifyMessageEventHandler(string[] msg);
     public delegate void NotifyStartTimerEventHandler(int timerLength);
     public delegate void NotifyCardsReadyEventHandler(ArrayList myCardIsReady);
     public delegate void ResortMyCardsEventHandler();
@@ -235,7 +235,7 @@ namespace Duan.Xiugang.Tractor.Player
                 GameOnStarted();
         }
 
-        public void NotifyMessage(string msg)
+        public void NotifyMessage(string[] msg)
         {
             if (NotifyMessageEvent != null)
                 NotifyMessageEvent(msg);

@@ -49,14 +49,14 @@ namespace TractorServer
                         if (!allowSameIP)
                         {
                             msg += "？？失败";
-                            PublishMessage(msg);
-                            player.NotifyMessage("已在游戏中，请勿双开旁观");
+                            PublishMessage(new string[] { msg });
+                            player.NotifyMessage(new string[] { "已在游戏中", "请勿双开旁观" });
                             return false;
                         }
                         else
                         {
                             msg += "？？";
-                            PublishMessage(msg);
+                            PublishMessage(new string[] { msg });
                         }
                     }
                     else
@@ -64,7 +64,7 @@ namespace TractorServer
                         LogClientInfo(clientIP, playerID, false);
                     }
 
-                    player.NotifyMessage("房间已满，加入旁观");
+                    player.NotifyMessage(new string[] { "房间已满", "加入旁观" });
                     log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
 
                     ObserversProxy.Add(playerID, player);
@@ -473,7 +473,7 @@ namespace TractorServer
                         SaveGameStateToFile();
                         if (sb != null)
                         {
-                            PublishMessage(string.Format("恭喜{0}获胜！点击就绪重新开始游戏", sb.ToString()));
+                            PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
                         }
                         else if (TractorHost.gameConfig.IsFullDebug)
                         {
@@ -524,9 +524,10 @@ namespace TractorServer
                         playersIDToCall.Add(player.Key);
                     }
                 }
-                if (playersIDToCall.Count>0)
+                if (playersIDToCall.Count > 0)
                 {
                     IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyDumpingValidationResult", new List<object>() { result });
+                    IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
                 }
             }
             var cardString = "";
@@ -558,7 +559,7 @@ namespace TractorServer
 
             if (!isValid)
             {
-                PublishMessage("随机组队失败：玩家人数不够");
+                PublishMessage(new string[] { "随机组队失败", "玩家人数不够" });
                 return;
             }
 
@@ -583,7 +584,7 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
-            PublishMessage("随机组队成功！请点击就绪开始游戏");
+            PublishMessage(new string[] { "随机组队成功", "请点击就绪开始游戏" });
         }
 
         //和下家互换座位
@@ -601,7 +602,7 @@ namespace TractorServer
 
             if (!isValid)
             {
-                PublishMessage("和下家互换座位失败：玩家人数不够");
+                PublishMessage(new string[] { "和下家互换座位失败", "玩家人数不够" });
                 return;
             }
 
@@ -642,7 +643,7 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
-            PublishMessage(string.Format("玩家【{0}】和下家【{1}】互换座位成功！请点击就绪开始游戏", playerId, nextPlayerId));
+            PublishMessage(new string[] { string.Format("玩家【{0}】", playerId), string.Format("和下家【{0}】", nextPlayerId), "互换座位成功", "请点击就绪开始游戏" });
         }
 
         //旁观：选牌
@@ -667,7 +668,7 @@ namespace TractorServer
 
             if (!isValid)
             {
-                PublishMessage("读取牌局失败：玩家人数不够");
+                PublishMessage(new string[] { "读取牌局失败", "玩家人数不够" });
                 return;
             }
 
@@ -703,7 +704,7 @@ namespace TractorServer
 
                 if (lastStarterIndex < 0)
                 {
-                    PublishMessage("读取牌局失败：上盘牌局无庄家");
+                    PublishMessage(new string[] { "读取牌局失败", "上盘牌局无庄家" });
                     return;
                 }
 
@@ -739,11 +740,11 @@ namespace TractorServer
                     }
                 }
 
-                PublishMessage("读取牌局成功！请点击就绪继续上盘游戏");
+                PublishMessage(new string[] { "读取牌局成功", "请点击就绪继续上盘游戏" }); ;
             }
             catch (Exception ex)
             {
-                PublishMessage("读取牌局失败：牌局存档文件读取失败");
+                PublishMessage(new string[] { "读取牌局失败", "牌局存档文件读取失败" });
             }
             finally
             {
@@ -777,7 +778,7 @@ namespace TractorServer
 
             if (!isValid)
             {
-                PublishMessage(string.Format("设置从{0}打起失败：玩家人数不够", beginRankString));
+                PublishMessage(new string[] { string.Format("设置从{0}打起失败", beginRankString), "玩家人数不够" });
                 return;
             }
             int beginRank = 0;
@@ -821,7 +822,7 @@ namespace TractorServer
 
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
-            PublishMessage(string.Format("设置从{0}打起成功！请点击就绪开始游戏", beginRankString));
+            PublishMessage(new string[] { string.Format("设置从{0}打起成功", beginRankString), "请点击就绪开始游戏" });
         }
 
         //旁观玩家 by id
@@ -912,6 +913,10 @@ namespace TractorServer
             var oldTrump = CurrentRoomState.CurrentHandState.Trump;
             while (true)
             {
+                if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
+                {
+                    PublishMessage(new string[] { "无人亮主", "庄家将会自动下台！" });
+                }
                 PublishStartTimer(5);
                 Thread.Sleep(5000 + 1000);
                 if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
@@ -939,6 +944,10 @@ namespace TractorServer
                 var oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
                 while (true)
                 {
+                    if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
+                    {
+                        PublishMessage(new string[] { "再次无人亮主", "庄家将会自动下台！", "并且重新摸牌！" });
+                    }
                     PublishStartTimer(5);
                     Thread.Sleep(5000 + 1000);
                     if (CurrentRoomState.CurrentHandState.Trump == oldTrump2)
@@ -1231,7 +1240,7 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState });
         }
 
-        public void PublishMessage(string msg)
+        public void PublishMessage(string[] msg)
         {
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });

@@ -1627,6 +1627,49 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
+        internal void DrawCountDown(bool shouldDraw)
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            int x = 350, y = 500, size=80;
+            Rectangle rectsrc = new Rectangle(0, 0, size, size);
+            Rectangle rect = new Rectangle(x, y, size, size);
+            g.DrawImage(mainForm.image, rect, rectsrc, GraphicsUnit.Pixel);
+
+            if (shouldDraw)
+            {
+                Font font = new Font("ËÎÌו", 50, FontStyle.Bold);
+                int countDown = mainForm.timerCountDown;
+                g.DrawString(countDown.ToString(), font, Brushes.Yellow, x, y);
+            }
+            mainForm.Refresh();
+            g.Dispose();
+        }
+
+        internal void DrawMessages(string[] msgs)
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            int x = 300, y = 560, width = 300, height = (msgs.Length) * 21 + 8;
+            y = y - height;
+            Rectangle rectsrc = new Rectangle(0, 0, width, height);
+            Rectangle rect = new Rectangle(x, y, width, height);
+            g.DrawImage(mainForm.image, rect, rectsrc, GraphicsUnit.Pixel);
+
+            if (msgs != null)
+            {
+                y += 4;
+                int fontSize = 16;
+                Font font = new Font("ËÎÌו", fontSize, FontStyle.Bold);
+                for (int i = 0; i < msgs.Length; i++)
+                {
+                    g.DrawString(msgs[i], font, Brushes.Yellow, x, y + i * (fontSize + 5));
+                }
+            }
+            mainForm.Refresh();
+            g.Dispose();
+        }
+
         internal void DrawFinishedScoreImage()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);

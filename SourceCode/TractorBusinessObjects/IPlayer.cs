@@ -23,7 +23,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //广播消息
         [OperationContract(IsOneWay = true)]
-        void NotifyMessage(string msg);
+        void NotifyMessage(string[] msg);
 
         //广播倒计时
         [OperationContract(IsOneWay = true)]

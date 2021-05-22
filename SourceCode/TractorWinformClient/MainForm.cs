@@ -92,6 +92,7 @@ namespace Duan.Xiugang.Tractor
         internal int whoShowRank = 0;
         internal int whoseOrder = 0; //0未定,1我，2对家，3西家,4东家
 
+        internal int timerCountDown = 0;
 
         //音乐文件
 
@@ -529,10 +530,10 @@ namespace Duan.Xiugang.Tractor
                                     (Convert.ToInt32(ThisPlayer.CurrentHandState.TrumpExposingPoker) + 1);
                             if (trump == Suit.Joker)
                             {
-                                if (ThisPlayer.CurrentPoker.BlackJoker == 2)
-                                    next = TrumpExposingPoker.PairBlackJoker;
-                                else if (ThisPlayer.CurrentPoker.RedJoker == 2)
+                                if (ThisPlayer.CurrentPoker.RedJoker == 2)
                                     next = TrumpExposingPoker.PairRedJoker;
+                                else if (ThisPlayer.CurrentPoker.BlackJoker == 2)
+                                    next = TrumpExposingPoker.PairBlackJoker;
                             }
                             ThisPlayer.ExposeTrump(next, trump);
                         }
@@ -616,11 +617,12 @@ namespace Duan.Xiugang.Tractor
                         //甩牌失败
                     else
                     {
+                        this.drawingFormHelper.DrawMessages(new string[] { string.Format("甩牌{0}张失败", SelectedCards.Count), string.Format("罚分：{0}", SelectedCards.Count * 10) });
+                        Thread.Sleep(5000);
                         foreach (int card in result.MustShowCardsForDumpingFail)
                         {
                             ThisPlayer.CurrentPoker.RemoveCard(card);
                         }
-                        Thread.Sleep(2000);
                         ThisPlayer.ShowCards(result.MustShowCardsForDumpingFail);
 
                         SelectedCards = result.MustShowCardsForDumpingFail;
@@ -1240,6 +1242,10 @@ namespace Duan.Xiugang.Tractor
                 }
                 SelectedCards.Clear();
             }
+            else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
+            {
+                drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+            }
         }
 
         private void ThisPlayer_TrickFinished()
@@ -1318,14 +1324,15 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void ThisPlayer_NotifyMessageEventHandler(string msg)
+        private void ThisPlayer_NotifyMessageEventHandler(string[] msgs)
         {
-            MessageBox.Show(msg);
+            this.drawingFormHelper.DrawMessages(msgs);
         }
 
         private void ThisPlayer_NotifyStartTimerEventHandler(int timerLength)
         {
-            this.lblTheTimer.Text = timerLength.ToString();
+            this.timerCountDown = timerLength;
+            this.drawingFormHelper.DrawCountDown(true);
             this.theTimer.Start();
         }
 
@@ -1500,18 +1507,14 @@ namespace Duan.Xiugang.Tractor
 
         private void theTimer_Tick(object sender, EventArgs e)
         {
-            int timeRemaining = 0;
-            if (int.TryParse(this.lblTheTimer.Text, out timeRemaining))
+            if (this.timerCountDown > 0)
             {
-                if (timeRemaining > 0)
-                {
-                    this.lblTheTimer.Text = (timeRemaining - 1).ToString();
-                    if (timeRemaining - 1 > 0) return;
-                }
+                this.timerCountDown--;
+                this.drawingFormHelper.DrawCountDown(true);
+                if (this.timerCountDown - 1 > 0) return;
             }
-            Refresh();
             Thread.Sleep(200);
-            this.lblTheTimer.Text = "";
+            this.drawingFormHelper.DrawCountDown(false);
             this.theTimer.Stop();
         }
 
@@ -1620,18 +1623,22 @@ namespace Duan.Xiugang.Tractor
 
         private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)
         {
-            string userManual = "【隐藏技】";
-            userManual += "\n摸牌时开启托管可在达到5张时自动亮牌";
-            userManual += "\n右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
-            userManual += "\n查看上轮出牌：右键单击空白处";
-            userManual += "\n查看得分牌：点得分图标";
-            userManual += "\n查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
+            string userManual = "";
+            userManual = "【基本规则】";
+            userManual += "\n- 无人亮主，庄家将会自动下台";
+            userManual += "\n- 甩牌失败，将会以每张10分进行罚分";
+            userManual += "\n\n【隐藏技】";
+            userManual += "\n- 摸牌时开启托管可在达到5张时自动亮牌";
+            userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
+            userManual += "\n- 查看上轮出牌：右键单击空白处";
+            userManual += "\n- 查看得分牌：点得分图标";
+            userManual += "\n- 查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
             userManual += "\n\n【快捷键】";
-            userManual += "\n进入大厅：F1";
-            userManual += "\n进入第一个房间：F2";
-            userManual += "\n就绪：F3";
-            userManual += "\n托管：F4";
-            userManual += "\n旁观下家：F5（仅限旁观模式下）";
+            userManual += "\n- 进入大厅：F1";
+            userManual += "\n- 进入第一个房间：F2";
+            userManual += "\n- 就绪：F3";
+            userManual += "\n- 托管：F4";
+            userManual += "\n- 旁观下家：F5（仅限旁观模式下）";
             userManual += "\n\n此帮助信息可在菜单【帮助】【使用说明】中再次查看";
             userManual += "\n\n不再提示？";
 
