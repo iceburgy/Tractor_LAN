@@ -1091,7 +1091,7 @@ namespace Duan.Xiugang.Tractor
         /// 画对家的牌
         /// </summary>
         /// <param name="readys"></param>
-        private void DrawFriendUserSendedCardsAction(ArrayList readys)
+        internal void DrawFriendUserSendedCardsAction(ArrayList readys)
         {
             int start = 285;
             Graphics g = Graphics.FromImage(mainForm.bmp);
@@ -1112,7 +1112,7 @@ namespace Duan.Xiugang.Tractor
         /// 画上家应该出的牌
         /// </summary>
         /// <param name="readys"></param>
-        private void DrawPreviousUserSendedCardsAction(ArrayList readys)
+        internal void DrawPreviousUserSendedCardsAction(ArrayList readys)
         {
             int start = 245;
             Graphics g = Graphics.FromImage(mainForm.bmp);
@@ -1132,7 +1132,7 @@ namespace Duan.Xiugang.Tractor
         /// 画下家应该出的牌
         /// </summary>
         /// <param name="readys"></param>
-        private void DrawNextUserSendedCardsAction(ArrayList readys)
+        internal void DrawNextUserSendedCardsAction(ArrayList readys)
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
@@ -1650,7 +1650,7 @@ namespace Duan.Xiugang.Tractor
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            int x = 300, y = 560, width = 300, height = (msgs.Length) * 21 + 8;
+            int x = 300, y = 496, width = 300, height = (msgs.Length) * 21 + 8;
             y = y - height;
             Rectangle rectsrc = new Rectangle(0, 0, width, height);
             Rectangle rect = new Rectangle(x, y, width, height);

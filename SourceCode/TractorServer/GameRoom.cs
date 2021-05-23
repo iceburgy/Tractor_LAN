@@ -727,6 +727,7 @@ namespace TractorServer
                 UpdateGameState();
                 UpdatePlayersCurrentHandState();
 
+                string restoredMsg = "读取牌局成功";
                 if (restoreCardsShoe)
                 {
                     string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
@@ -737,10 +738,11 @@ namespace TractorServer
                         CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
                         this.CardsShoe.IsCardsRestored = true;
                         this.CardsShoe.Cards = cs.Cards;
+                        restoredMsg = "读取牌局并还原手牌成功";
                     }
                 }
 
-                PublishMessage(new string[] { "读取牌局成功", "请点击就绪继续上盘游戏" }); ;
+                PublishMessage(new string[] { restoredMsg, "请点击就绪继续上盘游戏" }); ;
             }
             catch (Exception ex)
             {
@@ -852,6 +854,7 @@ namespace TractorServer
         public void RestartGame(int curRank)
         {
             log.Debug("restart game with current set rank");
+            CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
 
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Rank = curRank;
@@ -893,6 +896,8 @@ namespace TractorServer
 
         public void StartNextHand(PlayerEntity nextStarter)
         {
+            CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+
             UpdateGameState();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Starter = nextStarter.PlayerId;

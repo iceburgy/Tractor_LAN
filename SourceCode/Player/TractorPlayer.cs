@@ -54,6 +54,8 @@ namespace Duan.Xiugang.Tractor.Player
         public CurrentPoker CurrentPoker;
         public CurrentHandState CurrentHandState { get; set; }
         public CurrentTrickState CurrentTrickState { get; set; }
+        public Dictionary<string, List<int>> ShowedCardsInCurrentTrick { get; set; }
+        public bool ShowLastTrickCards;
 
         public event GameHallUpdatedEventHandler GameHallUpdatedEvent;
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
@@ -94,6 +96,7 @@ namespace Duan.Xiugang.Tractor.Player
             CurrentGameState = new GameState();
             CurrentHandState = new CurrentHandState(CurrentGameState);
             CurrentTrickState = new CurrentTrickState();
+            ShowedCardsInCurrentTrick = new Dictionary<string, List<int>>();
 
             var instanceContext = new InstanceContext(this);
             var channelFactory = new DuplexChannelFactory<ITractorHost>(instanceContext, "NetTcpBinding_ITractorHost");

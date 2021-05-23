@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -284,6 +285,10 @@ namespace Duan.Xiugang.Tractor
 
         private void init()
         {
+            //游戏开始前重置各种变量
+            this.ThisPlayer.ShowLastTrickCards = false;
+            this.ThisPlayer.ShowedCardsInCurrentTrick.Clear();
+
             //每次初始化都重绘背景
             Graphics g = Graphics.FromImage(bmp);
             drawingFormHelper.DrawBackground(g);
@@ -471,8 +476,16 @@ namespace Duan.Xiugang.Tractor
                     }
                     else
                     {
-                        //绘制上一轮各家所出的牌，缩小至一半，放在左下角
-                        ThisPlayer_PlayerLastTrickShowedCards();
+                        this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
+                        //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前轮各家所出的牌
+                        if (this.ThisPlayer.ShowLastTrickCards)
+                        {
+                            ThisPlayer_PlayerLastTrickShowedCards();
+                        }
+                        else
+                        {
+                            ThisPlayer_PlayerCurrentTrickShowedCards();
+                        }
                         Refresh();
                     }
                 }
@@ -728,30 +741,39 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_PlayerShowedCards()
         {
-            //擦掉上一把
-            if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
-            {
-                drawingFormHelper.DrawCenterImage();
-                drawingFormHelper.DrawScoreImage();
-            }
-
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
-            int position = PlayerPosition[latestPlayer];
-            if (latestPlayer == ThisPlayer.PlayerId)
+            this.ThisPlayer.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+
+            //如果自己刚刚出了牌，则重置回看
+            if (latestPlayer == ThisPlayer.PlayerId) this.ThisPlayer.ShowLastTrickCards = false;
+
+            //如果不在回看上轮出牌，才重画刚刚出的牌
+            if (!this.ThisPlayer.ShowLastTrickCards)
             {
-                drawingFormHelper.DrawMyShowedCards();
-            }
-            if (position == 2)
-            {
-                drawingFormHelper.DrawNextUserSendedCards();
-            }
-            if (position == 3)
-            {
-                drawingFormHelper.DrawFriendUserSendedCards();
-            }
-            if (position == 4)
-            {
-                drawingFormHelper.DrawPreviousUserSendedCards();
+                //擦掉上一把
+                if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
+                {
+                    drawingFormHelper.DrawCenterImage();
+                    drawingFormHelper.DrawScoreImage();
+                }
+
+                int position = PlayerPosition[latestPlayer];
+                if (latestPlayer == ThisPlayer.PlayerId)
+                {
+                    drawingFormHelper.DrawMyShowedCards();
+                }
+                if (position == 2)
+                {
+                    drawingFormHelper.DrawNextUserSendedCards();
+                }
+                if (position == 3)
+                {
+                    drawingFormHelper.DrawFriendUserSendedCards();
+                }
+                if (position == 4)
+                {
+                    drawingFormHelper.DrawPreviousUserSendedCards();
+                }
             }
 
             if (ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
@@ -801,6 +823,12 @@ namespace Duan.Xiugang.Tractor
         //绘制上一轮各家所出的牌，缩小至一半，放在左下角
         private void ThisPlayer_PlayerLastTrickShowedCards()
         {
+            //擦掉上一把
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImage();
+
+            this.drawingFormHelper.DrawMessages(new string[]{"回看上轮出牌..."});
+
             if (ThisPlayer.CurrentTrickState.ShowedCardsInLastTrick.Count == 0) return;
             foreach (var entry in ThisPlayer.CurrentTrickState.ShowedCardsInLastTrick)
             {
@@ -821,6 +849,39 @@ namespace Duan.Xiugang.Tractor
                 if (position == 4)
                 {
                     drawingFormHelper.DrawPreviousUserLastSendedCardsAction(new ArrayList(entry.Value));
+                }
+            }
+        }
+
+        //绘制当前轮各家所出的牌（仅用于切换视角时）
+        private void ThisPlayer_PlayerCurrentTrickShowedCards()
+        {
+            //擦掉出牌区
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImage();
+
+            if (this.ThisPlayer.ShowedCardsInCurrentTrick != null && this.ThisPlayer.ShowedCardsInCurrentTrick.Count > 0)
+            {
+                foreach (var entry in this.ThisPlayer.ShowedCardsInCurrentTrick)
+                {
+                    string player = entry.Key;
+                    int position = PlayerPosition[player];
+                    if (position == 1)
+                    {
+                        drawingFormHelper.DrawMySendedCardsAction(new ArrayList(entry.Value));
+                    }
+                    if (position == 2)
+                    {
+                        drawingFormHelper.DrawNextUserSendedCardsAction(new ArrayList(entry.Value));
+                    }
+                    if (position == 3)
+                    {
+                        drawingFormHelper.DrawFriendUserSendedCardsAction(new ArrayList(entry.Value));
+                    }
+                    if (position == 4)
+                    {
+                        drawingFormHelper.DrawPreviousUserSendedCardsAction(new ArrayList(entry.Value));
+                    }
                 }
             }
         }
@@ -1511,7 +1572,7 @@ namespace Duan.Xiugang.Tractor
             {
                 this.timerCountDown--;
                 this.drawingFormHelper.DrawCountDown(true);
-                if (this.timerCountDown - 1 > 0) return;
+                if (this.timerCountDown > 0) return;
             }
             Thread.Sleep(200);
             this.drawingFormHelper.DrawCountDown(false);
