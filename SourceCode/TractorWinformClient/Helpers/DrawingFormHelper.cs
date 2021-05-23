@@ -1675,8 +1675,8 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             Pen pen = new Pen(Color.White, 2);
-            g.FillRectangle(new SolidBrush(Color.FromArgb(100, Color.White)), 77, 124, 476 + offsetCenter, 244 * scaleDividend / scaleDivisor);
-            g.DrawRectangle(pen, 77, 124, 476 + offsetCenter, 244 * scaleDividend / scaleDivisor);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(100, Color.White)), 90, 124, 463 + offsetCenter, 244 * scaleDividend / scaleDivisor);
+            g.DrawRectangle(pen, 90, 124, 463 + offsetCenter, 244 * scaleDividend / scaleDivisor);
 
             //»­µ×ÅÆ,´Ó169¿ªÊ¼»­
             for (int i = 0; i < 8; i++)

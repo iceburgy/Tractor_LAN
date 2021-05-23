@@ -511,7 +511,16 @@ namespace Duan.Xiugang.Tractor
             //一局结束时右键查看最后一轮各家所出的牌，缩小至一半，放在左下角
             else if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Ending && e.Button == MouseButtons.Right) //右键
             {
-                ThisPlayer_PlayerLastTrickShowedCards();
+                this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
+                //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前结束画面
+                if (this.ThisPlayer.ShowLastTrickCards)
+                {
+                    ThisPlayer_PlayerLastTrickShowedCards();
+                }
+                else
+                {
+                    ThisPlayer_ShowEnding();
+                }
                 Refresh();
             }
         }
@@ -884,6 +893,16 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
             }
+        }
+
+        //绘制当前结束画面（仅用于切换视角时）
+        private void ThisPlayer_ShowEnding()
+        {
+            //擦掉出牌区
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImage();
+
+            ThisPlayer_HandEnding();
         }
 
         private void ThisPlayer_ShowingCardBegan()
