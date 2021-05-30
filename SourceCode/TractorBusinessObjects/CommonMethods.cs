@@ -10,6 +10,37 @@ namespace Duan.Xiugang.Tractor.Objects
     /// </summary>
     public class CommonMethods
     {
+        static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+        /// <summary>
+        ///     得到一个牌的花色
+        /// </summary>
+        /// <param name="a">牌值</param>
+        /// <returns>花色</returns>
+        public static string GetSuitString(int a)
+        {
+            int suitInt = GetSuit(a);
+            Suit suit = (Suit)suitInt;
+            return suit.ToString();
+        }
+
+        /// <summary>
+        ///     得到一个牌的点数
+        /// </summary>
+        /// <param name="a">牌值</param>
+        /// <returns>点数</returns>
+        public static string GetNumberString(int a)
+        {
+            if (a == 52)
+            {
+                return "Small";
+            }
+            if (a == 53)
+            {
+                return "Big";
+            }
+            return cardNumToValue[a % 13];
+        }
 
         /// <summary>
         ///     得到一个牌的花色

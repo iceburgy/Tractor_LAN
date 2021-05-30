@@ -327,6 +327,9 @@ namespace TractorServer
             Thread.Sleep(2000);
             if (trump == CurrentRoomState.CurrentHandState.Trump) //没有玩家反
             {
+                //log trump and rank before a new game starts
+                log.Debug(string.Format("starting a new game: starter {0} {1} {2}", CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentHandState.Trump.ToString(), (CurrentRoomState.CurrentHandState.Rank + 2).ToString()));
+
                 BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
                 CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Playing;
                 UpdatePlayersCurrentHandState();
@@ -376,7 +379,7 @@ namespace TractorServer
                 string cardsString = "";
                 foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
                 {
-                    cardsString += card.ToString() + " ";
+                    cardsString += string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card));
                 }
                 log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
                 //更新每个用户手中的牌在SERVER
