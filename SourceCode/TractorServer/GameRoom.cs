@@ -350,6 +350,9 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.TrumpMaker = trumpMaker;
                     CurrentRoomState.CurrentHandState.Trump = trump;
 
+                    //log who made what trump
+                    log.Debug(string.Format("player made trump: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), (CurrentRoomState.CurrentHandState.Rank + 2).ToString()));
+
                     TrumpState tempLastTrumState = new TrumpState();
                     tempLastTrumState.TrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
                     tempLastTrumState.TrumpMaker = CurrentRoomState.CurrentHandState.TrumpMaker;
@@ -1434,7 +1437,6 @@ namespace TractorServer
 
         private void Swap(int[] Cards, int i, int r)
         {
-            log.Debug(string.Format("swapping: {0} and {1}", i, r));
             int temp = Cards[r];
             Cards[r] = Cards[i];
             Cards[i] = temp;
