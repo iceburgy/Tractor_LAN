@@ -85,6 +85,7 @@ namespace Duan.Xiugang.Tractor
             this.btnExitRoom = new System.Windows.Forms.Button();
             this.progressBarPingHost = new System.Windows.Forms.ProgressBar();
             this.tmrGeneral = new System.Windows.Forms.Timer(this.components);
+            this.btnPig = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -597,11 +598,24 @@ namespace Duan.Xiugang.Tractor
             this.tmrGeneral.Interval = 1000;
             this.tmrGeneral.Tick += new System.EventHandler(this.tmrGeneral_Tick);
             // 
+            // btnPig
+            // 
+            this.btnPig.Font = new System.Drawing.Font("Microsoft Sans Serif", 17F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel, ((byte)(134)));
+            this.btnPig.Location = new System.Drawing.Point(536, 545);
+            this.btnPig.Name = "btnPig";
+            this.btnPig.Size = new System.Drawing.Size(53, 46);
+            this.btnPig.TabIndex = 27;
+            this.btnPig.Text = "È·¶¨";
+            this.btnPig.UseVisualStyleBackColor = true;
+            this.btnPig.Visible = false;
+            this.btnPig.Click += new System.EventHandler(this.btnPig_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnPig);
             this.Controls.Add(this.progressBarPingHost);
             this.Controls.Add(this.btnExitRoom);
             this.Controls.Add(this.btnObserveNext);
@@ -696,6 +710,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ProgressBar progressBarPingHost;
         private System.Windows.Forms.Timer tmrGeneral;
         private System.Windows.Forms.ToolStripMenuItem RestoreGameStateCardsShoeToolStripMenuItem;
+        public System.Windows.Forms.Button btnPig;
     }
 }
 

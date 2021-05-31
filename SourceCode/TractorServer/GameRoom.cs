@@ -1008,6 +1008,11 @@ namespace TractorServer
             List<string> playerIDs = new List<string>();
             for (int i = 0; i < 4; i++)
             {
+                if (CurrentRoomState.CurrentGameState.Players[i] == null)
+                {
+                    //玩家退出，停止发牌
+                    return false;
+                }
                 playerIDs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
             }
             for (int i = 0; i < cardNumberofEachPlayer; i++)

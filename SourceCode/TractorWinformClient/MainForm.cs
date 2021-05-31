@@ -349,19 +349,6 @@ namespace Duan.Xiugang.Tractor
                             ThisPlayer.CardsReady(ThisPlayer.PlayerId, myCardIsReady);
                         }
                     }
-                    else if ((e.X >= 20 && e.X <= (20 + 70) || e.X >= drawingFormHelper.offsetSideBar && e.X <= (drawingFormHelper.offsetSideBar + 70)) && (e.Y >= 30 && e.Y < 30 + 80))
-                    {
-                        //点上方任一亮牌框查看谁亮过什么牌
-                        if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
-                        {
-                            drawingFormHelper.LastTrumpMadeCardsShow();
-                        }
-                    }
-                    else if (e.X >= drawingFormHelper.offsetSideBar - 56 && e.X <= drawingFormHelper.offsetSideBar && e.Y >= 128 && e.Y < 128 + 56)
-                    {
-                        //点得分图标查看得分牌
-                        drawingFormHelper.DrawScoreCards();
-                    }
                 }
                 else if (e.Button == MouseButtons.Right) //右键
                 {
@@ -477,29 +464,19 @@ namespace Duan.Xiugang.Tractor
                     else
                     {
                         this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
-                        //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前轮各家所出的牌
                         if (this.ThisPlayer.ShowLastTrickCards)
                         {
+                            //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前轮各家所出的牌
                             ThisPlayer_PlayerLastTrickShowedCards();
+                            //查看谁亮过什么牌
+                            drawingFormHelper.LastTrumpMadeCardsShow();
+                            //查看得分牌
+                            drawingFormHelper.DrawScoreCards();
                         }
                         else
                         {
                             ThisPlayer_PlayerCurrentTrickShowedCards();
                         }
-                        Refresh();
-                    }
-                }
-
-
-                //判断是否点击了小猪*********和以上的点击不同
-                var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
-                var region = new Region(pigRect);
-                if (region.IsVisible(e.X, e.Y))
-                {
-                    if (SelectedCards.Count > 0)
-                    {
-                        ToDiscard8Cards();
-                        ToShowCards();
                     }
                 }
             }
@@ -512,16 +489,19 @@ namespace Duan.Xiugang.Tractor
             else if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Ending && e.Button == MouseButtons.Right) //右键
             {
                 this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
-                //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前结束画面
                 if (this.ThisPlayer.ShowLastTrickCards)
                 {
+                    //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前结束画面
                     ThisPlayer_PlayerLastTrickShowedCards();
+                    //查看谁亮过什么牌
+                    drawingFormHelper.LastTrumpMadeCardsShow();
+                    //查看得分牌
+                    drawingFormHelper.DrawScoreCards();
                 }
                 else
                 {
                     ThisPlayer_ShowEnding();
                 }
-                Refresh();
             }
         }
 
@@ -570,8 +550,6 @@ namespace Duan.Xiugang.Tractor
 
         private void ToDiscard8Cards()
         {
-            var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
-            var pigRectEmpty = new Rectangle(296, 300, 53, 46);
             //判断是否处在扣牌阶段
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
                 ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
@@ -579,9 +557,7 @@ namespace Duan.Xiugang.Tractor
                 if (SelectedCards.Count == 8)
                 {
                     //扣牌,所以擦去小猪
-                    Graphics g = Graphics.FromImage(bmp);
-                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
-                    g.Dispose();
+                    this.btnPig.Visible = false;
 
                     foreach (int card in SelectedCards)
                     {
@@ -597,9 +573,6 @@ namespace Duan.Xiugang.Tractor
 
         private void ToShowCards()
         {
-            var pigRect = new Rectangle(296 + drawingFormHelper.offsetXPig, 300 + drawingFormHelper.offsetY, 53, 46);
-            var pigRectEmpty = new Rectangle(296, 300, 53, 46);
-            Graphics g = Graphics.FromImage(bmp);
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
             {
@@ -609,7 +582,7 @@ namespace Duan.Xiugang.Tractor
                 if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
                 {
                     //擦去小猪
-                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
+                    this.btnPig.Visible = false;
 
                     foreach (int card in SelectedCards)
                     {
@@ -622,7 +595,7 @@ namespace Duan.Xiugang.Tractor
                 else if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.TryToDump)
                 {
                     //擦去小猪
-                    g.DrawImage(image, pigRect, pigRectEmpty, GraphicsUnit.Pixel);
+                    this.btnPig.Visible = false;
 
                     ShowingCardsValidationResult result = ThisPlayer.ValidateDumpingCards(SelectedCards);
                     if (result.ResultType == ShowingCardsValidationResultType.DumpingSuccess) //甩牌成功.
@@ -652,7 +625,6 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
             }
-            g.Dispose();
         }
 
         //窗口绘画处理,将缓冲区图像画到窗口上
@@ -753,9 +725,6 @@ namespace Duan.Xiugang.Tractor
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
             this.ThisPlayer.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
 
-            //如果自己刚刚出了牌，则重置回看
-            if (latestPlayer == ThisPlayer.PlayerId) this.ThisPlayer.ShowLastTrickCards = false;
-
             //如果不在回看上轮出牌，才重画刚刚出的牌
             if (!this.ThisPlayer.ShowLastTrickCards)
             {
@@ -767,22 +736,29 @@ namespace Duan.Xiugang.Tractor
                 }
 
                 int position = PlayerPosition[latestPlayer];
-                if (latestPlayer == ThisPlayer.PlayerId)
+                if (position == 1)
                 {
                     drawingFormHelper.DrawMyShowedCards();
                 }
-                if (position == 2)
+                else if (position == 2)
                 {
                     drawingFormHelper.DrawNextUserSendedCards();
                 }
-                if (position == 3)
+                else if (position == 3)
                 {
                     drawingFormHelper.DrawFriendUserSendedCards();
                 }
-                if (position == 4)
+                else if (position == 4)
                 {
                     drawingFormHelper.DrawPreviousUserSendedCards();
                 }
+            }
+
+            //如果自己正在回看并且刚刚出了牌，则重置回看
+            if (this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
+            {
+                this.ThisPlayer.ShowLastTrickCards = false;
+                ThisPlayer_PlayerCurrentTrickShowedCards();
             }
 
             if (ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
@@ -847,19 +823,20 @@ namespace Duan.Xiugang.Tractor
                 {
                     drawingFormHelper.DrawMyLastSendedCardsAction(new ArrayList(entry.Value));
                 }
-                if (position == 2)
+                else if (position == 2)
                 {
                     drawingFormHelper.DrawNextUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
-                if (position == 3)
+                else if (position == 3)
                 {
                     drawingFormHelper.DrawFriendUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
-                if (position == 4)
+                else if (position == 4)
                 {
                     drawingFormHelper.DrawPreviousUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
             }
+            Refresh();
         }
 
         //绘制当前轮各家所出的牌（仅用于切换视角时）
@@ -879,20 +856,21 @@ namespace Duan.Xiugang.Tractor
                     {
                         drawingFormHelper.DrawMySendedCardsAction(new ArrayList(entry.Value));
                     }
-                    if (position == 2)
+                    else if (position == 2)
                     {
                         drawingFormHelper.DrawNextUserSendedCardsAction(new ArrayList(entry.Value));
                     }
-                    if (position == 3)
+                    else if (position == 3)
                     {
                         drawingFormHelper.DrawFriendUserSendedCardsAction(new ArrayList(entry.Value));
                     }
-                    if (position == 4)
+                    else if (position == 4)
                     {
                         drawingFormHelper.DrawPreviousUserSendedCardsAction(new ArrayList(entry.Value));
                     }
                 }
             }
+            Refresh();
         }
 
         //绘制当前结束画面（仅用于切换视角时）
@@ -1710,9 +1688,7 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n\n【隐藏技】";
             userManual += "\n- 摸牌时开启托管可在达到5张时自动亮牌";
             userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
-            userManual += "\n- 查看上轮出牌：右键单击空白处";
-            userManual += "\n- 查看得分牌：点得分图标";
-            userManual += "\n- 查看谁亮过什么牌：点上方任一亮牌框（东西/南北）";
+            userManual += "\n- 右键单击空白处查看：上轮出牌、谁亮过什么牌、得分牌";
             userManual += "\n\n【快捷键】";
             userManual += "\n- 进入大厅：F1";
             userManual += "\n- 进入第一个房间：F2";
@@ -1760,6 +1736,12 @@ namespace Duan.Xiugang.Tractor
                 this.progressBarPingHost.Hide();
                 Refresh();
             }
+        }
+
+        private void btnPig_Click(object sender, EventArgs e)
+        {
+            ToDiscard8Cards();
+            ToShowCards();
         }
     }
 }
