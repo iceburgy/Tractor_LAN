@@ -771,6 +771,11 @@ namespace Duan.Xiugang.Tractor
                 ResortMyCards();
             }
 
+            RobotPlayFollowing();
+        }
+
+        private void RobotPlayFollowing()
+        {
             //最后一轮自动跟出
             bool isLastTrick = false;
             if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
@@ -1010,6 +1015,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_PlayerToggleIsRobot(bool isRobot)
         {
+            bool shouldTrigger = isRobot && isRobot != gameConfig.IsDebug;
             this.ToolStripMenuItemRobot.Checked = isRobot;
             gameConfig.IsDebug = isRobot;
             this.btnRobot.Text = isRobot ? "取消" : "托管";
@@ -1046,6 +1052,12 @@ namespace Duan.Xiugang.Tractor
                     readyLabels[i].Text = (curIndex + 1).ToString();
                 }
                 curIndex = (curIndex + 1) % 4;
+            }
+
+            if (shouldTrigger)
+            {
+                if (!ThisPlayer.CurrentTrickState.IsStarted()) this.RobotPlayStarting();
+                else this.RobotPlayFollowing();
             }
         }
 
@@ -1276,7 +1288,16 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_TrickStarted()
         {
-            //托管代打，先手
+            if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
+            {
+                drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+            }
+            RobotPlayStarting();
+        }
+
+        //托管代打，先手
+        private void RobotPlayStarting()
+        {
             if (gameConfig.IsDebug && !ThisPlayer.isObserver &&
                 (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished) &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
@@ -1299,10 +1320,6 @@ namespace Duan.Xiugang.Tractor
                     MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
                 }
                 SelectedCards.Clear();
-            }
-            else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
-            {
-                drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
             }
         }
 
