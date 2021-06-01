@@ -1071,7 +1071,7 @@ namespace Duan.Xiugang.Tractor
                 DrawMyImage(g, getPokerImageByNumber(card), start + offsetCenterHalf, 244 + offsetCenter, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 start += 12 * scaleDividend / scaleDivisor;
             }
-            mainForm.Refresh();
+
             g.Dispose();
         }
 
@@ -1088,8 +1088,6 @@ namespace Duan.Xiugang.Tractor
                 DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 start += 12 * scaleDividend / scaleDivisor;
             }
-            // RedrawFrieldUserCardsAction(g, mainForm.currentPokers[1]);
-
 
             g.Dispose();
         }
@@ -1109,8 +1107,6 @@ namespace Duan.Xiugang.Tractor
                 DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
-            // RedrawPreviousUserCardsAction(g, mainForm.currentPokers[2]);
-
             g.Dispose();
         }
 
@@ -1128,13 +1124,49 @@ namespace Duan.Xiugang.Tractor
                 DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 326 + offsetCenter + i * 12 * scaleDividend / scaleDivisor, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
             }
 
-            //RedrawNextUserCardsAction(g, mainForm.currentPokers[3]);
-
-
             g.Dispose();
         }
 
+        public void DrawOverridingFlag(int position, int winResult)
+        {
+            int x = 0, y = 0;
+            switch (position)
+            {
+                case 1:
+                    x = 285 + offsetCenterHalf;
+                    y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor;
+                    break;
+                case 2:
+                    x = 326 + offsetCenter;
+                    y = 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor;
+                    break;
+                case 3:
+                    x = 285 + offsetCenterHalf;
+                    y = 130 + 96 * scaleDividend / scaleDivisor;
+                    break;
+                case 4:
+                    x = 245;
+                    y = 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor;
+                    break;
+                default:
+                    return;
+            }
 
+            Bitmap pic = Properties.Resources.Ready;
+            int width = 53;
+            int height = 46;
+            if (winResult == 2)
+            {
+                pic = Properties.Resources.About;
+                width = 120;
+                height = 87;
+            }
+
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            DrawMyImage(g, pic, x, y - height, width, height);
+            g.Dispose();
+            mainForm.Refresh();
+        }
 
         #endregion // 在各种情况下画自己的牌
 
@@ -1491,16 +1523,6 @@ namespace Duan.Xiugang.Tractor
             var latestCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.CurrentTrickState.LatestPlayerShowedCard()];
             DrawNextUserSendedCardsAction(new ArrayList(latestCards));
 
-
-            //考虑是否盖住的问题
-            //我已经出牌，应该将我重画
-            var myShowedCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.PlayerId];
-            if (myShowedCards.Count > 0)
-            {
-                DrawMySendedCardsAction(myShowedCards);
-            }
-
-
             // DrawScoreImage(mainForm.Scores);
             mainForm.Refresh();
 
@@ -1515,22 +1537,6 @@ namespace Duan.Xiugang.Tractor
             var latestCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.CurrentTrickState.LatestPlayerShowedCard()];
             DrawFriendUserSendedCardsAction(new ArrayList(latestCards));
 
-
-
-            //考虑是否盖住的问题
-            //如果下家已经出牌，应该将下家重画,
-            var nextPlayerShowedCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.PositionPlayer[2]];
-            if (nextPlayerShowedCards.Count > 0)
-            {
-                DrawNextUserSendedCardsAction(new ArrayList(nextPlayerShowedCards));
-            }
-            //重画下家之后，重画我的牌
-            var myShowedCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.PlayerId];
-            if (myShowedCards.Count > 0)
-            {
-                DrawMySendedCardsAction(myShowedCards);
-            }
-
             //DrawScoreImage(mainForm.Scores);
             mainForm.Refresh();
 
@@ -1543,14 +1549,6 @@ namespace Duan.Xiugang.Tractor
         {
             var latestCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.CurrentTrickState.LatestPlayerShowedCard()];
             DrawPreviousUserSendedCardsAction(new ArrayList(latestCards));
-
-
-            //重画下家之后，重画我的牌
-            var myShowedCards = mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.PlayerId];
-            if (myShowedCards.Count > 0)
-            {
-                DrawMySendedCardsAction(myShowedCards);
-            }
 
             //DrawScoreImage(mainForm.Scores);
             mainForm.Refresh();

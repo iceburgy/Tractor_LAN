@@ -719,14 +719,31 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawMySortedCards(ThisPlayer.CurrentPoker, ThisPlayer.CurrentPoker.Count);
         }
 
+        //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为主毙牌
+        private int IsWinningWithTrump(string playerID)
+        {
+            if (playerID == ThisPlayer.CurrentTrickState.Learder) return 1;
+            string winnerID = TractorRules.GetWinnerWithoutAllShowedCards(ThisPlayer.CurrentTrickState);
+            if (playerID == winnerID)
+            {
+                bool isLeaderTrump = PokerHelper.IsTrump(ThisPlayer.CurrentTrickState.LeadingCards[0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
+                bool isWinnerTrump = PokerHelper.IsTrump(ThisPlayer.CurrentTrickState.ShowedCards[winnerID][0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
+                if (!isLeaderTrump && isWinnerTrump) return 2;
+                return 1;
+            }
+            return 0;
+        }
 
         private void ThisPlayer_PlayerShowedCards()
         {
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
             this.ThisPlayer.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
 
-            //如果不在回看上轮出牌，才重画刚刚出的牌
-            if (!this.ThisPlayer.ShowLastTrickCards)
+            int winResult = this.IsWinningWithTrump(latestPlayer);
+            int position = PlayerPosition[latestPlayer];
+
+            //如果如果本轮目前大牌无变化，且不在回看上轮出牌，才重画刚刚出的牌
+            if (winResult == 0 && !this.ThisPlayer.ShowLastTrickCards)
             {
                 //擦掉上一把
                 if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
@@ -735,7 +752,6 @@ namespace Duan.Xiugang.Tractor
                     drawingFormHelper.DrawScoreImage();
                 }
 
-                int position = PlayerPosition[latestPlayer];
                 if (position == 1)
                 {
                     drawingFormHelper.DrawMyShowedCards();
@@ -754,11 +770,16 @@ namespace Duan.Xiugang.Tractor
                 }
             }
 
-            //如果自己正在回看并且刚刚出了牌，则重置回看
-            if (this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
+            //如果并未回看且本轮大牌变了，或者自己正在回看并且刚刚出了牌，则重置回看，重新画牌，且如果大牌变了，画大牌标记
+            if (!this.ThisPlayer.ShowLastTrickCards && winResult > 0 || this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
             {
                 this.ThisPlayer.ShowLastTrickCards = false;
                 ThisPlayer_PlayerCurrentTrickShowedCards();
+
+                if (winResult > 0)
+                {
+                    drawingFormHelper.DrawOverridingFlag(position, winResult);
+                }
             }
 
             if (ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
@@ -1314,6 +1335,7 @@ namespace Duan.Xiugang.Tractor
                         ThisPlayer.CurrentPoker.RemoveCard(card);
                     }
                     ThisPlayer.ShowCards(SelectedCards);
+                    drawingFormHelper.DrawMyShowedCards();
                 }
                 else
                 {

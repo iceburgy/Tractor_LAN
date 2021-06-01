@@ -7,7 +7,7 @@
         /// </summary>
         /// <param name="cardNumber">牌值</param>
         /// <returns>花色</returns>
-        internal static Suit GetSuit(int cardNumber)
+        public static Suit GetSuit(int cardNumber)
         {
             if (cardNumber >= 0 && cardNumber < 13)
             {
@@ -30,7 +30,7 @@
             return Suit.Joker;
         }
 
-        internal static bool IsTrump(int cardNumber, Suit trump, int rank)
+        public static bool IsTrump(int cardNumber, Suit trump, int rank)
         {
             bool result;
 

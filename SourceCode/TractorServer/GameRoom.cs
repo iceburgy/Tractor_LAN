@@ -1011,7 +1011,7 @@ namespace TractorServer
                 if (CurrentRoomState.CurrentGameState.Players[i] == null)
                 {
                     //玩家退出，停止发牌
-                    return false;
+                    return true;
                 }
                 playerIDs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
             }
