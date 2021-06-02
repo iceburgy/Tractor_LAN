@@ -152,7 +152,7 @@ namespace Duan.Xiugang.Tractor
                         y = 200 + offsetCenterHalf;
                         break;
                     case 2:
-                        x = 480 + offsetCenterHalf;
+                        x = offsetSideBar - wid;
                         y = 200 + offsetCenterHalf;
                         break;
                     case 1:
@@ -165,18 +165,30 @@ namespace Duan.Xiugang.Tractor
 
                 int offset = 0;
                 int offsetDelta = 12 * scaleDividend / scaleDivisor;
+                int totalCount = 0;
+                if (mainForm.PlayerPosition[player] == 2)
+                {
+                    foreach (var suitToTrumInfoEntry in suitToTrumInfo)
+                    {
+                        int baseCount = 1;
+                        TrumpState trumpInfo = suitToTrumInfoEntry.Value;
+                        if (trumpInfo.TrumpExposingPoker > TrumpExposingPoker.SingleRank) baseCount = 2;
+                        totalCount += baseCount;
+                    }
+                }
+                x -= offsetDelta * (totalCount - 1);
                 foreach (var suitToTrumInfoEntry in suitToTrumInfo)
                 {
                     Suit trump = suitToTrumInfoEntry.Key;
                     TrumpState trumpInfo = suitToTrumInfoEntry.Value;
 
                     var trumpMadeCard = ((int)trump - 1) * 13 + mainForm.ThisPlayer.CurrentHandState.Rank;
-                    
+
                     if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairBlackJoker)
                         trumpMadeCard = 52;
                     else if (trumpInfo.TrumpExposingPoker == TrumpExposingPoker.PairRedJoker)
                         trumpMadeCard = 53;
-                    
+
                     int count = 1;
                     if (trumpInfo.TrumpExposingPoker > TrumpExposingPoker.SingleRank)
                     {
@@ -1127,7 +1139,7 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
-        public void DrawOverridingFlag(int position, int winResult)
+        public void DrawOverridingFlag(int position, int winResult, int sizeDivisor)
         {
             int x = 0, y = 0;
             switch (position)
@@ -1158,14 +1170,13 @@ namespace Duan.Xiugang.Tractor
             if (winResult == 2)
             {
                 pic = Properties.Resources.About;
-                width = 120;
-                height = 87;
+                width = 80;
+                height = 60;
             }
 
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            DrawMyImage(g, pic, x, y - height, width, height);
+            DrawMyImage(g, pic, x, y - height / sizeDivisor, width / sizeDivisor, height / sizeDivisor);
             g.Dispose();
-            mainForm.Refresh();
         }
 
         #endregion // 在各种情况下画自己的牌
@@ -1555,10 +1566,9 @@ namespace Duan.Xiugang.Tractor
 
         }
 
-        public void DrawWhoWinThisTime()
+        public void DrawWhoWinThisTime(string winner)
         {
             //谁赢了这一圈
-            string winner = mainForm.ThisPlayer.CurrentTrickState.Winner;
             int winnerPosition = mainForm.PlayerPosition[winner];
 
             if (winnerPosition == 1) //我
@@ -1876,6 +1886,12 @@ namespace Duan.Xiugang.Tractor
         {
             //在中央画出点出的牌
             DrawMySendedCardsAction(mainForm.ThisPlayer.CurrentTrickState.ShowedCards[mainForm.ThisPlayer.PlayerId]);
+
+            mainForm.Refresh();
+        }
+
+        public void DrawMyHandCards()
+        {
             //重画自己手中的牌
             if (mainForm.ThisPlayer.CurrentPoker.Count > 0)
                 DrawMySortedCards(mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);

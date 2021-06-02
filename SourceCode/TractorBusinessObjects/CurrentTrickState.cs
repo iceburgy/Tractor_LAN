@@ -12,12 +12,12 @@ namespace Duan.Xiugang.Tractor.Objects
         public CurrentTrickState()
         {
             ShowedCards = new Dictionary<string, List<int>>();
-            ShowedCardsInLastTrick = new Dictionary<string, List<int>>();
+            serverLocalCache = new ServerLocalCache();
         }
 
-        public CurrentTrickState(List<string> playeIds, Dictionary<string, List<int>> lastShowedCards)
+        public CurrentTrickState(List<string> playeIds, ServerLocalCache slc)
         {
-            ShowedCardsInLastTrick = lastShowedCards;
+            serverLocalCache = slc;
             ShowedCards = new Dictionary<string, List<int>>();
             foreach (string playeId in playeIds)
             {
@@ -36,7 +36,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public Dictionary<string, List<int>> ShowedCards { get; set; }
 
         [DataMember]
-        public Dictionary<string, List<int>> ShowedCardsInLastTrick { get; set; }
+        public ServerLocalCache serverLocalCache { get; set; }
         
         [DataMember]
         public Suit Trump { get; set; }

@@ -21,7 +21,7 @@ namespace TractorServer
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
-        private Dictionary<string, List<int>> lastShowedCards;
+        private ServerLocalCache serverLocalCache;
 
         public GameRoom(int roomID, string roomName)
         {
@@ -30,7 +30,7 @@ namespace TractorServer
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
-            lastShowedCards = new Dictionary<string, List<int>>();
+            serverLocalCache = new ServerLocalCache();
         }
 
         #region implement interface ITractorHost
@@ -277,9 +277,7 @@ namespace TractorServer
                         RestartCurrentHand();
                         break;
                     case GameState.START_NEXT_HAND:
-                        //清空缓存
-                        this.lastShowedCards.Clear();
-                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+                        CleanupCaches();
 
                         StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         break;
@@ -412,7 +410,9 @@ namespace TractorServer
                         log.Debug("Winner: " + CurrentRoomState.CurrentTrickState.Winner);
 
                     }
-                    lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+                    serverLocalCache = new ServerLocalCache();
+                    serverLocalCache.lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+                    serverLocalCache.lastLeader = CurrentRoomState.CurrentTrickState.Learder;
 
                     UpdatePlayerCurrentTrickState();
 
@@ -437,7 +437,7 @@ namespace TractorServer
                         }
 
                         //本局结束画面，更新最后一轮出的牌
-                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick = lastShowedCards;
+                        CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
                         UpdatePlayerCurrentTrickState();
 
                         CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
@@ -484,6 +484,8 @@ namespace TractorServer
                         else if (TractorHost.gameConfig.IsFullDebug)
                         {
                             Thread.Sleep(3000);
+                            CleanupCaches();
+
                             StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         }
                     }
@@ -492,11 +494,19 @@ namespace TractorServer
                 {
                     if (CurrentRoomState.CurrentTrickState.CountOfPlayerShowedCards() == 1)
                     {
-                        CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick = lastShowedCards;
+                        CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
                     }
                     UpdatePlayerCurrentTrickState();
                 }
             }
+        }
+
+        private void CleanupCaches()
+        {
+            //清空缓存
+            this.serverLocalCache = new ServerLocalCache();
+            CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
+            UpdatePlayerCurrentTrickState();
         }
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
@@ -860,7 +870,7 @@ namespace TractorServer
         public void RestartGame(int curRank)
         {
             log.Debug("restart game with current set rank");
-            CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+            CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Rank = curRank;
@@ -902,7 +912,7 @@ namespace TractorServer
 
         public void StartNextHand(PlayerEntity nextStarter)
         {
-            CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick.Clear();
+            CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
             UpdateGameState();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
@@ -1117,7 +1127,7 @@ namespace TractorServer
                 if (p == null) continue;
                 playerIDList.Add(p.PlayerId);
             }
-            CurrentRoomState.CurrentTrickState = new CurrentTrickState(playerIDList, CurrentRoomState.CurrentTrickState.ShowedCardsInLastTrick);
+            CurrentRoomState.CurrentTrickState = new CurrentTrickState(playerIDList, CurrentRoomState.CurrentTrickState.serverLocalCache);
             CurrentRoomState.CurrentTrickState.Learder = leader;
             CurrentRoomState.CurrentTrickState.Trump = CurrentRoomState.CurrentHandState.Trump;
             CurrentRoomState.CurrentTrickState.Rank = CurrentRoomState.CurrentHandState.Rank;

@@ -66,7 +66,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
-        public void TestSet()
+        public void TestSetManyExposeTrumps()
         {
             int rankDelta=2;
             Suit wantedSuit = Suit.Heart;
