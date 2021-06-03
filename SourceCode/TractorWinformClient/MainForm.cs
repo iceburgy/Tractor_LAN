@@ -719,19 +719,16 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawMySortedCards(ThisPlayer.CurrentPoker, ThisPlayer.CurrentPoker.Count);
         }
 
-        //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为主毙牌
-        private int IsWinningWithTrump(CurrentTrickState trickState, string playerID)
+        //检查当前大牌是否为主毙牌
+        private bool IsWinningWithTrump(CurrentTrickState trickState, string winnerID)
         {
-            if (playerID == trickState.Learder) return 1;
-            string winnerID = TractorRules.GetWinnerWithoutAllShowedCards(trickState);
-            if (playerID == winnerID)
+            if (trickState.Learder != winnerID)
             {
                 bool isLeaderTrump = PokerHelper.IsTrump(trickState.LeadingCards[0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
                 bool isWinnerTrump = PokerHelper.IsTrump(trickState.ShowedCards[winnerID][0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
-                if (!isLeaderTrump && isWinnerTrump) return 2;
-                return 1;
+                if (!isLeaderTrump && isWinnerTrump) return true;
             }
-            return 0;
+            return false;
         }
 
         private void ThisPlayer_PlayerShowedCards()
@@ -741,21 +738,14 @@ namespace Duan.Xiugang.Tractor
             {
                 this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
             }
-            
+
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
             this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-
-            int winResult = this.IsWinningWithTrump(ThisPlayer.CurrentTrickState, latestPlayer);
+            
             int position = PlayerPosition[latestPlayer];
-            //如果大牌变更，更新缓存相关信息
-            if (winResult > 0)
-            {
-                this.ThisPlayer.playerLocalCache.WinnerResult = winResult;
-                this.ThisPlayer.playerLocalCache.WinnerPosition = position;
-                this.ThisPlayer.playerLocalCache.WinnderID = latestPlayer;
-            }
-            //如果如果本轮目前大牌无变化，且不在回看上轮出牌，才重画刚刚出的牌
-            if (winResult == 0 && !this.ThisPlayer.ShowLastTrickCards)
+            
+            //如果不在回看上轮出牌，才重画刚刚出的牌
+            if (!this.ThisPlayer.ShowLastTrickCards)
             {
                 //擦掉上一把
                 if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
@@ -782,8 +772,8 @@ namespace Duan.Xiugang.Tractor
                 }
             }
 
-            //如果并未回看且本轮大牌变了，或者自己正在回看并且刚刚出了牌，则重置回看，重新画牌，且如果大牌变了，画大牌标记
-            if (!this.ThisPlayer.ShowLastTrickCards && winResult > 0 || this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
+            //如果正在回看并且自己刚刚出了牌，则重置回看，重新画牌
+            if (this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
             {
                 this.ThisPlayer.ShowLastTrickCards = false;
                 ThisPlayer_PlayerCurrentTrickShowedCards(false);
@@ -800,42 +790,6 @@ namespace Duan.Xiugang.Tractor
             }
 
             RobotPlayFollowing();
-        }
-
-        private void RobotPlayFollowing()
-        {
-            //最后一轮自动跟出
-            bool isLastTrick = false;
-            if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
-            {
-                isLastTrick = true;
-            }
-
-            //托管代打，跟出
-            if ((isLastTrick || gameConfig.IsDebug) && !ThisPlayer.isObserver &&
-                ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
-                ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
-                ThisPlayer.CurrentTrickState.IsStarted())
-            {
-                SelectedCards.Clear();
-                Algorithm.MustSelectedCards(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
-                ShowingCardsValidationResult showingCardsValidationResult =
-                    TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
-                if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
-                {
-                    foreach (int card in SelectedCards)
-                    {
-                        ThisPlayer.CurrentPoker.RemoveCard(card);
-                    }
-                    ThisPlayer.ShowCards(SelectedCards);
-                    drawingFormHelper.DrawMyHandCards();
-                }
-                else
-                {
-                    MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
-                }
-                SelectedCards.Clear();
-            }
         }
 
         //绘制上一轮各家所出的牌，缩小至一半，放在左下角
@@ -856,53 +810,34 @@ namespace Duan.Xiugang.Tractor
             trickState.Trump = ThisPlayer.CurrentTrickState.Trump;
             trickState.Rank = ThisPlayer.CurrentTrickState.Rank;
 
-            int winResult = 0;
-            int winposition = 0;
-            string curPlayerID = trickState.Learder;
-
             foreach (var entry in ThisPlayer.CurrentTrickState.serverLocalCache.lastShowedCards)
             {
                 trickState.ShowedCards.Add((string)entry.Key, (List<int>)entry.Value);
             }
 
-            for (int i = 0; i < 4; i++)
+            foreach (var entry in trickState.ShowedCards)
             {
-                int position = PlayerPosition[curPlayerID];
+                int position = PlayerPosition[entry.Key];
                 if (position == 1)
                 {
-                    drawingFormHelper.DrawMyLastSendedCardsAction(new ArrayList(trickState.ShowedCards[curPlayerID]));
+                    drawingFormHelper.DrawMyLastSendedCardsAction(new ArrayList(entry.Value));
                 }
                 else if (position == 2)
                 {
-                    drawingFormHelper.DrawNextUserLastSendedCardsAction(new ArrayList(trickState.ShowedCards[curPlayerID]));
+                    drawingFormHelper.DrawNextUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
                 else if (position == 3)
                 {
-                    drawingFormHelper.DrawFriendUserLastSendedCardsAction(new ArrayList(trickState.ShowedCards[curPlayerID]));
+                    drawingFormHelper.DrawFriendUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
                 else if (position == 4)
                 {
-                    drawingFormHelper.DrawPreviousUserLastSendedCardsAction(new ArrayList(trickState.ShowedCards[curPlayerID]));
+                    drawingFormHelper.DrawPreviousUserLastSendedCardsAction(new ArrayList(entry.Value));
                 }
-
-                //确定winner result, postion
-                if (winResult == 0)
-                {
-                    winResult = 1;
-                    winposition = position;
-                }
-                else
-                {
-                    int tempWinResult = this.IsWinningWithTrump(trickState, curPlayerID);
-                    if (tempWinResult > 0)
-                    {
-                        winResult = tempWinResult;
-                        winposition = position;
-                    }
-                }
-                curPlayerID = ThisPlayer.CurrentTrickState.NextPlayer(curPlayerID);
             }
-            drawingFormHelper.DrawOverridingFlag(winposition, winResult, 2);
+            string winnerID = TractorRules.GetWinner(trickState);
+            bool tempIsWinByTrump = this.IsWinningWithTrump(trickState, winnerID);
+            drawingFormHelper.DrawOverridingFlag(this.PlayerPosition[winnerID], tempIsWinByTrump, 2);
             Refresh();
         }
 
@@ -912,20 +847,6 @@ namespace Duan.Xiugang.Tractor
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
             drawingFormHelper.DrawScoreImage();
-            if (fromRightClick)
-            {
-                //重画亮过的牌
-                if (this.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
-                {
-                    drawingFormHelper.TrumpMadeCardsShow();
-                }
-
-                //重画winner灯泡
-                if (!this.ThisPlayer.CurrentTrickState.IsStarted() && !string.IsNullOrEmpty(this.ThisPlayer.playerLocalCache.WinnderID))
-                {
-                    drawingFormHelper.DrawWhoWinThisTime(this.ThisPlayer.playerLocalCache.WinnderID);
-                }
-            }
 
             if (this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick != null)
             {
@@ -951,7 +872,21 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
             }
-            drawingFormHelper.DrawOverridingFlag(this.ThisPlayer.playerLocalCache.WinnerPosition, this.ThisPlayer.playerLocalCache.WinnerResult, 1);
+            if (fromRightClick)
+            {
+                //重画亮过的牌
+                if (this.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
+                {
+                    drawingFormHelper.TrumpMadeCardsShow();
+                }
+
+                //重画大牌标记，winner灯泡
+                if (!this.ThisPlayer.CurrentTrickState.IsStarted() && !string.IsNullOrEmpty(this.ThisPlayer.playerLocalCache.WinnderID))
+                {
+                    drawingFormHelper.DrawOverridingFlag(this.ThisPlayer.playerLocalCache.WinnerPosition, this.ThisPlayer.playerLocalCache.IsWinByTrump, 1);
+                    drawingFormHelper.DrawWhoWinThisTime(this.ThisPlayer.playerLocalCache.WinnderID);
+                }
+            }
             Refresh();
         }
 
@@ -1372,6 +1307,43 @@ namespace Duan.Xiugang.Tractor
             RobotPlayStarting();
         }
 
+        //托管代打
+        private void RobotPlayFollowing()
+        {
+            //最后一轮自动跟出
+            bool isLastTrick = false;
+            if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
+            {
+                isLastTrick = true;
+            }
+
+            //正常跟出
+            if ((isLastTrick || gameConfig.IsDebug) && !ThisPlayer.isObserver &&
+                ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
+                ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentTrickState.IsStarted())
+            {
+                SelectedCards.Clear();
+                Algorithm.MustSelectedCards(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                ShowingCardsValidationResult showingCardsValidationResult =
+                    TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
+                if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
+                {
+                    foreach (int card in SelectedCards)
+                    {
+                        ThisPlayer.CurrentPoker.RemoveCard(card);
+                    }
+                    ThisPlayer.ShowCards(SelectedCards);
+                    drawingFormHelper.DrawMyHandCards();
+                }
+                else
+                {
+                    MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
+                }
+                SelectedCards.Clear();
+            }
+        }
+
         //托管代打，先手
         private void RobotPlayStarting()
         {
@@ -1406,6 +1378,15 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_TrickFinished()
         {
             drawingFormHelper.DrawScoreImage();
+
+            //收集大牌标记相关信息
+            string winnerID = TractorRules.GetWinner(ThisPlayer.CurrentTrickState);
+            bool winResult = this.IsWinningWithTrump(ThisPlayer.CurrentTrickState, winnerID);
+            int position = PlayerPosition[ThisPlayer.CurrentTrickState.Winner];
+            this.ThisPlayer.playerLocalCache.IsWinByTrump = winResult;
+            this.ThisPlayer.playerLocalCache.WinnerPosition = position;
+            this.ThisPlayer.playerLocalCache.WinnderID = ThisPlayer.CurrentTrickState.Winner;
+            drawingFormHelper.DrawOverridingFlag(this.ThisPlayer.playerLocalCache.WinnerPosition, this.ThisPlayer.playerLocalCache.IsWinByTrump, 1);
 
             drawingFormHelper.DrawWhoWinThisTime(this.ThisPlayer.CurrentTrickState.Winner);
             Refresh();

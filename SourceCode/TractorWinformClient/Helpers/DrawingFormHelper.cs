@@ -1139,7 +1139,7 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
-        public void DrawOverridingFlag(int position, int winResult, int sizeDivisor)
+        public void DrawOverridingFlag(int position, bool isWinByTrump, int sizeDivisor)
         {
             int x = 0, y = 0;
             switch (position)
@@ -1167,7 +1167,7 @@ namespace Duan.Xiugang.Tractor
             Bitmap pic = Properties.Resources.Ready;
             int width = 53;
             int height = 46;
-            if (winResult == 2)
+            if (isWinByTrump)
             {
                 pic = Properties.Resources.About;
                 width = 80;
