@@ -1767,11 +1767,13 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n- 摸牌时开启托管可在达到5张时自动亮牌";
             userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
             userManual += "\n- 右键单击空白处查看：上轮出牌、谁亮过什么牌、得分牌";
+            userManual += "\n- 小猪图标代表一圈中的大牌，拖拉机图标代表主毙牌";
             userManual += "\n\n【快捷键】";
+            userManual += "\n- 出牌：按键S（Show cards）";
             userManual += "\n- 进入大厅：F1";
             userManual += "\n- 进入第一个房间：F2";
-            userManual += "\n- 就绪：F3";
-            userManual += "\n- 托管：F4";
+            userManual += "\n- 就绪：F3、按键Z（Zhunbei准备）";
+            userManual += "\n- 托管：F4、按键A（Auto）";
             userManual += "\n- 旁观下家：F5（仅限旁观模式下）";
             userManual += "\n\n此帮助信息可在菜单【帮助】【使用说明】中再次查看";
             userManual += "\n\n不再提示？";
@@ -1820,6 +1822,33 @@ namespace Duan.Xiugang.Tractor
         {
             ToDiscard8Cards();
             ToShowCards();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case Keys.A:
+                    if (this.btnRobot.Visible && this.btnRobot.Enabled)
+                    {
+                        this.btnRobot.PerformClick();
+                    }
+                    return true;
+                case Keys.S:
+                    if (this.btnPig.Visible)
+                    {
+                        this.btnPig.PerformClick();
+                    }
+                    return true;
+                case Keys.Z:
+                    if (this.btnReady.Visible && this.btnReady.Enabled)
+                    {
+                        this.btnReady.PerformClick();
+                    }
+                    return true;
+                default:
+                    return base.ProcessCmdKey(ref msg, keyData);
+            }
         }
     }
 }
