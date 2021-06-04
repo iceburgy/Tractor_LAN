@@ -9,6 +9,7 @@ using System.Threading;
 namespace Duan.Xiugang.Tractor.Player
 {
     public delegate void GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names);
+    public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified);
     public delegate void NewPlayerJoinedEventHandler();
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
@@ -56,8 +57,10 @@ namespace Duan.Xiugang.Tractor.Player
         public CurrentTrickState CurrentTrickState { get; set; }
         public PlayerLocalCache playerLocalCache { get; set; }
         public bool ShowLastTrickCards;
+        public RoomSetting CurrentRoomSetting;
 
         public event GameHallUpdatedEventHandler GameHallUpdatedEvent;
+        public event RoomSettingUpdatedEventHandler RoomSettingUpdatedEvent;
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
         public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
         public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
@@ -140,6 +143,11 @@ namespace Duan.Xiugang.Tractor.Player
         public void SetBeginRank(string beginRankString)
         {
             _tractorHost.SetBeginRank(beginRankString);
+        }
+
+        public void SaveRoomSetting(RoomSetting roomSetting)
+        {
+            _tractorHost.SaveRoomSetting(roomSetting);
         }
 
         public void TeamUp()
@@ -466,6 +474,14 @@ namespace Duan.Xiugang.Tractor.Player
             if (GameHallUpdatedEvent != null)
             {
                 GameHallUpdatedEvent(roomStates, names);
+            }
+        }
+
+        public void NotifyRoomSetting(RoomSetting roomSetting, bool isRoomSettingModified)
+        {
+            if (RoomSettingUpdatedEvent != null)
+            {
+                RoomSettingUpdatedEvent(roomSetting, isRoomSettingModified);
             }
         }
 

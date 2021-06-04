@@ -52,12 +52,8 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommonMethodsTest.cs" />
-    <Compile Include="CurrentPokerTest.cs" />
-    <Compile Include="CurrentTrickStateTest.cs" />
     <Compile Include="GameStateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TractorRulesTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TractorBusinessObjects\TractorBusinessObjects.csproj">

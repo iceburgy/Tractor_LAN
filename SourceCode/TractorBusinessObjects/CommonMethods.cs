@@ -10,7 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
     /// </summary>
     public class CommonMethods
     {
-        static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+        public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
         /// <summary>
         ///     得到一个牌的花色

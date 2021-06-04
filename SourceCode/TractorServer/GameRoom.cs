@@ -31,6 +31,7 @@ namespace TractorServer
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
             serverLocalCache = new ServerLocalCache();
+            CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
         }
 
         #region implement interface ITractorHost
@@ -69,6 +70,9 @@ namespace TractorServer
 
                     ObserversProxy.Add(playerID, player);
                     ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
+
+                    Thread.Sleep(2000);
+                    player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     return true;
                 }
 
@@ -107,6 +111,8 @@ namespace TractorServer
                     CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 }
                 UpdateGameState();
+
+                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                 return true;
             }
             else
@@ -451,7 +457,7 @@ namespace TractorServer
                             }
                         }
                         CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-                        CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState.CurrentHandState, CurrentRoomState.CurrentTrickState);
+                        CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
                         CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
 
                         //检查是否本轮游戏结束
@@ -777,6 +783,36 @@ namespace TractorServer
                 if (stream3 != null)
                 {
                     stream3.Close();
+                }
+            }
+        }
+
+        //读取房间游戏设置
+        public RoomSetting ReadRoomSettingFromFile()
+        {
+            Stream stream = null;
+            RoomSetting roomSetting = new RoomSetting();
+            try
+            {
+                string fileNameRoomSetting = string.Format("{0}\\backup_RoomSetting.xml", this.LogsByRoomFolder);
+                if (File.Exists(fileNameRoomSetting))
+                {
+                    DataContractSerializer ser = new DataContractSerializer(typeof(RoomSetting));
+                    stream = new FileStream(fileNameRoomSetting, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    roomSetting= (RoomSetting)ser.ReadObject(stream);
+                    roomSetting.SortManditoryRanks();
+                }
+                return roomSetting;
+            }
+            catch (Exception ex)
+            {
+                return roomSetting;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
                 }
             }
         }
@@ -1245,6 +1281,30 @@ namespace TractorServer
                 }
             }
         }
+
+        //保存房间游戏设置
+        private void SaveRoomSettingToFile()
+        {
+            Stream stream = null;
+            try
+            {
+                string fileNameRoomSetting = string.Format("{0}\\backup_RoomSetting.xml", this.LogsByRoomFolder);
+                stream = new FileStream(fileNameRoomSetting, FileMode.Create, FileAccess.Write, FileShare.None);
+                DataContractSerializer ser = new DataContractSerializer(typeof(RoomSetting));
+                ser.WriteObject(stream, this.CurrentRoomState.roomSetting);
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+            }
+        }
         #endregion
 
         #region Update Client State
@@ -1455,6 +1515,18 @@ namespace TractorServer
             int temp = Cards[r];
             Cards[r] = Cards[i];
             Cards[i] = temp;
+        }
+
+        internal void SetRoomSetting(RoomSetting newSetting)
+        {
+            if (this.CurrentRoomState.roomSetting.Equals(newSetting)) return;
+
+            newSetting.SortManditoryRanks();
+            this.CurrentRoomState.roomSetting = newSetting;
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { newSetting, true });
+
+            //save setting to file
+            SaveRoomSettingToFile();
         }
     }
 }

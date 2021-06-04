@@ -359,6 +359,17 @@ namespace TractorServer
                 gameRoom.ObservePlayerById(playerId, observerId);
             }
         }
+
+        //保存房间游戏设置
+        public void SaveRoomSetting(RoomSetting roomSetting)
+        {
+            string sessionID = GetSessionID();
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.SetRoomSetting(roomSetting);
+            }
+        }
         #endregion
 
         #region Update Client State

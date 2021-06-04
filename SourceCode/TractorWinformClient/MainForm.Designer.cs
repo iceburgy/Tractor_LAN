@@ -86,6 +86,7 @@ namespace Duan.Xiugang.Tractor
             this.progressBarPingHost = new System.Windows.Forms.ProgressBar();
             this.tmrGeneral = new System.Windows.Forms.Timer(this.components);
             this.btnPig = new System.Windows.Forms.Button();
+            this.btnRoomSetting = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -610,11 +611,25 @@ namespace Duan.Xiugang.Tractor
             this.btnPig.Visible = false;
             this.btnPig.Click += new System.EventHandler(this.btnPig_Click);
             // 
+            // btnRoomSetting
+            // 
+            this.btnRoomSetting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnRoomSetting.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnRoomSetting.Location = new System.Drawing.Point(594, 38);
+            this.btnRoomSetting.Name = "btnRoomSetting";
+            this.btnRoomSetting.Size = new System.Drawing.Size(107, 45);
+            this.btnRoomSetting.TabIndex = 28;
+            this.btnRoomSetting.Text = "∑øº‰…Ë÷√";
+            this.btnRoomSetting.UseVisualStyleBackColor = true;
+            this.btnRoomSetting.Visible = false;
+            this.btnRoomSetting.Click += new System.EventHandler(this.btnRoomSetting_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnRoomSetting);
             this.Controls.Add(this.btnPig);
             this.Controls.Add(this.progressBarPingHost);
             this.Controls.Add(this.btnExitRoom);
@@ -711,6 +726,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Timer tmrGeneral;
         private System.Windows.Forms.ToolStripMenuItem RestoreGameStateCardsShoeToolStripMenuItem;
         public System.Windows.Forms.Button btnPig;
+        private System.Windows.Forms.Button btnRoomSetting;
     }
 }
 

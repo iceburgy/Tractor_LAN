@@ -72,6 +72,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void ObservePlayerById(string playerId, string observerId);
 
+        //保存房间游戏设置
+        [OperationContract(IsOneWay = true)]
+        void SaveRoomSetting(RoomSetting roomSetting);
+
         //甩牌检查
         [OperationContract]
         ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId);

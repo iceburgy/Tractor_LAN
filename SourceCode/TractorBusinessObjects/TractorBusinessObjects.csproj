@@ -46,6 +46,7 @@
     <Compile Include="CardsShoe.cs" />
     <Compile Include="CommonMethods.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="RoomSetting.cs" />
     <Compile Include="ServerLocalCache.cs" />
     <Compile Include="TrumpState.cs" />
     <Compile Include="RoomState.cs" />

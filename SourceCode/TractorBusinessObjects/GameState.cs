@@ -82,8 +82,10 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <param name="starter">player id of the starter of this ending hand</param>
         /// <param name="score">socre got by the team without starter</param>
         /// <returns>the starter of next hand</returns>
-        public PlayerEntity NextRank(string starter, int score)
+        public PlayerEntity NextRankWorker(RoomState CurrentRoomState)
         {
+            string starter = CurrentRoomState.CurrentHandState.Starter;
+            int score = CurrentRoomState.CurrentHandState.Score;
             PlayerEntity nextStarter = null;
 
             if (!Players.Exists(p => p != null && p.PlayerId == starter))
@@ -97,70 +99,39 @@ namespace Duan.Xiugang.Tractor.Objects
             if (score >= 80)
             {
                 nextStarter = GetNextPlayerAfterThePlayer(false, starter);
+                int rankToAdd = (score - 80) / 40;
                 foreach (PlayerEntity player in Players)
                 {
-                    int scoreCopy = Math.Min(200, score);
-                    while (scoreCopy >= 120)
+                    if (player == null) continue;
+                    if (player.Team != starterTeam)
                     {
-                        //5,10,K必打
-                        if (player.Team != starterTeam && player.Rank != 3 && player.Rank != 8 && player.Rank != 11)
-                        {
-                            player.Rank = player.Rank + 1;
-                            scoreCopy -= 40;
-                        }
-                        else
-                            break;
+                        UpdatePlayerRank(CurrentRoomState, rankToAdd, player);
                     }
                 }
             }
             else
             {
                 nextStarter = GetNextPlayerAfterThePlayer(true, starter);
+                int rankToAdd = 1;
                 if (score <= 0)
                 {
-                    foreach (PlayerEntity player in Players)
-                    {
-                        if (player == null) continue;
-                        if (player.Team == starterTeam)
-                        {
-                            //5,10,K必打
-                            if (player.Rank < 3 && player.Rank + 3 > 3)
-                                player.Rank = 3;
-                            else if (player.Rank < 8 && player.Rank + 3 > 8)
-                                player.Rank = 8;
-                            else if (player.Rank < 11 && player.Rank + 3 > 11)
-                                player.Rank = 11;
-                            else
-                                player.Rank = player.Rank + 3;
-                        }
-                    }
+                    rankToAdd = Math.Abs(score) / 40 + 3;
                 }
                 else if (score < 40)
                 {
-                    foreach (PlayerEntity player in Players)
-                    {
-                        if (player == null) continue;
-                        if (player.Team == starterTeam)
-                        {
-                            //5,10,K必打
-                            if (player.Rank < 3 && player.Rank + 2 > 3)
-                                player.Rank = 3;
-                            else if (player.Rank < 8 && player.Rank + 2 > 8)
-                                player.Rank = 8;
-                            else if (player.Rank < 11 && player.Rank + 2 > 11)
-                                player.Rank = 11;
-                            else
-                                player.Rank = player.Rank + 2;
-                        }
-                    }
+                    rankToAdd = 2;
                 }
                 else
                 {
-                    foreach (PlayerEntity player in Players)
+                    rankToAdd = 1;
+                }
+
+                foreach (PlayerEntity player in Players)
+                {
+                    if (player == null) continue;
+                    if (player.Team == starterTeam)
                     {
-                        if (player == null) continue;
-                        if (player.Team == starterTeam)
-                            player.Rank = player.Rank + 1;
+                        UpdatePlayerRank(CurrentRoomState, rankToAdd, player);
                     }
                 }
             }
@@ -168,20 +139,83 @@ namespace Duan.Xiugang.Tractor.Objects
             return nextStarter;
         }
 
+        private static void UpdatePlayerRank(RoomState CurrentRoomState, int rankToAdd, PlayerEntity player)
+        {
+            //检查必打牌，default为5,10,K
+            List<int> mandRanks = CurrentRoomState.roomSetting.GetManditoryRanks();
+            int index = mandRanks.BinarySearch(player.Rank);
+            if (index >= 0)
+            {
+                index++;
+            }
+            else
+            {
+                index = ~index;
+            }
+            if (index < mandRanks.Count)
+            {
+                player.Rank = Math.Min(player.Rank + rankToAdd, mandRanks[index]);
+            }
+            else
+            {
+                player.Rank = player.Rank + rankToAdd;
+            }
+        }
+
         /// <summary>
         /// </summary>
         /// <param name="handState"></param>
         /// <param name="lastTrickState">扣抵的牌</param>
         /// <returns></returns>
-        public PlayerEntity NextRank(CurrentHandState handState, CurrentTrickState lastTrickState)
+        public PlayerEntity NextRank(RoomState CurrentRoomState)
         {
-            if (!Players.Exists(p => p != null && p.PlayerId == handState.Starter))
+            if (!Players.Exists(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Starter))
             {
                 //log
                 return null;
             }
 
-            return NextRank(handState.Starter, handState.Score);
+            //处理J到底
+            if (CurrentRoomState.roomSetting.AllowJToBottom && CurrentRoomState.CurrentHandState.Rank == 9)
+            {
+                var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Winner];
+                var cardscp = new CurrentPoker(cards, (int)CurrentRoomState.CurrentHandState.Trump,
+                                               CurrentRoomState.CurrentHandState.Rank);
+
+                //最后一把牌的赢家不跟庄家一伙
+                if (!CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                                        CurrentRoomState.CurrentTrickState.Winner))
+                {
+
+                    //主J勾到底
+
+                    if (cardscp.MasterRank > 0)
+                    {
+                        foreach (PlayerEntity player in Players)
+                        {
+                            if (ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                player.PlayerId))
+                            {
+                                player.Rank = 0;
+                            }
+                        }
+                    }
+                    //副J勾一半
+                    else if (cardscp.SubRank > 0)
+                    {
+                        foreach (PlayerEntity player in Players)
+                        {
+                            if (ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                player.PlayerId))
+                            {
+                                player.Rank = CurrentRoomState.CurrentHandState.Rank / 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return NextRankWorker(CurrentRoomState);
         }
 
         /// <summary>

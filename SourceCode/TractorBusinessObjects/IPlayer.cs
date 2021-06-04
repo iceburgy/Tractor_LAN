@@ -53,6 +53,12 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void NotifyGameState(GameState gameState);
 
+        /// <summary>
+        ///     更新房间游戏设置状态
+        /// </summary>
+        [OperationContract(IsOneWay = true)]
+        void NotifyRoomSetting(RoomSetting roomSetting, bool isRoomSettingModified);
+
         ///     更新游戏游戏大厅状态
         [OperationContract(IsOneWay = true)]
         void NotifyGameHall(List<RoomState> roomStates, List<string> names);

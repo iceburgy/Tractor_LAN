@@ -142,6 +142,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.GameHallUpdatedEvent += ThisPlayer_GameHallUpdatedEventHandler;
+            ThisPlayer.RoomSettingUpdatedEvent += ThisPlayer_RoomSettingUpdatedEventHandler;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
             ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
             ThisPlayer.PlayerToggleIsRobot += ThisPlayer_PlayerToggleIsRobot;
@@ -948,6 +949,7 @@ namespace Duan.Xiugang.Tractor
                 this.ToolStripMenuItemObserve.Visible = true;
             }
             this.btnExitRoom.Show();
+            this.btnRoomSetting.Show();
 
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
@@ -984,6 +986,26 @@ namespace Duan.Xiugang.Tractor
             {
                 this.ToolStripMenuItemUserManual.PerformClick();
             }
+        }
+
+        private void DisplayRoomSetting(string prefix)
+        {
+            List<string> msgs = new List<string>();
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                msgs.Add(prefix);
+                msgs.Add(string.Empty);
+            }
+            msgs.Add(string.Format("允许投降：{0}", this.ThisPlayer.CurrentRoomSetting.AllowSurrender ? "是" : "否"));
+            msgs.Add(string.Format("允许J到底：{0}", this.ThisPlayer.CurrentRoomSetting.AllowJToBottom ? "是" : "否"));
+            msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards > 0 ? string.Format("允许分数低于{0}时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards) : "不允许分数革命");
+            msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards > 0 ? string.Format("允许主牌少于{0}时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards) : "不允许主牌革命");
+
+            List<int> mandRanks = this.ThisPlayer.CurrentRoomSetting.GetManditoryRanks();
+            string[] mandRanksStr = mandRanks.Select(x => CommonMethods.cardNumToValue[x].ToString()).ToArray();
+            msgs.Add(mandRanks.Count > 0 ? string.Format("必打：{0}", string.Join(",", mandRanksStr)) : "没有必打牌");
+
+            ThisPlayer_NotifyMessageEventHandler(msgs.ToArray());
         }
 
         private void ThisPlayer_NewPlayerReadyToStart(bool readyToStart)
@@ -1073,6 +1095,17 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
+        private void ThisPlayer_RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified)
+        {
+            this.ThisPlayer.CurrentRoomSetting = roomSetting;
+            string prefix = string.Empty;
+            if (isRoomSettingModified)
+            {
+                prefix = "房间设置已更改！";
+            }
+            this.DisplayRoomSetting(prefix);
+        }
+        
         private void ThisPlayer_GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names)
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
@@ -1091,6 +1124,7 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.Hide();
             this.btnRobot.Hide();
             this.btnExitRoom.Hide();
+            this.btnRoomSetting.Hide();
             this.btnObserveNext.Hide();
             this.lblEastNickName.Text = "";
             this.lblNorthNickName.Text = "";
@@ -1296,6 +1330,11 @@ namespace Duan.Xiugang.Tractor
         private void Mainform_SettingsUpdatedEventHandler()
         {
             Application.Restart();
+        }
+
+        private void Mainform_RoomSettingChangedByClientEventHandler()
+        {
+            this.ThisPlayer.SaveRoomSetting(this.ThisPlayer.CurrentRoomSetting);
         }
 
         private void ThisPlayer_TrickStarted()
@@ -1849,6 +1888,13 @@ namespace Duan.Xiugang.Tractor
                 default:
                     return base.ProcessCmdKey(ref msg, keyData);
             }
+        }
+
+        private void btnRoomSetting_Click(object sender, EventArgs e)
+        {
+            FormRoomSetting roomSetting = new FormRoomSetting(this);
+            roomSetting.RoomSettingChangedByClientEvent += Mainform_RoomSettingChangedByClientEventHandler;
+            roomSetting.Show();
         }
     }
 }
