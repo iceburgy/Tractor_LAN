@@ -215,6 +215,18 @@ namespace TractorServer
             return result.Data;
         }
 
+        //玩家投降
+        public void SpecialEndGame(string playerID, SpecialEndingType endType)
+        {
+            string sessionID = GetSessionID();
+            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                gameRoom.SpecialEndGame(playerID, endType);
+            }
+            log.Debug(string.Format("player {0} surrendered.", playerID));
+        }
+
         public void PlayerIsReadyToStart(string playerID)
         {
             string sessionID = GetSessionID();

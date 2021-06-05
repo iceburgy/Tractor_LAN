@@ -2699,5 +2699,56 @@ namespace Duan.Xiugang.Tractor.Objects
 
             return result.ToString();
         }
+
+        public int GetTotalScore()
+        {
+            int totalScore = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                int offset = 13 * i;
+                //5分牌
+                totalScore += 5 * _cards[3 + offset];
+                //10分牌
+                totalScore += 10 * _cards[8 + offset];
+                //K分牌
+                totalScore += 10 * _cards[11 + offset];
+            }
+            return totalScore;
+        }
+
+        public List<int> GetCardsInList()
+        {
+            List<int> jokerList = new List<int>();
+            List<int> rankList = new List<int>();
+            List<int> trumpList = new List<int>();
+            List<int> cardList = new List<int>();
+            for (int i = 0; i < 54; i++)
+            {
+
+                for (int j = 0; j < _cards[i]; j++)
+                {
+                    if (i==52||i==53)
+                    {
+                        jokerList.Add(i);
+                    }
+                    else if (i % 13 == Rank)
+                    {
+                        rankList.Add(i);
+                    }
+                    else if (i / 13 == TrumpInt-1)
+                    {
+                        trumpList.Add(i);
+                    }
+                    else
+                    {
+                        cardList.Add(i);
+                    }
+                }
+            }
+            cardList.AddRange(trumpList);
+            cardList.AddRange(rankList);
+            cardList.AddRange(jokerList);
+            return cardList;
+        }
     }
 }

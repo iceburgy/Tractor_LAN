@@ -139,5 +139,19 @@ namespace TestProject1
             target = new CurrentPoker(new[] {53, 53, 39, 39, 14}, Suit.Club, 0);
             Assert.IsTrue(target.IsMixed());
         }
+
+        /// <summary>
+        ///     A test for GetTotalScore
+        /// </summary>
+        [TestMethod]
+        public void GetTotalScoreTest()
+        {
+            var target = new CurrentPoker(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, Suit.Spade, 1);
+            Assert.AreEqual(25, target.GetTotalScore());
+            target = new CurrentPoker(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 }, Suit.Club, 8);
+            Assert.AreEqual(15, target.GetTotalScore());
+            target = new CurrentPoker(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12 }, Suit.Diamond, 11);
+            Assert.AreEqual(15, target.GetTotalScore());
+        }
     }
 }

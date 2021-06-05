@@ -31,6 +31,15 @@
         DiscardingLast8CardsFinished,
         Last8CardsRobbed,
         Playing,
+        SpecialEnding,
         Ending
+    }
+
+    //特殊结束几种情况
+    public enum SpecialEndingType
+    {
+        Surrender,
+        RiotByScore,
+        RiotByTrump
     }
 }

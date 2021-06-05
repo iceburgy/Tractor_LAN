@@ -10,6 +10,7 @@ namespace Duan.Xiugang.Tractor.Player
 {
     public delegate void GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names);
     public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified);
+    public delegate void ShowAllHandCardsEventHandler();
     public delegate void NewPlayerJoinedEventHandler();
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
@@ -38,6 +39,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void TrickStartedEventHandler();
 
     public delegate void HandEndingEventHandler();
+    public delegate void SpecialEndingEventHandler();
     
     
     
@@ -61,6 +63,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public event GameHallUpdatedEventHandler GameHallUpdatedEvent;
         public event RoomSettingUpdatedEventHandler RoomSettingUpdatedEvent;
+        public event ShowAllHandCardsEventHandler ShowAllHandCardsEvent;        
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
         public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
         public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
@@ -89,6 +92,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event TrickStartedEventHandler TrickStarted;
         
         public event HandEndingEventHandler HandEnding;
+        public event SpecialEndingEventHandler SpecialEndingEvent;
 
         private readonly ITractorHost _tractorHost;
 
@@ -193,6 +197,11 @@ namespace Duan.Xiugang.Tractor.Player
         public void ExitRoom(string playerID)
         {
             _tractorHost.PlayerExitRoom(this.MyOwnId);
+        }
+
+        public void SpecialEndGame(string playerID, SpecialEndingType endType)
+        {
+            _tractorHost.SpecialEndGame(this.MyOwnId, endType);
         }
 
         public void Quit()
@@ -340,10 +349,15 @@ namespace Duan.Xiugang.Tractor.Player
                     if (HandEnding != null)
                         HandEnding();
                 }
+                else if (currentHandState.CurrentHandStep == HandStep.SpecialEnding)
+                {
+                    if (SpecialEndingEvent != null)
+                        SpecialEndingEvent();
+                }
             }
 
             //显示庄家
-            if (starterChanged || this.CurrentHandState.CurrentHandStep == HandStep.Ending)
+            if (starterChanged || this.CurrentHandState.CurrentHandStep == HandStep.Ending || currentHandState.CurrentHandStep == HandStep.SpecialEnding)
             {
                 if (StarterChangedEvent != null)
                     StarterChangedEvent();
@@ -373,7 +387,7 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyCurrentTrickState(CurrentTrickState currentTrickState)
         {
             this.CurrentTrickState = currentTrickState;
-            if (this.CurrentHandState.CurrentHandStep == HandStep.Ending)
+            if (this.CurrentHandState.CurrentHandStep == HandStep.Ending || this.CurrentHandState.CurrentHandStep == HandStep.SpecialEnding)
             {
                 return;
             }
@@ -482,6 +496,14 @@ namespace Duan.Xiugang.Tractor.Player
             if (RoomSettingUpdatedEvent != null)
             {
                 RoomSettingUpdatedEvent(roomSetting, isRoomSettingModified);
+            }
+        }
+
+        public void NotifyShowAllHandCards()
+        {
+            if (ShowAllHandCardsEvent != null)
+            {
+                ShowAllHandCardsEvent();
             }
         }
 

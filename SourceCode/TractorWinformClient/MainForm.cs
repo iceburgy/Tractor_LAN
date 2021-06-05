@@ -143,6 +143,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.GameHallUpdatedEvent += ThisPlayer_GameHallUpdatedEventHandler;
             ThisPlayer.RoomSettingUpdatedEvent += ThisPlayer_RoomSettingUpdatedEventHandler;
+            ThisPlayer.ShowAllHandCardsEvent += ThisPlayer_ShowAllHandCardsEventHandler;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
             ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
             ThisPlayer.PlayerToggleIsRobot += ThisPlayer_PlayerToggleIsRobot;
@@ -150,6 +151,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.TrickFinished += ThisPlayer_TrickFinished;
             ThisPlayer.TrickStarted += ThisPlayer_TrickStarted;
             ThisPlayer.HandEnding += ThisPlayer_HandEnding;
+            ThisPlayer.SpecialEndingEvent += ThisPlayer_SpecialEndingEventHandler;
             ThisPlayer.StarterFailedForTrump += ThisPlayer_StarterFailedForTrump;
             ThisPlayer.StarterChangedEvent += ThisPlayer_StarterChangedEventHandler;
             ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
@@ -907,6 +909,11 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.RemoveToolbar();
             drawingFormHelper.DrawCenterImage();
             drawingFormHelper.DrawScoreImage();
+
+            //出牌开始前，去掉不需要的controls
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
+
             Refresh();
         }
 
@@ -1104,6 +1111,37 @@ namespace Duan.Xiugang.Tractor
                 prefix = "房间设置已更改！";
             }
             this.DisplayRoomSetting(prefix);
+        }
+
+        private void ThisPlayer_ShowAllHandCardsEventHandler()
+        {
+            //擦掉出牌区
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImage();
+
+            foreach (var entry in this.ThisPlayer.CurrentHandState.PlayerHoldingCards)
+            {
+                string player = entry.Key;
+                int position = PlayerPosition[player];
+                if (position == 1)
+                {
+                    continue;
+                }
+                else if (position == 2)
+                {
+                    drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
+                }
+                else if (position == 3)
+                {
+                    drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
+                }
+                else if (position == 4)
+                {
+                    drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
+                }
+            }
+            Refresh();
+
         }
         
         private void ThisPlayer_GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names)
@@ -1436,6 +1474,13 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawFinishedSendedCards();
         }
 
+        private void ThisPlayer_SpecialEndingEventHandler()
+        {
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
+            drawingFormHelper.DrawFinishedBySpecialEnding();
+        }
+
         private void ThisPlayer_StarterFailedForTrump()
         {
             Graphics g = Graphics.FromImage(bmp);
@@ -1559,6 +1604,26 @@ namespace Duan.Xiugang.Tractor
             if (!ThisPlayer.isObserver && gameConfig.IsDebug && !FormSettings.GetSettingBool(FormSettings.KeyFullDebug))
             {
                 this.btnRobot.PerformClick();
+            }
+
+            //摸牌结束，如果允许投降，则显示投降按钮
+            if (ThisPlayer.CurrentRoomSetting.AllowSurrender)
+            {
+                this.btnSurrender.Visible = true;
+            }
+            
+            //摸牌结束，如果允许分数革命，则判断是否该显示革命按钮
+            int riotScoreCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards;
+            if (ThisPlayer.CurrentPoker.GetTotalScore() < riotScoreCap)
+            {
+                this.btnRiot.Visible = true;
+            }
+
+            //摸牌结束，如果允许主牌革命，则判断是否该显示革命按钮
+            int riotTrumpCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards;
+            if (ThisPlayer.CurrentPoker.GetMasterCardsCount() < riotTrumpCap)
+            {
+                this.btnRiot.Visible = true;
             }
 
             int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
@@ -1794,6 +1859,32 @@ namespace Duan.Xiugang.Tractor
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
+        }
+
+        private void btnSurrender_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.SpecialEndGame(ThisPlayer.MyOwnId, SpecialEndingType.Surrender);
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
+        }
+
+        private void btnRiot_Click(object sender, EventArgs e)
+        {
+            SpecialEndingType endType = SpecialEndingType.RiotByScore;
+            //如果允许革命，则判断是哪种革命
+            int riotScoreCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards;
+            if (ThisPlayer.CurrentPoker.GetTotalScore() < riotScoreCap)
+            {
+                endType = SpecialEndingType.RiotByScore;
+            }
+            else
+            {
+                endType = SpecialEndingType.RiotByTrump;
+            }
+
+            ThisPlayer.SpecialEndGame(ThisPlayer.MyOwnId, endType);
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
         }
 
         private void ToolStripMenuItemUserManual_Click(object sender, EventArgs e)

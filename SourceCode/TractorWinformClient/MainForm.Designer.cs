@@ -87,6 +87,8 @@ namespace Duan.Xiugang.Tractor
             this.tmrGeneral = new System.Windows.Forms.Timer(this.components);
             this.btnPig = new System.Windows.Forms.Button();
             this.btnRoomSetting = new System.Windows.Forms.Button();
+            this.btnRiot = new System.Windows.Forms.Button();
+            this.btnSurrender = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -615,14 +617,40 @@ namespace Duan.Xiugang.Tractor
             // 
             this.btnRoomSetting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnRoomSetting.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnRoomSetting.Location = new System.Drawing.Point(594, 38);
+            this.btnRoomSetting.Location = new System.Drawing.Point(629, 38);
             this.btnRoomSetting.Name = "btnRoomSetting";
-            this.btnRoomSetting.Size = new System.Drawing.Size(107, 45);
+            this.btnRoomSetting.Size = new System.Drawing.Size(101, 33);
             this.btnRoomSetting.TabIndex = 28;
             this.btnRoomSetting.Text = "房间设置";
             this.btnRoomSetting.UseVisualStyleBackColor = true;
             this.btnRoomSetting.Visible = false;
             this.btnRoomSetting.Click += new System.EventHandler(this.btnRoomSetting_Click);
+            // 
+            // btnRiot
+            // 
+            this.btnRiot.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnRiot.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnRiot.Location = new System.Drawing.Point(560, 38);
+            this.btnRiot.Name = "btnRiot";
+            this.btnRiot.Size = new System.Drawing.Size(63, 33);
+            this.btnRiot.TabIndex = 25;
+            this.btnRiot.Text = "革命";
+            this.btnRiot.UseVisualStyleBackColor = true;
+            this.btnRiot.Visible = false;
+            this.btnRiot.Click += new System.EventHandler(this.btnRiot_Click);
+            // 
+            // btnSurrender
+            // 
+            this.btnSurrender.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSurrender.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnSurrender.Location = new System.Drawing.Point(491, 38);
+            this.btnSurrender.Name = "btnSurrender";
+            this.btnSurrender.Size = new System.Drawing.Size(63, 33);
+            this.btnSurrender.TabIndex = 25;
+            this.btnSurrender.Text = "投降";
+            this.btnSurrender.UseVisualStyleBackColor = true;
+            this.btnSurrender.Visible = false;
+            this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
             // 
             // MainForm
             // 
@@ -632,6 +660,8 @@ namespace Duan.Xiugang.Tractor
             this.Controls.Add(this.btnRoomSetting);
             this.Controls.Add(this.btnPig);
             this.Controls.Add(this.progressBarPingHost);
+            this.Controls.Add(this.btnSurrender);
+            this.Controls.Add(this.btnRiot);
             this.Controls.Add(this.btnExitRoom);
             this.Controls.Add(this.btnObserveNext);
             this.Controls.Add(this.btnRobot);
@@ -727,6 +757,8 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem RestoreGameStateCardsShoeToolStripMenuItem;
         public System.Windows.Forms.Button btnPig;
         private System.Windows.Forms.Button btnRoomSetting;
+        private System.Windows.Forms.Button btnRiot;
+        private System.Windows.Forms.Button btnSurrender;
     }
 }
 

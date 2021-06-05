@@ -74,6 +74,12 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void NotifyCardsReady(ArrayList myCardIsReady);
 
+        /// <summary>
+        ///     所有人展示手牌
+        /// </summary>
+        [OperationContract(IsOneWay = true)]
+        void NotifyShowAllHandCards();
+
         void DiscardCards(int[] cards);
     }
 }

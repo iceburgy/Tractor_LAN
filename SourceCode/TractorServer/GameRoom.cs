@@ -306,6 +306,88 @@ namespace TractorServer
             UpdateGameState();
         }
 
+        public void SpecialEndGame(string playerID, SpecialEndingType endType)
+        {
+            if (CurrentRoomState.CurrentHandState.CurrentHandStep != HandStep.DiscardingLast8Cards) return;
+
+            //开始下一盘
+            CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.SpecialEnding;
+
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+            {
+                p.IsReadyToStart = false;
+                p.IsRobot = false;
+            }
+
+            StringBuilder sb = null;
+            string[] msgs = null;
+            switch (endType)
+            {
+                case SpecialEndingType.Surrender:
+                    if (CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter, playerID))
+                    {
+                        CurrentRoomState.CurrentHandState.Score = 80;
+                    }
+                    else
+                    {
+                        CurrentRoomState.CurrentHandState.Score = 40;
+                    }
+                    CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                    CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
+                    CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
+                    //检查是否本轮游戏结束
+                    if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
+                    {
+                        sb = new StringBuilder();
+                        foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
+                        {
+                            if (player == null) continue;
+                            player.Rank = 0;
+                            if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
+                                sb.Append(string.Format("【{0}】", player.PlayerId));
+                        }
+                        CurrentRoomState.CurrentHandState.Rank = 0;
+                        CurrentRoomState.CurrentHandState.Starter = null;
+
+                        CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+                        CurrentRoomState.CurrentGameState.startNextHandStarter = null;
+                    }
+                    else
+                    {
+                        msgs = new string[] { string.Format("玩家【{0}】", playerID), "发动了技能【投降】" };
+                    }
+                    break;
+                case SpecialEndingType.RiotByScore:
+                    CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_CURRENT_HAND;
+                    msgs = new string[] { string.Format("玩家【{0}】", playerID), "发动了技能【无分革命】" };
+                    break;
+                case SpecialEndingType.RiotByTrump:
+                    CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_CURRENT_HAND;
+                    msgs = new string[] { string.Format("玩家【{0}】", playerID), "发动了技能【无主革命】" };
+                    break;
+                default:
+                    return;
+            }
+
+            UpdatePlayersCurrentHandState();
+
+            UpdateGameState();
+
+            SaveGameStateToFile();
+
+            //所有人展示手牌
+            ShowAllHandCards();
+
+            if (sb != null)
+            {
+                PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
+            }
+            else if (msgs!=null)
+            {
+                PublishMessage(msgs);
+            }
+        }
+
         //player discard last 8 cards
         public void StoreDiscardedCards(int[] cards)
         {
@@ -1336,6 +1418,12 @@ namespace TractorServer
         {
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
+        }
+
+        public void ShowAllHandCards()
+        {
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyShowAllHandCards", new List<object>() { });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyShowAllHandCards", new List<object>() { });
         }
 
         #endregion

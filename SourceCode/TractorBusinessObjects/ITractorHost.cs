@@ -26,6 +26,9 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void PlayerExitRoom(string playerId);
 
+        [OperationContract(IsOneWay = true)]
+        void SpecialEndGame(string playerID, SpecialEndingType endType);
+
         [OperationContract(AsyncPattern = true)]
         IAsyncResult BeginPlayerQuit(string playerId, AsyncCallback callback, object state);
         string EndPlayerQuit(IAsyncResult ar);

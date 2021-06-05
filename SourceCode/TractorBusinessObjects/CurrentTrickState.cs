@@ -210,7 +210,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public string LatestPlayerShowedCard()
         {
             string playerId = "";
-            if (ShowedCards[Learder].Count == 0)
+            if (string.IsNullOrEmpty(Learder) || ShowedCards[Learder].Count == 0)
                 return playerId;
 
             bool afterLeader = false;

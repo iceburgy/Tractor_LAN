@@ -58,9 +58,9 @@
             this.lblAllowRiotByScore.AutoSize = true;
             this.lblAllowRiotByScore.Location = new System.Drawing.Point(24, 154);
             this.lblAllowRiotByScore.Name = "lblAllowRiotByScore";
-            this.lblAllowRiotByScore.Size = new System.Drawing.Size(265, 20);
+            this.lblAllowRiotByScore.Size = new System.Drawing.Size(164, 20);
             this.lblAllowRiotByScore.TabIndex = 0;
-            this.lblAllowRiotByScore.Text = "Coming soon! 允许分数低于N时革命";
+            this.lblAllowRiotByScore.Text = "允许分数低于N时革命";
             // 
             // cbbRiotByScore
             // 
@@ -82,9 +82,9 @@
             this.lblRiotByTrump.AutoSize = true;
             this.lblRiotByTrump.Location = new System.Drawing.Point(24, 210);
             this.lblRiotByTrump.Name = "lblRiotByTrump";
-            this.lblRiotByTrump.Size = new System.Drawing.Size(377, 20);
+            this.lblRiotByTrump.Size = new System.Drawing.Size(276, 20);
             this.lblRiotByTrump.TabIndex = 2;
-            this.lblRiotByTrump.Text = "Coming soon! 允许主牌少于N时革命（打无主不算）";
+            this.lblRiotByTrump.Text = "允许主牌少于N时革命（打无主不算）";
             // 
             // cbbRiotByTrump
             // 
@@ -117,9 +117,9 @@
             this.cbxAllowSurrender.AutoSize = true;
             this.cbxAllowSurrender.Location = new System.Drawing.Point(28, 41);
             this.cbxAllowSurrender.Name = "cbxAllowSurrender";
-            this.cbxAllowSurrender.Size = new System.Drawing.Size(360, 24);
+            this.cbxAllowSurrender.Size = new System.Drawing.Size(323, 24);
             this.cbxAllowSurrender.TabIndex = 3;
-            this.cbxAllowSurrender.Text = "Coming soon! 允许投降（投降后庄家升一级）";
+            this.cbxAllowSurrender.Text = "允许投降（投降后对方上台或者升一级）";
             this.cbxAllowSurrender.UseVisualStyleBackColor = true;
             // 
             // gpbMustDoRank

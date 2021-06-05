@@ -1181,6 +1181,62 @@ namespace Duan.Xiugang.Tractor
 
         #endregion // 在各种情况下画自己的牌
 
+        #region // 因特殊情况需画出所有手牌
+
+
+        /// <summary>
+        /// 画对家的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawFriendUserSendedCardsActionAllHandCards(ArrayList readys)
+        {
+            int start = 90;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 130, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                start += 12 * scaleDividend / scaleDivisor * 2 / 3;
+            }
+
+            g.Dispose();
+        }
+
+
+
+        /// <summary>
+        /// 画上家应该出的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawPreviousUserSendedCardsActionAllHandCards(ArrayList readys)
+        {
+            int start = 90;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 260, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+            }
+
+            g.Dispose();
+        }
+
+
+
+        /// <summary>
+        /// 画下家应该出的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawNextUserSendedCardsActionAllHandCards(ArrayList readys)
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 496, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+            }
+
+            g.Dispose();
+        }
+        #endregion
+
 
         #region 画自己的牌面(四种花色、四种花色Rank、大小王)
         private int DrawBigJack(Graphics g, CurrentPoker currentPoker, int j, int start)
@@ -1749,6 +1805,13 @@ namespace Duan.Xiugang.Tractor
             DrawCenterImage();
             DrawFinishedScoreImage();
             DrawScoreCards();
+            mainForm.Refresh();
+        }
+
+        //有人投降
+        internal void DrawFinishedBySpecialEnding()
+        {
+            DrawCenterImage();
             mainForm.Refresh();
         }
         #endregion // 绘制各家出的牌，并计算结果或者通知下一家
