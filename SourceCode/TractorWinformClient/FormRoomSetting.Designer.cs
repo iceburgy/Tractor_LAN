@@ -58,9 +58,9 @@
             this.lblAllowRiotByScore.AutoSize = true;
             this.lblAllowRiotByScore.Location = new System.Drawing.Point(24, 154);
             this.lblAllowRiotByScore.Name = "lblAllowRiotByScore";
-            this.lblAllowRiotByScore.Size = new System.Drawing.Size(164, 20);
+            this.lblAllowRiotByScore.Size = new System.Drawing.Size(196, 20);
             this.lblAllowRiotByScore.TabIndex = 0;
-            this.lblAllowRiotByScore.Text = "允许分数低于N时革命";
+            this.lblAllowRiotByScore.Text = "允许分数小于等于N时革命";
             // 
             // cbbRiotByScore
             // 
@@ -68,6 +68,7 @@
             this.cbbRiotByScore.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbRiotByScore.FormattingEnabled = true;
             this.cbbRiotByScore.Items.AddRange(new object[] {
+            "-1",
             "0",
             "5",
             "10",
@@ -82,9 +83,9 @@
             this.lblRiotByTrump.AutoSize = true;
             this.lblRiotByTrump.Location = new System.Drawing.Point(24, 210);
             this.lblRiotByTrump.Name = "lblRiotByTrump";
-            this.lblRiotByTrump.Size = new System.Drawing.Size(276, 20);
+            this.lblRiotByTrump.Size = new System.Drawing.Size(324, 20);
             this.lblRiotByTrump.TabIndex = 2;
-            this.lblRiotByTrump.Text = "允许主牌少于N时革命（打无主不算）";
+            this.lblRiotByTrump.Text = "允许主牌小于等于N张时革命（打无主不算）";
             // 
             // cbbRiotByTrump
             // 
@@ -92,6 +93,7 @@
             this.cbbRiotByTrump.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbRiotByTrump.FormattingEnabled = true;
             this.cbbRiotByTrump.Items.AddRange(new object[] {
+            "-1",
             "0",
             "1",
             "2",
