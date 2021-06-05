@@ -65,7 +65,6 @@ namespace TractorServer
                         LogClientInfo(clientIP, playerID, false);
                     }
 
-                    player.NotifyMessage(new string[] { "房间已满", "加入旁观" });
                     log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
 
                     ObserversProxy.Add(playerID, player);

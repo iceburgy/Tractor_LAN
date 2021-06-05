@@ -42,7 +42,7 @@ namespace Duan.Xiugang.Tractor
                 }
             }
 
-            if (this.mainForm.ThisPlayer.CurrentGameState.Players[0] == null || this.mainForm.ThisPlayer.CurrentGameState.Players[0].PlayerId != this.mainForm.ThisPlayer.PlayerId)
+            if (this.mainForm.ThisPlayer.isObserver || this.mainForm.ThisPlayer.CurrentGameState.Players[0] == null || this.mainForm.ThisPlayer.CurrentGameState.Players[0].PlayerId != this.mainForm.ThisPlayer.PlayerId)
             {
                 foreach (Control control in this.Controls)
                 {

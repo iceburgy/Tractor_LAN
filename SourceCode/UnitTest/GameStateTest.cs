@@ -62,13 +62,13 @@ namespace TestProject1
             nextStart = target.CurrentGameState.NextRank(target);
             Assert.AreEqual(3, nextStart.Rank);
 
-            target.roomSetting.SetManditoryRanks(new List<int>());
+            target.roomSetting.SetManditoryRanks(new List<int>() { 3 });
             target.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = "p2", Rank = 0, Team = GameTeam.HorizonTeam };
             target.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = "p4", Rank = 0, Team = GameTeam.HorizonTeam };
             target.CurrentHandState.Starter = "p1";
             target.CurrentHandState.Score = 320;
             nextStart = target.CurrentGameState.NextRank(target);
-            Assert.AreEqual(6, nextStart.Rank);
+            Assert.AreEqual(3, nextStart.Rank);
 
             target.roomSetting.SetManditoryRanks(new List<int>() { 3 });
             target.roomSetting.AllowJToBottom = true;
