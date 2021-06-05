@@ -60,7 +60,7 @@ namespace TestProject1
             target.CurrentHandState.Starter = "p1";
             target.CurrentHandState.Score = 240;
             nextStart = target.CurrentGameState.NextRank(target);
-            Assert.AreEqual(7, nextStart.Rank);
+            Assert.AreEqual(3, nextStart.Rank);
 
             target.roomSetting.SetManditoryRanks(new List<int>());
             target.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = "p2", Rank = 0, Team = GameTeam.HorizonTeam };
@@ -69,6 +69,19 @@ namespace TestProject1
             target.CurrentHandState.Score = 320;
             nextStart = target.CurrentGameState.NextRank(target);
             Assert.AreEqual(6, nextStart.Rank);
+
+            target.roomSetting.SetManditoryRanks(new List<int>() { 3 });
+            target.roomSetting.AllowJToBottom = true;
+            target.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = "p1", Rank = 3, Team = GameTeam.VerticalTeam };
+            target.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = "p2", Rank = 0, Team = GameTeam.HorizonTeam };
+            target.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = "p3", Rank = 3, Team = GameTeam.VerticalTeam };
+            target.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = "p4", Rank = 0, Team = GameTeam.HorizonTeam };
+            target.CurrentHandState.Starter = "p2";
+            target.CurrentHandState.Score = 120;
+            target.CurrentHandState.Trump = Suit.Club;
+            target.CurrentHandState.Rank = 0;
+            nextStart = target.CurrentGameState.NextRank(target);
+            Assert.AreEqual(3, nextStart.Rank);
 
             //副J一半
             target.roomSetting.SetManditoryRanks(new List<int>());

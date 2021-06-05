@@ -103,7 +103,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 foreach (PlayerEntity player in Players)
                 {
                     if (player == null) continue;
-                    if (player.Team != starterTeam)
+                    if (player.Team != starterTeam && !CurrentRoomState.roomSetting.GetManditoryRanks().Contains(player.Rank))
                     {
                         UpdatePlayerRank(CurrentRoomState, rankToAdd, player);
                     }
