@@ -89,6 +89,7 @@ namespace Duan.Xiugang.Tractor
             this.btnRoomSetting = new System.Windows.Forms.Button();
             this.btnRiot = new System.Windows.Forms.Button();
             this.btnSurrender = new System.Windows.Forms.Button();
+            this.lblRoomName = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -652,11 +653,24 @@ namespace Duan.Xiugang.Tractor
             this.btnSurrender.Visible = false;
             this.btnSurrender.Click += new System.EventHandler(this.btnSurrender_Click);
             // 
+            // lblRoomName
+            // 
+            this.lblRoomName.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.lblRoomName.BackColor = System.Drawing.Color.Transparent;
+            this.lblRoomName.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblRoomName.ForeColor = System.Drawing.Color.Orange;
+            this.lblRoomName.Location = new System.Drawing.Point(629, 74);
+            this.lblRoomName.Name = "lblRoomName";
+            this.lblRoomName.Size = new System.Drawing.Size(101, 27);
+            this.lblRoomName.TabIndex = 29;
+            this.lblRoomName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.lblRoomName);
             this.Controls.Add(this.btnRoomSetting);
             this.Controls.Add(this.btnPig);
             this.Controls.Add(this.progressBarPingHost);
@@ -759,6 +773,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnRoomSetting;
         private System.Windows.Forms.Button btnRiot;
         private System.Windows.Forms.Button btnSurrender;
+        private System.Windows.Forms.Label lblRoomName;
     }
 }
 

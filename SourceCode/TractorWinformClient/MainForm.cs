@@ -1105,6 +1105,7 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified)
         {
             this.ThisPlayer.CurrentRoomSetting = roomSetting;
+            this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
             string prefix = string.Empty;
             if (isRoomSettingModified)
             {
@@ -1163,6 +1164,7 @@ namespace Duan.Xiugang.Tractor
             this.btnRobot.Hide();
             this.btnExitRoom.Hide();
             this.btnRoomSetting.Hide();
+            this.lblRoomName.Text = "";
             this.btnObserveNext.Hide();
             this.lblEastNickName.Text = "";
             this.lblNorthNickName.Text = "";
@@ -1184,7 +1186,7 @@ namespace Duan.Xiugang.Tractor
         private void CreateRoomControls(List<RoomState> roomStates, List<string> names)
         {
             int offsetX = 50;
-            int offsetY = 100;
+            int offsetY = 150;
             int offsetYLower = offsetY + 100;
 
             Label labelOnline = new Label();
@@ -1229,7 +1231,7 @@ namespace Duan.Xiugang.Tractor
                 btnEnterRoom.Name = string.Format("{0}_btnEnterRoom_{1}", roomControlPrefix, room.RoomID);
                 btnEnterRoom.Size = new System.Drawing.Size(tableSize, tableSize);
                 btnEnterRoom.BackColor = System.Drawing.Color.LightBlue;
-                btnEnterRoom.Text = room.RoomName;
+                btnEnterRoom.Text = room.roomSetting.RoomName;
                 btnEnterRoom.Click += new System.EventHandler(this.btnEnterRoom_Click);
                 this.Controls.Add(btnEnterRoom);
 
@@ -1600,8 +1602,20 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_DistributingLast8Cards()
         {
+            int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
+            //自己摸底不用画
+            if (position > 1)
+            {
+                drawingFormHelper.DrawDistributingLast8Cards(position);
+            }
+
+            if (ThisPlayer.isObserver)
+            {
+                return;
+            }
+
             //摸牌结束，如果处于托管状态，则取消托管
-            if (!ThisPlayer.isObserver && gameConfig.IsDebug && !FormSettings.GetSettingBool(FormSettings.KeyFullDebug))
+            if (gameConfig.IsDebug && !FormSettings.GetSettingBool(FormSettings.KeyFullDebug))
             {
                 this.btnRobot.PerformClick();
             }
@@ -1624,13 +1638,6 @@ namespace Duan.Xiugang.Tractor
             if (ThisPlayer.CurrentPoker.GetMasterCardsCount() <= riotTrumpCap)
             {
                 this.btnRiot.Visible = true;
-            }
-
-            int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
-            //自己摸底不用画
-            if (position > 1)
-            {
-                drawingFormHelper.DrawDistributingLast8Cards(position);
             }
         }
 

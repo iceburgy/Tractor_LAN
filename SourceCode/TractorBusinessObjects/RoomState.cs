@@ -10,20 +10,17 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public int RoomID;
         [DataMember]
-        public string RoomName;
-        [DataMember]
         public GameState CurrentGameState;
         [DataMember]
         public CurrentHandState CurrentHandState;
         [DataMember]
         public CurrentTrickState CurrentTrickState;
-
+        [DataMember]
         public RoomSetting roomSetting;
 
-        public RoomState(int roomID, string roomName)
+        public RoomState(int roomID)
         {
             RoomID = roomID;
-            RoomName = roomName;
             CurrentGameState = new GameState();
             CurrentHandState = new CurrentHandState(this.CurrentGameState);
             CurrentTrickState = new CurrentTrickState();

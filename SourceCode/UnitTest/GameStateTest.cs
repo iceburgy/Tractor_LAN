@@ -20,7 +20,7 @@ namespace TestProject1
         [TestMethod()]
         public void NextRankTest()
         {
-            RoomState target = new RoomState(0, "test");
+            RoomState target = new RoomState(0);
             target.roomSetting.SetManditoryRanks(new List<int>() { 11, 8, 3 });
             target.CurrentGameState = new GameState();
             target.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = "p1", Rank = 0, Team = GameTeam.VerticalTeam };

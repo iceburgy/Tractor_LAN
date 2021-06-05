@@ -10,6 +10,10 @@ namespace Duan.Xiugang.Tractor.Objects
     public class RoomSetting
     {
         [DataMember]
+        public string RoomName;
+        [DataMember]
+        public string RoomOwner;
+        [DataMember]
         public List<int> ManditoryRanks;
         [DataMember]
         public int AllowRiotWithTooFewScoreCards;
@@ -39,6 +43,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
             RoomSetting rs = (RoomSetting)obj;
 
+            if (RoomName != rs.RoomName) return false;
+            if (RoomOwner != rs.RoomOwner) return false;
             if (AllowRiotWithTooFewScoreCards != rs.AllowRiotWithTooFewScoreCards) return false;
             if (AllowRiotWithTooFewTrumpCards != rs.AllowRiotWithTooFewTrumpCards) return false;
             if (AllowJToBottom != rs.AllowJToBottom) return false;
@@ -46,6 +52,11 @@ namespace Duan.Xiugang.Tractor.Objects
             if (!ManditoryRanks.SequenceEqual(rs.ManditoryRanks)) return false;
 
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public List<int> GetManditoryRanks()

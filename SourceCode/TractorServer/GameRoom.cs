@@ -25,13 +25,15 @@ namespace TractorServer
 
         public GameRoom(int roomID, string roomName)
         {
-            CurrentRoomState = new RoomState(roomID, roomName);
+            CurrentRoomState = new RoomState(roomID);
             LogsByRoomFolder = string.Format("{0}\\{1}", LogsFolder, roomID);
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
             serverLocalCache = new ServerLocalCache();
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
+            CurrentRoomState.roomSetting.RoomName = roomName;
+            CurrentRoomState.roomSetting.RoomOwner = string.Empty;
         }
 
         #region implement interface ITractorHost
@@ -51,7 +53,7 @@ namespace TractorServer
                         {
                             msg += "？？失败";
                             PublishMessage(new string[] { msg });
-                            player.NotifyMessage(new string[] { "已在游戏中", "请勿双开旁观" });
+                            player.NotifyMessage(new string[] { "已在游戏中", "请勿双开旁观", "", "" });
                             return false;
                         }
                         else
@@ -70,7 +72,6 @@ namespace TractorServer
                     ObserversProxy.Add(playerID, player);
                     ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
 
-                    Thread.Sleep(2000);
                     player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     return true;
                 }
@@ -94,6 +95,10 @@ namespace TractorServer
                 CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
+                if (string.IsNullOrEmpty(CurrentRoomState.roomSetting.RoomOwner))
+                {
+                    CurrentRoomState.roomSetting.RoomOwner = playerID;
+                }
                 if (PlayersProxy.Count == 4)
                 {
                     //create team
@@ -979,7 +984,10 @@ namespace TractorServer
             }
             //即时更新旁观手牌
             UpdateGameState();
-            UpdatePlayersCurrentHandState();
+            if (new HandStep[] { HandStep.DiscardingLast8Cards, HandStep.Playing }.Contains(this.CurrentRoomState.CurrentHandState.CurrentHandStep))
+            {
+                UpdatePlayersCurrentHandState();
+            }
         }
         #endregion
 
@@ -1425,6 +1433,12 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyShowAllHandCards", new List<object>() { });
         }
 
+        public void UpdatePlayerRoomSettings()
+        {
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, true });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, true });
+        }
+
         #endregion
 
         // IPlayer method invoker
@@ -1610,7 +1624,7 @@ namespace TractorServer
 
             newSetting.SortManditoryRanks();
             this.CurrentRoomState.roomSetting = newSetting;
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { newSetting, true });
+            UpdatePlayerRoomSettings();
 
             //save setting to file
             SaveRoomSettingToFile();

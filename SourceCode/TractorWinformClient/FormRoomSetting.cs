@@ -26,13 +26,15 @@ namespace Duan.Xiugang.Tractor
 
         private void InitValues()
         {
+            this.lblRoomName.Text = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomName;
+            this.lblRoomOwner.Text = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner;
             this.cbxAllowSurrender.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowSurrender;
             this.cbxJToBottom.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowJToBottom;
             this.cbbRiotByScore.SelectedIndex = this.cbbRiotByScore.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString());
             this.cbbRiotByTrump.SelectedIndex = this.cbbRiotByTrump.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString());
 
             List<int> mandRanks = this.mainForm.ThisPlayer.CurrentRoomSetting.GetManditoryRanks();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 13; i++)
             {
                 Control[] controls = this.Controls.Find(string.Format("cbxMust_{0}", i), true);
                 if (controls != null && controls.Length > 0)
@@ -42,19 +44,20 @@ namespace Duan.Xiugang.Tractor
                 }
             }
 
-            if (this.mainForm.ThisPlayer.isObserver || this.mainForm.ThisPlayer.CurrentGameState.Players[0] == null || this.mainForm.ThisPlayer.CurrentGameState.Players[0].PlayerId != this.mainForm.ThisPlayer.PlayerId)
+            if (!this.mainForm.ThisPlayer.isObserver && this.mainForm.ThisPlayer.PlayerId == this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner)
             {
                 foreach (Control control in this.Controls)
                 {
-                    control.Enabled = false;
+                    control.Enabled = true;
                 }
-                this.btnCancel.Enabled = true;
             }
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
             RoomSetting rs = new RoomSetting();
+            rs.RoomName = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomName;
+            rs.RoomOwner = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner;
             rs.AllowSurrender = this.cbxAllowSurrender.Checked;
             rs.AllowJToBottom = this.cbxJToBottom.Checked;
             rs.AllowRiotWithTooFewScoreCards = Int32.Parse((string)this.cbbRiotByScore.SelectedItem);
