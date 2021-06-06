@@ -1635,7 +1635,7 @@ namespace Duan.Xiugang.Tractor
 
             //摸牌结束，如果允许主牌革命，则判断是否该显示革命按钮
             int riotTrumpCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards;
-            if (ThisPlayer.CurrentPoker.GetMasterCardsCount() <= riotTrumpCap)
+            if (ThisPlayer.CurrentPoker.GetMasterCardsCount() <= riotTrumpCap && ThisPlayer.CurrentHandState.Trump != Suit.Joker)
             {
                 this.btnRiot.Visible = true;
             }
