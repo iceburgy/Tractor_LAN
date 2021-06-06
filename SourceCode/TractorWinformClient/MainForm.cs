@@ -290,6 +290,8 @@ namespace Duan.Xiugang.Tractor
             //游戏开始前重置各种变量
             this.ThisPlayer.ShowLastTrickCards = false;
             this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
 
             //每次初始化都重绘背景
             Graphics g = Graphics.FromImage(bmp);
@@ -1163,6 +1165,8 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.Hide();
             this.btnRobot.Hide();
             this.btnExitRoom.Hide();
+            this.btnSurrender.Hide();
+            this.btnRiot.Hide();
             this.btnRoomSetting.Hide();
             this.lblRoomName.Text = "";
             this.btnObserveNext.Hide();

@@ -782,7 +782,7 @@ namespace TractorServer
 
             Stream stream = null;
             Stream stream2 = null;
-            Stream stream3 = null;
+            List<string> restoredMsg = new List<string>();
             try
             {
                 DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
@@ -835,26 +835,13 @@ namespace TractorServer
                 UpdateGameState();
                 UpdatePlayersCurrentHandState();
 
-                string restoredMsg = "读取牌局成功";
-                if (restoreCardsShoe)
-                {
-                    string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                    if (File.Exists(fileNameCardsShoe))
-                    {
-                        DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
-                        stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
-                        this.CardsShoe.IsCardsRestored = true;
-                        this.CardsShoe.Cards = cs.Cards;
-                        restoredMsg = "读取牌局并还原手牌成功";
-                    }
-                }
+                restoredMsg.Add("读取牌局【成功】");
 
-                PublishMessage(new string[] { restoredMsg, "请点击就绪继续上盘游戏" }); ;
             }
             catch (Exception ex)
             {
-                PublishMessage(new string[] { "读取牌局失败", "牌局存档文件读取失败" });
+                log.Debug(string.Format("读取牌局 error: {0}", ex));
+                restoredMsg.Add("读取牌局【失败】");
             }
             finally
             {
@@ -866,10 +853,34 @@ namespace TractorServer
                 {
                     stream2.Close();
                 }
-                if (stream3 != null)
+                if (restoreCardsShoe)
                 {
-                    stream3.Close();
+                    Stream stream3 = null;
+                    try
+                    {
+                        string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
+                        DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
+                        stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
+                        this.CardsShoe.IsCardsRestored = true;
+                        this.CardsShoe.Cards = cs.Cards;
+                        restoredMsg.Add("还原手牌【成功】");
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Debug(string.Format("还原手牌 error: {0}", ex));
+                        restoredMsg.Add("还原手牌【失败】");
+                    }
+                    finally
+                    {
+                        if (stream3 != null)
+                        {
+                            stream3.Close();
+                        }
+                    }
                 }
+                restoredMsg.Add("请点击就绪继续游戏");
+                PublishMessage(restoredMsg.ToArray());
             }
         }
 
