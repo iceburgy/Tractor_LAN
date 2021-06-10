@@ -530,6 +530,7 @@ namespace TractorServer
 
                         //本局结束画面，更新最后一轮出的牌
                         CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
+                        CurrentRoomState.CurrentTrickState.serverLocalCache.muteSound = true;
                         UpdatePlayerCurrentTrickState();
 
                         CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;

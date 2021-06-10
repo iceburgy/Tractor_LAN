@@ -35,6 +35,11 @@ namespace Duan.Xiugang.Tractor
         internal Bitmap[] cardsImages = new Bitmap[54];
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
+        internal bool enableSound = false;
+        internal string[] showCardSoundFiles;
+        internal string trumpUpdatedSoundFile;
+        internal string discardingLast8CardsFinishedSoundFile;
+        internal string gameOverSoundFile;
 
         internal CurrentPoker[] currentAllSendPokers =
         {
@@ -126,6 +131,27 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.PlayerId = nickName;
             ThisPlayer.MyOwnId = nickName;
             updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
+            enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
+
+            //加载音效
+            //get the full location of the assembly with DaoTests in it
+            string fullPath = Assembly.GetExecutingAssembly().Location;
+            //get the folder that's in
+            string fullFolder = Path.GetDirectoryName(fullPath);
+            showCardSoundFiles = new string[] 
+            { 
+                Path.Combine(fullFolder, "music\\equip1.mp3"),
+                Path.Combine(fullFolder, "music\\equip2.mp3"),
+                Path.Combine(fullFolder, "music\\sha.mp3"),
+                Path.Combine(fullFolder, "music\\sha_fire.mp3"),
+                Path.Combine(fullFolder, "music\\sha_thunder.mp3"),
+            };
+            trumpUpdatedSoundFile = "music\\biyue1.mp3";
+            discardingLast8CardsFinishedSoundFile = "music\\tie.mp3";
+            gameOverSoundFile = "music\\win.mp3";
+
+            //创建大牌标记labels
+            CreateOverridingLabels();
 
             //ping host
             this.progressBarPingHost.Visible = true;
@@ -172,6 +198,29 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //初始化
             }
+        }
+
+        private void CreateOverridingLabels()
+        {
+            //自己
+            this.imbOverridingFlag_1.AutoSize = false;
+            this.imbOverridingFlag_1.BackColor = System.Drawing.Color.Transparent;
+            this.Controls.Add(this.imbOverridingFlag_1);
+
+            //下家
+            this.imbOverridingFlag_2.AutoSize = false;
+            this.imbOverridingFlag_2.BackColor = System.Drawing.Color.Transparent;
+            this.Controls.Add(this.imbOverridingFlag_2);
+
+            //对家
+            this.imbOverridingFlag_3.AutoSize = false;
+            this.imbOverridingFlag_3.BackColor = System.Drawing.Color.Transparent;
+            this.Controls.Add(this.imbOverridingFlag_3);
+
+            //上家
+            this.imbOverridingFlag_4.AutoSize = false;
+            this.imbOverridingFlag_4.BackColor = System.Drawing.Color.Transparent;
+            this.Controls.Add(this.imbOverridingFlag_4);
         }
 
 
@@ -708,6 +757,13 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_TrumpUpdated(CurrentHandState currentHandState)
         {
+            if (HandStep.DistributingCards <= this.ThisPlayer.CurrentHandState.CurrentHandStep &&
+                this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.Playing &&
+                this.enableSound)
+            {
+                MciSoundPlayer.Play(this.trumpUpdatedSoundFile, "song");
+            }
+
             ThisPlayer.CurrentHandState = currentHandState;
             drawingFormHelper.Trump();
             drawingFormHelper.TrumpMadeCardsShow();
@@ -724,16 +780,19 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawMySortedCards(ThisPlayer.CurrentPoker, ThisPlayer.CurrentPoker.Count);
         }
 
-        //检查当前大牌是否为主毙牌
-        private bool IsWinningWithTrump(CurrentTrickState trickState, string winnerID)
+        //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为主毙牌
+        private int IsWinningWithTrump(CurrentTrickState trickState, string playerID)
         {
-            if (trickState.Learder != winnerID)
+            if (playerID == trickState.Learder) return 1;
+            string winnerID = TractorRules.GetWinnerWithoutAllShowedCards(trickState);
+            if (playerID == winnerID)
             {
                 bool isLeaderTrump = PokerHelper.IsTrump(trickState.LeadingCards[0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
                 bool isWinnerTrump = PokerHelper.IsTrump(trickState.ShowedCards[winnerID][0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
-                if (!isLeaderTrump && isWinnerTrump) return true;
+                if (!isLeaderTrump && isWinnerTrump) return 2;
+                return 1;
             }
-            return false;
+            return 0;
         }
 
         private void ThisPlayer_PlayerShowedCards()
@@ -746,9 +805,25 @@ namespace Duan.Xiugang.Tractor
 
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
             this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-            
+
+            int winResult = this.IsWinningWithTrump(ThisPlayer.CurrentTrickState, latestPlayer);
             int position = PlayerPosition[latestPlayer];
-            
+            //如果大牌变更，更新缓存相关信息
+            if (winResult > 0)
+            {
+                if (winResult == 1)
+                {
+                    this.ThisPlayer.playerLocalCache.WinResult = winResult;
+                }
+                else
+                {
+                    if (this.ThisPlayer.playerLocalCache.WinResult == 1) this.ThisPlayer.playerLocalCache.WinResult = winResult;
+                    else this.ThisPlayer.playerLocalCache.WinResult++;
+                }
+                this.ThisPlayer.playerLocalCache.WinnerPosition = position;
+                this.ThisPlayer.playerLocalCache.WinnderID = latestPlayer;
+            }
+
             //如果不在回看上轮出牌，才重画刚刚出的牌
             if (!this.ThisPlayer.ShowLastTrickCards)
             {
@@ -757,6 +832,16 @@ namespace Duan.Xiugang.Tractor
                 {
                     drawingFormHelper.DrawCenterImage();
                     drawingFormHelper.DrawScoreImage();
+                }
+
+                //播放出牌音效
+                int soundInex = winResult;
+                if (winResult > 0) soundInex = this.ThisPlayer.playerLocalCache.WinResult;
+                if (this.enableSound &&
+                    !gameConfig.IsDebug &&
+                    !ThisPlayer.CurrentTrickState.serverLocalCache.muteSound)
+                {
+                    MciSoundPlayer.Play(this.showCardSoundFiles[soundInex], "song");
                 }
 
                 if (position == 1)
@@ -793,6 +878,8 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
                 ResortMyCards();
             }
+
+            if (winResult > 0) drawingFormHelper.DrawOverridingFlag(this.PlayerPosition[this.ThisPlayer.playerLocalCache.WinnderID], this.ThisPlayer.playerLocalCache.WinResult - 1, 1);
 
             RobotPlayFollowing();
         }
@@ -841,8 +928,8 @@ namespace Duan.Xiugang.Tractor
                 }
             }
             string winnerID = TractorRules.GetWinner(trickState);
-            bool tempIsWinByTrump = this.IsWinningWithTrump(trickState, winnerID);
-            drawingFormHelper.DrawOverridingFlag(this.PlayerPosition[winnerID], tempIsWinByTrump, 2);
+            int tempIsWinByTrump = this.IsWinningWithTrump(trickState, winnerID);
+            drawingFormHelper.DrawOverridingFlag(this.PlayerPosition[winnerID], tempIsWinByTrump - 1, 0);
             Refresh();
         }
 
@@ -877,20 +964,16 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
             }
-            if (fromRightClick)
+            //重画亮过的牌
+            if (this.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
             {
-                //重画亮过的牌
-                if (this.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
-                {
-                    drawingFormHelper.TrumpMadeCardsShow();
-                }
+                drawingFormHelper.TrumpMadeCardsShow();
+            }
 
-                //重画大牌标记，winner灯泡
-                if (!this.ThisPlayer.CurrentTrickState.IsStarted() && !string.IsNullOrEmpty(this.ThisPlayer.playerLocalCache.WinnderID))
-                {
-                    drawingFormHelper.DrawOverridingFlag(this.ThisPlayer.playerLocalCache.WinnerPosition, this.ThisPlayer.playerLocalCache.IsWinByTrump, 1);
-                    drawingFormHelper.DrawWhoWinThisTime(this.ThisPlayer.playerLocalCache.WinnderID);
-                }
+            //重画大牌标记
+            if (!string.IsNullOrEmpty(this.ThisPlayer.playerLocalCache.WinnderID))
+            {
+                drawingFormHelper.DrawOverridingFlag(this.PlayerPosition[this.ThisPlayer.playerLocalCache.WinnderID], this.ThisPlayer.playerLocalCache.WinResult - 1, 1);
             }
             Refresh();
         }
@@ -1394,14 +1477,14 @@ namespace Duan.Xiugang.Tractor
         private void RobotPlayFollowing()
         {
             //最后一轮自动跟出
-            bool isLastTrick = false;
-            if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
-            {
-                isLastTrick = true;
-            }
+            //bool isLastTrick = false;
+            //if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
+            //{
+            //    isLastTrick = true;
+            //}
 
             //正常跟出
-            if ((isLastTrick || gameConfig.IsDebug) && !ThisPlayer.isObserver &&
+            if ((gameConfig.IsDebug) && !ThisPlayer.isObserver &&
                 ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentTrickState.IsStarted())
@@ -1462,16 +1545,6 @@ namespace Duan.Xiugang.Tractor
         {
             drawingFormHelper.DrawScoreImage();
 
-            //收集大牌标记相关信息
-            string winnerID = TractorRules.GetWinner(ThisPlayer.CurrentTrickState);
-            bool winResult = this.IsWinningWithTrump(ThisPlayer.CurrentTrickState, winnerID);
-            int position = PlayerPosition[ThisPlayer.CurrentTrickState.Winner];
-            this.ThisPlayer.playerLocalCache.IsWinByTrump = winResult;
-            this.ThisPlayer.playerLocalCache.WinnerPosition = position;
-            this.ThisPlayer.playerLocalCache.WinnderID = ThisPlayer.CurrentTrickState.Winner;
-            drawingFormHelper.DrawOverridingFlag(this.ThisPlayer.playerLocalCache.WinnerPosition, this.ThisPlayer.playerLocalCache.IsWinByTrump, 1);
-
-            drawingFormHelper.DrawWhoWinThisTime(this.ThisPlayer.CurrentTrickState.Winner);
             Refresh();
         }
 
@@ -1552,6 +1625,10 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NotifyMessageEventHandler(string[] msgs)
         {
+            if (msgs.Length >= 2 && msgs[1] == "获胜！" && this.enableSound)
+            {
+                MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+            }
             this.drawingFormHelper.DrawMessages(msgs);
         }
 
@@ -1581,6 +1658,8 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_Last8Discarded()
         {
+            if (this.enableSound) MciSoundPlayer.Play(this.discardingLast8CardsFinishedSoundFile, "song");
+
             Graphics g = Graphics.FromImage(bmp);
             for (int i = 0; i < 8; i++)
             {
@@ -1606,6 +1685,9 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_DistributingLast8Cards()
         {
+            //先去掉反牌按钮，再放发底牌动画
+            drawingFormHelper.ReDrawToolbar();
+
             int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
             //自己摸底不用画
             if (position > 1)
@@ -1629,25 +1711,28 @@ namespace Duan.Xiugang.Tractor
             {
                 this.btnSurrender.Visible = true;
             }
-            
-            //摸牌结束，如果允许分数革命，则判断是否该显示革命按钮
-            int riotScoreCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards;
-            if (ThisPlayer.CurrentPoker.GetTotalScore() <= riotScoreCap)
-            {
-                this.btnRiot.Visible = true;
-            }
 
-            //摸牌结束，如果允许主牌革命，则判断是否该显示革命按钮
-            int riotTrumpCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards;
-            if (ThisPlayer.CurrentPoker.GetMasterCardsCount() <= riotTrumpCap && ThisPlayer.CurrentHandState.Trump != Suit.Joker)
+            //仅允许台下的玩家可以革命
+            if (!this.ThisPlayer.CurrentGameState.ArePlayersInSameTeam(this.ThisPlayer.CurrentHandState.Starter, this.ThisPlayer.PlayerId))
             {
-                this.btnRiot.Visible = true;
+                //摸牌结束，如果允许分数革命，则判断是否该显示革命按钮
+                int riotScoreCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards;
+                if (ThisPlayer.CurrentPoker.GetTotalScore() <= riotScoreCap)
+                {
+                    this.btnRiot.Visible = true;
+                }
+
+                //摸牌结束，如果允许主牌革命，则判断是否该显示革命按钮
+                int riotTrumpCap = ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards;
+                if (ThisPlayer.CurrentPoker.GetMasterCardsCount() <= riotTrumpCap && ThisPlayer.CurrentHandState.Trump != Suit.Joker)
+                {
+                    this.btnRiot.Visible = true;
+                }
             }
         }
 
         private void ThisPlayer_DiscardingLast8()
         {
-            drawingFormHelper.ReDrawToolbar();
             Graphics g = Graphics.FromImage(bmp);
 
             g.DrawImage(image, 200 + drawingFormHelper.offsetCenterHalf, 186 + drawingFormHelper.offsetCenterHalf, 85 * drawingFormHelper.scaleDividend, 96 * drawingFormHelper.scaleDividend);

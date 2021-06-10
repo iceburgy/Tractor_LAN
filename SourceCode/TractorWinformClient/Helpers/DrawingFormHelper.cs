@@ -29,13 +29,50 @@ namespace Duan.Xiugang.Tractor
         public int offsetSideBar = 0;
         public int offsetWinnerYMe = 21;
         public int offsetXPig = 240;
+        public PictureBox[] overridingFlagLabels;
+        public Bitmap[] overridingFlagPictures;
+        public int[][][] overridingFlagLocations;
+        public int[][] overridingFlagSizes;
 
         internal DrawingFormHelper(MainForm mainForm)
         {
             this.mainForm = mainForm;
             this.offsetSideBar = mainForm.Width - 70 - 20;
+            initOverridingLabels();
         }
 
+        private void initOverridingLabels()
+        {
+            int width = 75;
+            int height = 50;
+            this.overridingFlagLabels = new PictureBox[] { this.mainForm.imbOverridingFlag_1, this.mainForm.imbOverridingFlag_2, this.mainForm.imbOverridingFlag_3, this.mainForm.imbOverridingFlag_4 };
+            this.overridingFlagPictures = new Bitmap[] { Properties.Resources.bagua, Properties.Resources.sha, Properties.Resources.huosha, Properties.Resources.leisha };
+            this.overridingFlagLocations = new int[2][][];
+            this.overridingFlagSizes = new int[2][];
+
+            //half size
+            this.overridingFlagLocations[0] = new int[4][];
+            this.overridingFlagLocations[0][0] = new int[] { 285 + offsetCenterHalf, 244 + offsetCenter + 96 * scaleDividend / scaleDivisor - height / 2 };
+            this.overridingFlagLocations[0][1] = new int[] { 326 + offsetCenter, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height / 2 };
+            this.overridingFlagLocations[0][2] = new int[] { 285 + offsetCenterHalf, 130 + 96 * scaleDividend / scaleDivisor - height / 2 };
+            this.overridingFlagLocations[0][3] = new int[] { 245, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height / 2 };
+
+            this.overridingFlagSizes[0] = new int[] { width / 2, height / 2 };
+
+            //full size
+            this.overridingFlagLocations[1] = new int[4][];
+            this.overridingFlagLocations[1][0] = new int[] { 285 + offsetCenterHalf, 244 + offsetCenter + 96 * scaleDividend / scaleDivisor - height };
+            this.overridingFlagLocations[1][1] = new int[] { 326 + offsetCenter, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height };
+            this.overridingFlagLocations[1][2] = new int[] { 285 + offsetCenterHalf, 130 + 96 * scaleDividend / scaleDivisor - height };
+            this.overridingFlagLocations[1][3] = new int[] { 245, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height };
+
+            this.overridingFlagSizes[1] = new int[] { width, height };
+        }
+
+        private void setOverridingLabel(int position, int sizeLevel) {
+            this.overridingFlagLabels[position - 1].Location = new System.Drawing.Point(this.overridingFlagLocations[sizeLevel][position - 1][0], this.overridingFlagLocations[sizeLevel][position - 1][1]);
+            this.overridingFlagLabels[position - 1].Size = new System.Drawing.Size(this.overridingFlagSizes[sizeLevel][0], this.overridingFlagSizes[sizeLevel][1]);
+        }
 
         #region 发牌动画
 
@@ -232,6 +269,7 @@ namespace Duan.Xiugang.Tractor
         /// </summary>
         internal void DrawCenterImage()
         {
+            this.HideOverridingLabels();
             Graphics g = Graphics.FromImage(mainForm.bmp);
             Rectangle rect = new Rectangle(77, 120, offsetSideBar, 244 + offsetCenter + 75);
             g.DrawImage(mainForm.image, 77, 120, rect.Width, rect.Height);
@@ -1139,44 +1177,21 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
 
-        public void DrawOverridingFlag(int position, bool isWinByTrump, int sizeDivisor)
+        // sizeLevel: 0-half, 1-full
+        public void DrawOverridingFlag(int position, int winType, int sizeLevel)
         {
-            int x = 0, y = 0;
-            switch (position)
-            {
-                case 1:
-                    x = 285 + offsetCenterHalf;
-                    y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor;
-                    break;
-                case 2:
-                    x = 326 + offsetCenter;
-                    y = 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor;
-                    break;
-                case 3:
-                    x = 285 + offsetCenterHalf;
-                    y = 130 + 96 * scaleDividend / scaleDivisor;
-                    break;
-                case 4:
-                    x = 245;
-                    y = 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor;
-                    break;
-                default:
-                    return;
-            }
+            HideOverridingLabels();
+            this.setOverridingLabel(position, sizeLevel);
+            this.overridingFlagLabels[position - 1].Show();
+            this.overridingFlagLabels[position - 1].BackgroundImage = this.overridingFlagPictures[winType];
+        }
 
-            Bitmap pic = Properties.Resources.Ready;
-            int width = 53;
-            int height = 46;
-            if (isWinByTrump)
+        private void HideOverridingLabels()
+        {
+            for (int i = 0; i < this.overridingFlagLabels.Length; i++)
             {
-                pic = Properties.Resources.About;
-                width = 80;
-                height = 60;
+                this.overridingFlagLabels[i].Hide();
             }
-
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            DrawMyImage(g, pic, x, y - height / sizeDivisor, width / sizeDivisor, height / sizeDivisor);
-            g.Dispose();
         }
 
         #endregion // 在各种情况下画自己的牌
@@ -1622,39 +1637,6 @@ namespace Duan.Xiugang.Tractor
 
         }
 
-        public void DrawWhoWinThisTime(string winner)
-        {
-            //谁赢了这一圈
-            int winnerPosition = mainForm.PlayerPosition[winner];
-
-            if (winnerPosition == 1) //我
-            {
-                Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 437 + offsetCenter, 310 + offsetY - offsetWinnerYMe, 33, 53);
-                g.Dispose();
-            }
-            else if (winnerPosition == 3) //对家
-            {
-                Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 437 + offsetCenter, 120, 33, 53);
-                g.Dispose();
-            }
-            else if (winnerPosition == 4) //西家
-            {
-                Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 90, 218 + offsetCenterHalf, 33, 53);
-                g.Dispose();
-            }
-            else if (winnerPosition == 2) //东家
-            {
-                Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(Properties.Resources.Winner, 516 + offsetCenter, 218 + offsetCenterHalf, 33, 53);
-                g.Dispose();
-            }
-
-            mainForm.Refresh();
-        }
-
         internal void DrawScoreImage()
         {
             int scores = mainForm.ThisPlayer.CurrentHandState.Score;
@@ -1683,7 +1665,7 @@ namespace Duan.Xiugang.Tractor
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            int x = 350, y = 500, size=80;
+            int x = 300, y = 500, size=70;
             Rectangle rectsrc = new Rectangle(0, 0, size, size);
             Rectangle rect = new Rectangle(x, y, size, size);
             g.DrawImage(mainForm.image, rect, rectsrc, GraphicsUnit.Pixel);
@@ -1915,6 +1897,7 @@ namespace Duan.Xiugang.Tractor
         /// <param name="g">缓冲区图像的Graphics</param>
         internal void DrawBackground(Graphics g)
         {
+            this.HideOverridingLabels();
             //Bitmap image = global::Kuaff.Tractor.Properties.Resources.Backgroud;
             g.DrawImage(mainForm.image, 0, 0, mainForm.ClientRectangle.Width, mainForm.ClientRectangle.Height);
         }

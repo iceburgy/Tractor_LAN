@@ -23,8 +23,10 @@ namespace Duan.Xiugang.Tractor
         private static string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
+        public static string KeyEnableSound = "enableSound";
         public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyFullDebug = "fullDebug";
+        public static string[] initToTrue = new string[] { KeyEnableSound };
 
         public FormSettings()
         {
@@ -34,6 +36,7 @@ namespace Duan.Xiugang.Tractor
             this.tbxHostName.Text = hostName;
             this.tbxNickName.Text = GetSettingString(KeyNickName);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
+            this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
         }
 
         public static string GetHostAndPortFromConfig()
@@ -116,8 +119,14 @@ namespace Duan.Xiugang.Tractor
                 AppSettingsReader myreader = new AppSettingsReader();
                 return (bool)myreader.GetValue(key, typeof(Boolean));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (ex.Message.Contains("does not exist in the appSettings configuration section") &&
+                    initToTrue.Contains(key))
+                {
+                    SetSetting(key, true.ToString().ToLower());
+                    return true;
+                }
                 return false;
             }
         }
@@ -142,6 +151,7 @@ namespace Duan.Xiugang.Tractor
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
+            SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
             SettingsUpdatedEvent();
             this.Close();
         }

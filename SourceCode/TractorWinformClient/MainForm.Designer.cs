@@ -90,8 +90,16 @@ namespace Duan.Xiugang.Tractor
             this.btnRiot = new System.Windows.Forms.Button();
             this.btnSurrender = new System.Windows.Forms.Button();
             this.lblRoomName = new System.Windows.Forms.Label();
+            this.imbOverridingFlag_1 = new System.Windows.Forms.PictureBox();
+            this.imbOverridingFlag_2 = new System.Windows.Forms.PictureBox();
+            this.imbOverridingFlag_3 = new System.Windows.Forms.PictureBox();
+            this.imbOverridingFlag_4 = new System.Windows.Forms.PictureBox();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_4)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -665,11 +673,55 @@ namespace Duan.Xiugang.Tractor
             this.lblRoomName.TabIndex = 29;
             this.lblRoomName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // imbOverridingFlag_1
+            // 
+            this.imbOverridingFlag_1.BackColor = System.Drawing.Color.Transparent;
+            this.imbOverridingFlag_1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.imbOverridingFlag_1.Location = new System.Drawing.Point(27, 613);
+            this.imbOverridingFlag_1.Name = "imbOverridingFlag_1";
+            this.imbOverridingFlag_1.Size = new System.Drawing.Size(10, 17);
+            this.imbOverridingFlag_1.TabIndex = 30;
+            this.imbOverridingFlag_1.TabStop = false;
+            // 
+            // imbOverridingFlag_2
+            // 
+            this.imbOverridingFlag_2.BackColor = System.Drawing.Color.Transparent;
+            this.imbOverridingFlag_2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.imbOverridingFlag_2.Location = new System.Drawing.Point(27, 613);
+            this.imbOverridingFlag_2.Name = "imbOverridingFlag_2";
+            this.imbOverridingFlag_2.Size = new System.Drawing.Size(10, 17);
+            this.imbOverridingFlag_2.TabIndex = 31;
+            this.imbOverridingFlag_2.TabStop = false;
+            // 
+            // imbOverridingFlag_3
+            // 
+            this.imbOverridingFlag_3.BackColor = System.Drawing.Color.Transparent;
+            this.imbOverridingFlag_3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.imbOverridingFlag_3.Location = new System.Drawing.Point(27, 613);
+            this.imbOverridingFlag_3.Name = "imbOverridingFlag_3";
+            this.imbOverridingFlag_3.Size = new System.Drawing.Size(10, 17);
+            this.imbOverridingFlag_3.TabIndex = 32;
+            this.imbOverridingFlag_3.TabStop = false;
+            // 
+            // imbOverridingFlag_4
+            // 
+            this.imbOverridingFlag_4.BackColor = System.Drawing.Color.Transparent;
+            this.imbOverridingFlag_4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.imbOverridingFlag_4.Location = new System.Drawing.Point(27, 613);
+            this.imbOverridingFlag_4.Name = "imbOverridingFlag_4";
+            this.imbOverridingFlag_4.Size = new System.Drawing.Size(10, 17);
+            this.imbOverridingFlag_4.TabIndex = 33;
+            this.imbOverridingFlag_4.TabStop = false;
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.imbOverridingFlag_4);
+            this.Controls.Add(this.imbOverridingFlag_3);
+            this.Controls.Add(this.imbOverridingFlag_2);
+            this.Controls.Add(this.imbOverridingFlag_1);
             this.Controls.Add(this.lblRoomName);
             this.Controls.Add(this.btnRoomSetting);
             this.Controls.Add(this.btnPig);
@@ -707,6 +759,10 @@ namespace Duan.Xiugang.Tractor
             this.menuStrip.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_4)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -774,6 +830,10 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnRiot;
         private System.Windows.Forms.Button btnSurrender;
         private System.Windows.Forms.Label lblRoomName;
+        public System.Windows.Forms.PictureBox imbOverridingFlag_1;
+        public System.Windows.Forms.PictureBox imbOverridingFlag_2;
+        public System.Windows.Forms.PictureBox imbOverridingFlag_3;
+        public System.Windows.Forms.PictureBox imbOverridingFlag_4;
     }
 }
 

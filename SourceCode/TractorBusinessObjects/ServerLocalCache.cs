@@ -9,6 +9,7 @@ namespace Duan.Xiugang.Tractor.Objects
     {
         public Dictionary<string, List<int>> lastShowedCards;
         public string lastLeader;
+        public bool muteSound;
 
         public ServerLocalCache()
         {

@@ -9,7 +9,7 @@ namespace Duan.Xiugang.Tractor.Player
     {
         public Dictionary<string, List<int>> ShowedCardsInCurrentTrick { get; set; }
         public int WinnerPosition { get; set; }
-        public bool IsWinByTrump { get; set; }
+        public int WinResult { get; set; }
         public string WinnderID { get; set; }
 
         public PlayerLocalCache()

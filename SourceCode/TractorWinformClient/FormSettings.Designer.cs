@@ -35,6 +35,7 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.cbxUpdateOnLoad = new System.Windows.Forms.CheckBox();
+            this.cbxEnableSound = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblHostName
@@ -71,7 +72,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(70, 280);
+            this.btnOK.Location = new System.Drawing.Point(70, 314);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
             this.btnOK.TabIndex = 4;
@@ -82,7 +83,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(173, 280);
+            this.btnCancel.Location = new System.Drawing.Point(173, 314);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
             this.btnCancel.TabIndex = 5;
@@ -100,6 +101,16 @@
             this.cbxUpdateOnLoad.Text = "启动时检查更新";
             this.cbxUpdateOnLoad.UseVisualStyleBackColor = true;
             // 
+            // cbxEnableSound
+            // 
+            this.cbxEnableSound.AutoSize = true;
+            this.cbxEnableSound.Location = new System.Drawing.Point(70, 247);
+            this.cbxEnableSound.Name = "cbxEnableSound";
+            this.cbxEnableSound.Size = new System.Drawing.Size(99, 24);
+            this.cbxEnableSound.TabIndex = 7;
+            this.cbxEnableSound.Text = "开启音效";
+            this.cbxEnableSound.UseVisualStyleBackColor = true;
+            // 
             // FormSettings
             // 
             this.AcceptButton = this.btnOK;
@@ -107,6 +118,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(422, 390);
+            this.Controls.Add(this.cbxEnableSound);
             this.Controls.Add(this.cbxUpdateOnLoad);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
@@ -130,5 +142,6 @@
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.CheckBox cbxUpdateOnLoad;
+        private System.Windows.Forms.CheckBox cbxEnableSound;
     }
 }
