@@ -803,6 +803,11 @@ namespace Duan.Xiugang.Tractor
                 this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
             }
 
+            if (ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.CurrentTrickState.Learder].Count == 0)
+            {
+                this.ThisPlayer.playerLocalCache.isLastTrick = true;
+            }
+
             string latestPlayer = ThisPlayer.CurrentTrickState.LatestPlayerShowedCard();
             this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
 
@@ -837,7 +842,8 @@ namespace Duan.Xiugang.Tractor
                 //播放出牌音效
                 int soundInex = winResult;
                 if (winResult > 0) soundInex = this.ThisPlayer.playerLocalCache.WinResult;
-                if (this.enableSound &&
+                if (!this.ThisPlayer.playerLocalCache.isLastTrick &&
+                    this.enableSound &&
                     !gameConfig.IsDebug &&
                     !ThisPlayer.CurrentTrickState.serverLocalCache.muteSound)
                 {
@@ -1476,15 +1482,8 @@ namespace Duan.Xiugang.Tractor
         //托管代打
         private void RobotPlayFollowing()
         {
-            //最后一轮自动跟出
-            //bool isLastTrick = false;
-            //if (ThisPlayer.CurrentTrickState.LeadingCards.Count == this.ThisPlayer.CurrentPoker.Count)
-            //{
-            //    isLastTrick = true;
-            //}
-
-            //正常跟出
-            if ((gameConfig.IsDebug) && !ThisPlayer.isObserver &&
+            //跟出
+            if ((this.ThisPlayer.playerLocalCache.isLastTrick || gameConfig.IsDebug) && !ThisPlayer.isObserver &&
                 ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentTrickState.IsStarted())

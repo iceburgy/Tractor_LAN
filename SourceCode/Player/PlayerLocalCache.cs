@@ -11,6 +11,7 @@ namespace Duan.Xiugang.Tractor.Player
         public int WinnerPosition { get; set; }
         public int WinResult { get; set; }
         public string WinnderID { get; set; }
+        public bool isLastTrick { get; set; }
 
         public PlayerLocalCache()
         {
