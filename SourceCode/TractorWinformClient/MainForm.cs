@@ -626,7 +626,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ToShowCards()
         {
-            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
+            if ((ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing || ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished) &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
             {
                 ShowingCardsValidationResult showingCardsValidationResult =
@@ -1494,18 +1494,12 @@ namespace Duan.Xiugang.Tractor
                     TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
                 if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
                 {
-                    foreach (int card in SelectedCards)
-                    {
-                        ThisPlayer.CurrentPoker.RemoveCard(card);
-                    }
-                    ThisPlayer.ShowCards(SelectedCards);
-                    drawingFormHelper.DrawMyHandCards();
+                    this.ToShowCards();
                 }
                 else
                 {
                     MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
                 }
-                SelectedCards.Clear();
             }
         }
 
@@ -1525,18 +1519,12 @@ namespace Duan.Xiugang.Tractor
                     TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
                 if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
                 {
-                    foreach (int card in SelectedCards)
-                    {
-                        ThisPlayer.CurrentPoker.RemoveCard(card);
-                    }
-                    ThisPlayer.ShowCards(SelectedCards);
-                    drawingFormHelper.DrawMyHandCards();
+                    this.ToShowCards();
                 }
                 else
                 {
                     MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
                 }
-                SelectedCards.Clear();
             }
         }
 
@@ -1749,20 +1737,12 @@ namespace Duan.Xiugang.Tractor
                     Algorithm.ShouldSelectedLast8Cards(this.SelectedCards, this.ThisPlayer.CurrentPoker);
                     if (SelectedCards.Count == 8)
                     {
-                        foreach (int card in SelectedCards)
-                        {
-                            ThisPlayer.CurrentPoker.RemoveCard(card);
-                        }
-
-                        ThisPlayer.DiscardCards(SelectedCards.ToArray());
-
-                        ResortMyCards();
+                        this.ToDiscard8Cards();
                     }
                     else
                     {
                         MessageBox.Show(string.Format("failed to auto select last 8 cards: {0}, please manually select", SelectedCards));
                     }
-                    SelectedCards.Clear();
                 }
             }
         }
