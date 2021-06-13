@@ -271,7 +271,7 @@ namespace Duan.Xiugang.Tractor
         {
             this.HideOverridingLabels();
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Rectangle rect = new Rectangle(77, 120, offsetSideBar, 244 + offsetCenter + 75);
+            Rectangle rect = new Rectangle(77, 120, offsetSideBar, 224 + offsetCenter + 75);
             g.DrawImage(mainForm.image, 77, 120, rect.Width, rect.Height);
             g.Dispose();
             mainForm.Refresh();

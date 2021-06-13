@@ -1257,6 +1257,7 @@ namespace Duan.Xiugang.Tractor
             this.btnSurrender.Hide();
             this.btnRiot.Hide();
             this.btnRoomSetting.Hide();
+            this.btnPig.Hide();
             this.lblRoomName.Text = "";
             this.btnObserveNext.Hide();
             this.lblEastNickName.Text = "";
