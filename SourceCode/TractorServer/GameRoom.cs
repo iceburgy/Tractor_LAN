@@ -158,7 +158,13 @@ namespace TractorServer
                 }
 
                 if (posID < 0) {
-                    player.NotifyMessage(new string[] { "未能找回断线玩家信息", "加入失败", "", "" });
+                    player.NotifyMessage(new string[] { "未能找回断线玩家信息", "加入失败" });
+                    return false;
+                }
+
+                if (!CurrentRoomState.CurrentGameState.Players[posID].IsOffline)
+                {
+                    player.NotifyMessage(new string[] { "玩家并未断线", "重连失败" });
                     return false;
                 }
 
