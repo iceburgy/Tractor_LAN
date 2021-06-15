@@ -16,15 +16,18 @@ namespace TractorServer
         public static string LogsFolder = "logs";
         public string LogsByRoomFolder;
 
+        TractorHost tractorHost;
         public RoomState CurrentRoomState;
         public CardsShoe CardsShoe { get; set; }
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
         private ServerLocalCache serverLocalCache;
+        private bool isGameOver;
 
-        public GameRoom(int roomID, string roomName)
+        public GameRoom(int roomID, string roomName, TractorHost host)
         {
+            this.tractorHost = host;
             CurrentRoomState = new RoomState(roomID);
             LogsByRoomFolder = string.Format("{0}\\{1}", LogsFolder, roomID);
             CardsShoe = new CardsShoe();
@@ -125,21 +128,55 @@ namespace TractorServer
                     IPlayerInvoke(playerID, PlayersProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
                 else if (ObserversProxy.Keys.Contains(playerID))
                 {
-                    List<string> badObs = new List<string>();
-                    try
-                    {
-                        IPlayerInvoke(playerID, ObserversProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
-                        string obeserveeId = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
-                        ObservePlayerById(obeserveeId, playerID);
-                    }
-                    catch (Exception)
-                    {
-                        badObs.Add(playerID);
-                    }
-                    RemoveObserver(badObs);
+                    IPlayerInvoke(playerID, ObserversProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
+                    string obeserveeId = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
+                    ObservePlayerById(obeserveeId, playerID);
                 }
                 return false;
             }
+        }
+
+        public bool PlayerReenterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP)
+        {
+            if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
+            {
+                if (PlayersProxy.Count >= 4)
+                {
+                    player.NotifyMessage(new string[] { "房间已满", "加入失败", "", "" });
+                    return false;
+                }
+
+                int posID = -1;
+                for (int i = 0; i < 4; i++)
+                {
+                	if (CurrentRoomState.CurrentGameState.Players[i] ==  null) continue;
+                    if (CurrentRoomState.CurrentGameState.Players[i].PlayerId==playerID)
+                    {
+                        posID = i;
+                        break;
+                    }
+                }
+
+                if (posID < 0) {
+                    player.NotifyMessage(new string[] { "未能找回断线玩家信息", "加入失败", "", "" });
+                    return false;
+                }
+
+                CurrentRoomState.CurrentGameState.Players[posID].IsOffline = false;
+                LogClientInfo(clientIP, playerID, false);
+                CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
+                PlayersProxy.Add(playerID, player);
+                log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
+
+                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
+                UpdatePlayerCurrentTrickState();
+                UpdatePlayersCurrentHandState();
+                Thread.Sleep(2000);
+                UpdateGameState();
+
+                return true;
+            }
+            return false;
         }
 
         //玩家退出
@@ -149,19 +186,11 @@ namespace TractorServer
             bool needsRestart = false;
             foreach (string playerID in playerIDs)
             {
-                if (PlayersProxy.ContainsKey(playerID))
+                if (IsActualPlayer(playerID))
                 {
                     needsRestart = true;
                     break;
                 }
-            }
-
-            if (needsRestart)
-            {
-                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-                CurrentRoomState.CurrentHandState.IsFirstHand = true;
-                UpdatePlayersCurrentHandState();
             }
 
             foreach (string playerID in playerIDs)
@@ -169,19 +198,27 @@ namespace TractorServer
                 PlayerQuitWorker(playerID);
             }
 
-            if (needsRestart)
-            {
-                UpdateGameState();
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
-            }
+            if (needsRestart && !this.isGameOver) ResetAndRestartGame();
 
             return needsRestart;
+        }
+
+        public bool IsActualPlayer(string playerID)
+        {
+            foreach (PlayerEntity p in this.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (p != null && p.PlayerId == playerID)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         // returns: needRestart
         public void PlayerQuitWorker(string playerID)
         {
-            if (!PlayersProxy.ContainsKey(playerID))
+            if (!IsActualPlayer(playerID))
             {
                 List<string> badObs = new List<string>();
                 badObs.Add(playerID);
@@ -221,39 +258,47 @@ namespace TractorServer
             bool needsRestart = false;
             foreach (string playerID in playerIDs)
             {
-                if (!PlayersProxy.ContainsKey(playerID))
+                if (!IsActualPlayer(playerID))
                 {
                     List<string> badObs = new List<string>();
                     badObs.Add(playerID);
                     RemoveObserver(badObs);
+
+                    this.tractorHost.SessionIDGameRoom.Remove(playerID);
+                    this.tractorHost.PlayerToIP.Remove(playerID);
+                    this.tractorHost.PlayersProxy.Remove(playerID);
+
+                    Thread.Sleep(500);
+                    Thread thr = new Thread(new ThreadStart(this.tractorHost.UpdateGameHall));
+                    thr.Start();
                     continue;
                 }
 
+                log.Debug(playerID + " went offline.");
                 needsRestart = true;
                 CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
-                log.Debug(playerID + " quit.");
                 PlayersProxy.Remove(playerID);
+                this.tractorHost.PlayerToIP.Remove(playerID);
+                this.tractorHost.PlayersProxy.Remove(playerID);
+
+
                 for (int i = 0; i < 4; i++)
                 {
-                    if (CurrentRoomState.CurrentGameState.Players[i] != null)
+                    if (CurrentRoomState.CurrentGameState.Players[i] != null && CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                     {
-                        CurrentRoomState.CurrentGameState.Players[i].Rank = 0;
-                        CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                        CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
                         CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
-                        CurrentRoomState.CurrentGameState.Players[i].Team = GameTeam.None;
-                        foreach (string ob in CurrentRoomState.CurrentGameState.Players[i].Observers)
-                        {
-                            ObserversProxy.Remove(ob);
-                            // notify exit to hall
-                        }
-                        if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
-                        {
-                            CurrentRoomState.CurrentGameState.Players[i] = null;
-                        }
+                        break;
                     }
                 }
             }
-            return needsRestart;
+
+            var threadUpdateGameState = new Thread(() => this.UpdateGameState());
+            threadUpdateGameState.Start();
+
+            return needsRestart &&
+                !(CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
+                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished);
         }
 
         public void PlayerIsReadyToStart(string playerID)
@@ -308,6 +353,7 @@ namespace TractorServer
                 }
             }
             UpdateGameState();
+            CheckOfflinePlayers();
         }
 
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
@@ -319,6 +365,7 @@ namespace TractorServer
 
             foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
             {
+                if (p == null) continue;
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
@@ -373,11 +420,11 @@ namespace TractorServer
                     return;
             }
 
+            SaveGameStateToFile();
+
             UpdatePlayersCurrentHandState();
 
             UpdateGameState();
-
-            SaveGameStateToFile();
 
             //所有人展示手牌
             ShowAllHandCards();
@@ -466,132 +513,248 @@ namespace TractorServer
         public void PlayerShowCards(CurrentTrickState currentTrickState)
         {
             string lastestPlayer = currentTrickState.LatestPlayerShowedCard();
-            if (PlayersProxy[lastestPlayer] != null)
+            CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
+            string cardsString = "";
+            foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
             {
-                CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
-                string cardsString = "";
-                foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
+                cardsString += string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card));
+            }
+            log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
+            //更新每个用户手中的牌在SERVER
+            foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
+            {
+                CurrentRoomState.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
+            }
+            //即时更新旁观手牌
+            UpdatePlayersCurrentHandState();
+            //回合结束
+            if (CurrentRoomState.CurrentTrickState.AllPlayedShowedCards())
+            {
+                CurrentRoomState.CurrentTrickState.Winner = TractorRules.GetWinner(CurrentRoomState.CurrentTrickState);
+                if (!string.IsNullOrEmpty(CurrentRoomState.CurrentTrickState.Winner))
                 {
-                    cardsString += string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card));
-                }
-                log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
-                //更新每个用户手中的牌在SERVER
-                foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
-                {
-                    CurrentRoomState.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
-                }
-                //即时更新旁观手牌
-                UpdatePlayersCurrentHandState();
-                //回合结束
-                if (CurrentRoomState.CurrentTrickState.AllPlayedShowedCards())
-                {
-                    CurrentRoomState.CurrentTrickState.Winner = TractorRules.GetWinner(CurrentRoomState.CurrentTrickState);
-                    if (!string.IsNullOrEmpty(CurrentRoomState.CurrentTrickState.Winner))
+                    if (
+                        !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                                                    CurrentRoomState.CurrentTrickState.Winner))
                     {
-                        if (
-                            !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
-                                                                        CurrentRoomState.CurrentTrickState.Winner))
-                        {
-                            CurrentRoomState.CurrentHandState.Score += currentTrickState.Points;
-                            //收集得分牌
-                            CurrentRoomState.CurrentHandState.ScoreCards.AddRange(currentTrickState.ScoreCards);
-                            UpdatePlayersCurrentHandState();
-                        }
-
-
-                        log.Debug("Winner: " + CurrentRoomState.CurrentTrickState.Winner);
-
+                        CurrentRoomState.CurrentHandState.Score += currentTrickState.Points;
+                        //收集得分牌
+                        CurrentRoomState.CurrentHandState.ScoreCards.AddRange(currentTrickState.ScoreCards);
+                        UpdatePlayersCurrentHandState();
                     }
-                    serverLocalCache = new ServerLocalCache();
-                    serverLocalCache.lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-                    serverLocalCache.lastLeader = CurrentRoomState.CurrentTrickState.Learder;
 
+
+                    log.Debug("Winner: " + CurrentRoomState.CurrentTrickState.Winner);
+
+                }
+                serverLocalCache = new ServerLocalCache();
+                serverLocalCache.lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+                serverLocalCache.lastLeader = CurrentRoomState.CurrentTrickState.Learder;
+
+                UpdatePlayerCurrentTrickState();
+
+                CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
+
+                //开始新的回合
+                if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
+                {
+                    BeginNewTrick(CurrentRoomState.CurrentTrickState.Winner);
+                }
+                else //所有牌都出完了
+                {
+                    //扣底
+                    CalculatePointsFromDiscarded8Cards();
+                    PublishStartTimer(2);
+                    Thread.Sleep(2000 + 1000);
+
+                    //本局结束画面，更新最后一轮出的牌
+                    CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
+                    CurrentRoomState.CurrentTrickState.serverLocalCache.muteSound = true;
                     UpdatePlayerCurrentTrickState();
 
-                    CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
+                    CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
 
-                    //开始新的回合
-                    if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
+                    if (!TractorHost.gameConfig.IsFullDebug)
                     {
-                        BeginNewTrick(CurrentRoomState.CurrentTrickState.Winner);
-                    }
-                    else //所有牌都出完了
-                    {
-                        //扣底
-                        CalculatePointsFromDiscarded8Cards();
-                        PublishStartTimer(2);
-                        Thread.Sleep(2000 + 1000);
-
-                        //如果有人退出，则停止游戏
-                        if (this.PlayersProxy.Count < 4)
+                        foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
                         {
-                            return;
-                        }
-
-                        //本局结束画面，更新最后一轮出的牌
-                        CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
-                        CurrentRoomState.CurrentTrickState.serverLocalCache.muteSound = true;
-                        UpdatePlayerCurrentTrickState();
-
-                        CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
-
-                        if (!TractorHost.gameConfig.IsFullDebug)
-                        {
-                            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
-                            {
-                                p.IsReadyToStart = false;
-                                p.IsRobot = false;
-                            }
-                        }
-                        CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-                        CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
-                        CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
-
-                        //检查是否本轮游戏结束
-                        StringBuilder sb = null;
-                        if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
-                        {
-                            sb = new StringBuilder();
-                            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
-                            {
-                                if (player == null) continue;
-                                player.Rank = 0;
-                                if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
-                                    sb.Append(string.Format("【{0}】", player.PlayerId));
-                            }
-                            CurrentRoomState.CurrentHandState.Rank = 0;
-                            CurrentRoomState.CurrentHandState.Starter = null;
-
-                            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
-                            CurrentRoomState.CurrentGameState.startNextHandStarter = null;
-                        }
-                        UpdatePlayersCurrentHandState();
-
-                        UpdateGameState();
-
-                        SaveGameStateToFile();
-                        if (sb != null)
-                        {
-                            PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
-                        }
-                        else if (TractorHost.gameConfig.IsFullDebug)
-                        {
-                            Thread.Sleep(3000);
-                            CleanupCaches();
-
-                            StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                        	if (p == null) continue;
+                            p.IsReadyToStart = false;
+                            p.IsRobot = false;
                         }
                     }
+                    CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                    CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
+                    CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
+
+                    //检查是否本轮游戏结束
+                    StringBuilder sb = null;
+                    if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
+                    {
+                        sb = new StringBuilder();
+                        foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
+                        {
+                            if (player == null) continue;
+                            player.Rank = 0;
+                            if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
+                                sb.Append(string.Format("【{0}】", player.PlayerId));
+                        }
+                        CurrentRoomState.CurrentHandState.Rank = 0;
+                        CurrentRoomState.CurrentHandState.Starter = null;
+
+                        CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+                        CurrentRoomState.CurrentGameState.startNextHandStarter = null;
+                    }
+
+                    SaveGameStateToFile();
+
+                    UpdatePlayersCurrentHandState();
+
+                    UpdateGameState();
+
+                    if (sb != null)
+                    {
+                        PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
+                        this.isGameOver = true;
+                    }
+                    else if (TractorHost.gameConfig.IsFullDebug && AllOnline())
+                    {
+                        Thread.Sleep(3000);
+                        CleanupCaches();
+
+                        StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                    }
+                    CleanupOfflinePlayers();
+                }
+            }
+            else
+            {
+                if (CurrentRoomState.CurrentTrickState.CountOfPlayerShowedCards() == 1)
+                {
+                    CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
+                }
+                UpdatePlayerCurrentTrickState();
+            }
+            CheckOfflinePlayers();
+        }
+
+        private bool CleanupOfflinePlayers()
+        {
+            //检查是否有离线玩家，if so，将其移出游戏并重开
+            List<string> badPlayers = new List<string>();
+            foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
+            {
+            	if (player ==  null) continue;
+                if (player.IsOffline)
+                {
+                    badPlayers.Add(player.PlayerId);
+                }
+            }
+            if (badPlayers.Count > 0)
+            {
+                foreach (string bp in badPlayers)
+                {
+                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private void CheckOfflinePlayers()
+        {
+            List<string> badPlayers = new List<string>();
+            List<PlayerEntity> offlinePlayers = new List<PlayerEntity>();
+            foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player == null || !player.IsOffline) continue;
+                if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
+                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
+                {
+                    if (CurrentRoomState.CurrentTrickState.NextPlayer() != player.PlayerId) continue;
+                    if (CurrentRoomState.CurrentTrickState.ShowedCards[player.PlayerId].Count > 0) continue;
+                    offlinePlayers.Add(player);
                 }
                 else
                 {
-                    if (CurrentRoomState.CurrentTrickState.CountOfPlayerShowedCards() == 1)
-                    {
-                        CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
-                    }
-                    UpdatePlayerCurrentTrickState();
+                    badPlayers.Add(player.PlayerId);
                 }
             }
+
+            foreach (var player in offlinePlayers)
+            {
+                List<int> SelectedCards = new List<int>();
+                CurrentPoker currentPoker = CurrentRoomState.CurrentHandState.PlayerHoldingCards[player.PlayerId];
+                if (CurrentRoomState.CurrentTrickState.IsStarted())
+                {
+                    //托管代打 - 跟出
+                    Algorithm.MustSelectedCards(SelectedCards, CurrentRoomState.CurrentTrickState, currentPoker);
+                }
+                else
+                {
+                    //托管代打 - 先手
+                    Algorithm.ShouldSelectedCards(SelectedCards, CurrentRoomState.CurrentTrickState, currentPoker);
+                }
+                if (!TryToRobotPlayOffline(player.PlayerId, SelectedCards, currentPoker))
+                {
+                    badPlayers.Add(player.PlayerId);
+                    break;
+                }
+            }
+
+            if (badPlayers.Count > 0)
+            {
+                foreach (string bp in badPlayers)
+                {
+                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                }
+            }
+        }
+
+        // return true if succeedful, else false
+        private bool TryToRobotPlayOffline(string playerId, List<int> SelectedCards, CurrentPoker currentPoker)
+        {
+            ShowingCardsValidationResult showingCardsValidationResult =
+                TractorRules.IsValid(CurrentRoomState.CurrentTrickState, SelectedCards, currentPoker);
+            if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
+            {
+                CurrentRoomState.CurrentTrickState.ShowedCards[playerId] = SelectedCards;
+                PlayerShowCards(CurrentRoomState.CurrentTrickState);
+            }
+            else
+            {
+                PublishMessage(new string[] { string.Format("玩家【{0}】已离线", playerId), "尝试托管代打失败", "游戏即将重开..." });
+                PublishStartTimer(5);
+                //加一秒缓冲时间，让客户端倒计时完成
+                Thread.Sleep(5000 + 1000);
+
+                //将离线玩家移出游戏
+                this.tractorHost.BeginPlayerQuit(playerId, PlayerQuitCallback, this.tractorHost);
+
+                //重开游戏
+                ResetAndRestartGame();
+                return false;
+            }
+            return true;
+        }
+
+        public void PlayerQuitCallback(IAsyncResult ar)
+        {
+        }
+
+        private bool AllOnline()
+        {
+            bool allOnline = true;
+            foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player == null) continue;
+                if (player.IsOffline)
+                {
+                    allOnline = false;
+                    break;
+                }
+            }
+            return allOnline;
         }
 
         private void CleanupCaches()
@@ -685,12 +848,7 @@ namespace TractorServer
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-            CurrentRoomState.CurrentHandState.Rank = 0;
-            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-            CurrentRoomState.CurrentHandState.IsFirstHand = true;
-            UpdateGameState();
-            UpdatePlayersCurrentHandState();
+            ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
             PublishMessage(new string[] { "随机组队成功", "请点击就绪开始游戏" });
@@ -744,12 +902,7 @@ namespace TractorServer
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-            CurrentRoomState.CurrentHandState.Rank = 0;
-            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-            CurrentRoomState.CurrentHandState.IsFirstHand = true;
-            UpdateGameState();
-            UpdatePlayersCurrentHandState();
+            ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
             PublishMessage(new string[] { string.Format("玩家【{0}】", playerId), string.Format("和下家【{0}】", nextPlayerId), "互换座位成功", "请点击就绪开始游戏" });
@@ -1006,6 +1159,7 @@ namespace TractorServer
         #region Host Action
         public void RestartGame(int curRank)
         {
+            this.isGameOver = false;
             log.Debug("restart game with current set rank");
             CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
@@ -1049,6 +1203,7 @@ namespace TractorServer
 
         public void StartNextHand(PlayerEntity nextStarter)
         {
+            this.isGameOver = false;
             CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
             UpdateGameState();
@@ -1497,40 +1652,25 @@ namespace TractorServer
         // returns: needRestart
         private bool PerformProxyCleanupRestart(List<string> allBadPlayerIDs)
         {
-            StringBuilder sb = new StringBuilder();
-            List<string> badPlayers = new List<string>();
-            foreach (string badID in allBadPlayerIDs)
-            {
-                if (PlayersProxy.ContainsKey(badID))
-                {
-                    badPlayers.Add(badID);
-                    sb.Append(string.Format("【{0}】", badID));
-                }
-            }
-
-            if (badPlayers.Count > 0)
-            {
-                string msg = string.Format("玩家{0}断线，该玩家需重启游戏后重新开始", sb.ToString());
-                foreach (var entry in PlayersProxy)
-                {
-                    if (!allBadPlayerIDs.Contains(entry.Key))
-                    {
-                        IPlayerInvoke(entry.Key, entry.Value, "NotifyMessage", new List<object>() { msg }, false);
-                    }
-                }
-            }
             bool needsRestart = PlayerQuitFromCleanup(allBadPlayerIDs);
             if (needsRestart)
             {
-                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-                CurrentRoomState.CurrentHandState.IsFirstHand = true;
-                UpdatePlayersCurrentHandState();
-
-                UpdateGameState();
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
+                foreach (string bp in allBadPlayerIDs)
+                {
+                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                }
             }
             return needsRestart;
+        }
+
+        private void ResetAndRestartGame()
+        {
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            CurrentRoomState.CurrentHandState.IsFirstHand = true;
+            UpdatePlayersCurrentHandState();
+            UpdateGameState();
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
         }
 
         public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
@@ -1607,6 +1747,7 @@ namespace TractorServer
                         break;
                     }
                 }
+                CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerId);
             }
         }
 

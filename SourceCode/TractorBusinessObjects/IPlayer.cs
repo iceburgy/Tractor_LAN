@@ -14,7 +14,6 @@ namespace Duan.Xiugang.Tractor.Objects
         void ReadyToStart();
         void ExitRoom(string playerID);
         void Quit();
-        void ShowCards(List<int> cards);
         void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump);
 
         //从新开始打
@@ -79,7 +78,5 @@ namespace Duan.Xiugang.Tractor.Objects
         /// </summary>
         [OperationContract(IsOneWay = true)]
         void NotifyShowAllHandCards();
-
-        void DiscardCards(int[] cards);
     }
 }

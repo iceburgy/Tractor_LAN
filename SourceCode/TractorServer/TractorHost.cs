@@ -60,7 +60,7 @@ namespace TractorServer
             RoomStates = new List<RoomState>();
             for (int i = 0; i < this.MaxRoom; i++)
             {
-                GameRoom gameRoom = new GameRoom(i, RoomNames[i]);
+                GameRoom gameRoom = new GameRoom(i, RoomNames[i], this);
                 RoomStates.Add(gameRoom.CurrentRoomState);
                 GameRooms.Add(gameRoom);
                 if (!Directory.Exists(gameRoom.LogsByRoomFolder))
@@ -81,9 +81,31 @@ namespace TractorServer
             {
                 this.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
-                log.Debug(string.Format("player {0} entered hall.", playerID));
-                GameRoom.LogClientInfo(clientIP, playerID, false);
-                UpdateGameHall();
+                if (this.SessionIDGameRoom.ContainsKey(playerID))
+                {
+                    //断线重连
+                    log.Debug(string.Format("player {0} re-entered hall from offline.", playerID));
+                    player.NotifyMessage(new string[] { "断线重连中...", "请稍后" });
+                    Thread.Sleep(2000);
+
+                    GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                    lock (gameRoom)
+                    {
+                        bool entered = gameRoom.PlayerReenterRoom(playerID, clientIP, player, AllowSameIP);
+                        if (entered)
+                        {
+                            Thread.Sleep(500);
+                            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                            thr.Start();
+                        }
+                    }
+                }
+                else
+                {
+                    log.Debug(string.Format("player {0} entered hall.", playerID));
+                    GameRoom.LogClientInfo(clientIP, playerID, false);
+                    UpdateGameHall();
+                }
             }
             else if (this.PlayerToIP.ContainsValue(clientIP))
             {
@@ -98,7 +120,6 @@ namespace TractorServer
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
             string clientIP = GetClientIP();
-            string sessionID = GetSessionID();
             IPlayer player = PlayersProxy[playerID];
             if (player != null)
             {
@@ -114,7 +135,7 @@ namespace TractorServer
                         bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, posID);
                         if (entered)
                         {
-                            SessionIDGameRoom[sessionID] = gameRoom;
+                            SessionIDGameRoom[playerID] = gameRoom;
                             Thread.Sleep(500);
                             Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
                             thr.Start();
@@ -131,24 +152,46 @@ namespace TractorServer
         //玩家退出房间
         public void PlayerExitRoom(string playerID)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-                //如果退出的是正常玩家，则先将旁观玩家移出房间
-                if (gameRoom.PlayersProxy.ContainsKey(playerID))
-                {
-                    List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
-                    foreach (string ob in obs)
-                    {
-                        gameRoom.PlayerQuit(new List<string>() { ob });
-                    }
-                }
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
 
-                //再将正常玩家移出房间
-                gameRoom.PlayerQuit(new List<string>() { playerID });
-                SessionIDGameRoom.Remove(sessionID);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            //如果退出的是正常玩家，先记录旁观玩家
+            List<string> obs = new List<string>();
+            if (gameRoom.IsActualPlayer(playerID))
+            {
+                obs = gameRoom.ObserversProxy.Keys.ToList<string>();
             }
+
+            //先将正常玩家移出房间
+            gameRoom.PlayerQuit(new List<string>() { playerID });
+            SessionIDGameRoom.Remove(playerID);
+
+            //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
+            foreach (string ob in obs)
+            {
+                gameRoom.PlayerQuit(new List<string>() { ob });
+                SessionIDGameRoom.Remove(playerID);
+            }
+
+            //再将离线玩家移出房间
+            List<string> offlinePlayers = new List<string>();
+            foreach (var player in gameRoom.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player == null) continue;
+                if (player.IsOffline)
+                {
+                    offlinePlayers.Add(player.PlayerId);
+                }
+            }
+            if (offlinePlayers.Count > 0)
+            {
+                foreach (string offp in offlinePlayers)
+                {
+                    gameRoom.PlayerQuit(new List<string>() { offp });
+                    SessionIDGameRoom.Remove(offp);
+                }
+            }
+
             log.Debug(string.Format("player {0} exited room.", playerID));
             Thread.Sleep(500);
             Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
@@ -159,25 +202,10 @@ namespace TractorServer
         public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
             string clientIP = GetClientIP();
-            string sessionID = GetSessionID();
             if (!this.PlayerToIP.ContainsValue(clientIP)) return new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
-                //如果退出的是正常玩家，则先将旁观玩家移出房间
-                if (gameRoom.PlayersProxy.ContainsKey(playerID))
-                {
-                    List<string> obs = gameRoom.ObserversProxy.Keys.ToList<string>();
-                    foreach (string ob in obs)
-                    {
-                        gameRoom.PlayerQuit(new List<string>() { ob });
-                    }
-                }
 
-                //再将正常玩家移出房间
-                gameRoom.PlayerQuit(new List<string>() { playerID });
-                SessionIDGameRoom.Remove(sessionID);
-            }
+            PlayerExitRoom(playerID);
+
             string result = PlayerExitHall(playerID);
 
             return new CompletedAsyncResult<string>(result);
@@ -218,10 +246,9 @@ namespace TractorServer
         //玩家投降
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.SpecialEndGame(playerID, endType);
             }
             log.Debug(string.Format("player {0} surrendered.", playerID));
@@ -229,31 +256,28 @@ namespace TractorServer
 
         public void PlayerIsReadyToStart(string playerID)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerIsReadyToStart(playerID);
             }
         }
 
         public void PlayerToggleIsRobot(string playerID)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerToggleIsRobot(playerID);
             }
         }
 
         //player discard last 8 cards
-        public void StoreDiscardedCards(int[] cards)
+        public void StoreDiscardedCards(string playerId, int[] cards)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.StoreDiscardedCards(cards);
             }
         }
@@ -261,52 +285,47 @@ namespace TractorServer
         //亮主
         public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(trumpMaker))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[trumpMaker];
                 gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
             }
         }
 
-        public void PlayerShowCards(CurrentTrickState currentTrickState)
+        public void PlayerShowCards(string playerId, CurrentTrickState currentTrickState)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.PlayerShowCards(currentTrickState);
             }
         }
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 return gameRoom.ValidateDumpingCards(selectedCards, playerId);
             }
             return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Unknown };
         }
 
-        public void RefreshPlayersCurrentHandState()
+        public void RefreshPlayersCurrentHandState(string playerId)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.RefreshPlayersCurrentHandState();
             }
         }
 
         //随机组队
-        public void TeamUp()
+        public void TeamUp(string playerId)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.TeamUp();
                 Thread.Sleep(500);
                 Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
@@ -317,10 +336,9 @@ namespace TractorServer
         //和下家互换座位
         public void MoveToNextPosition(string playerId)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.MoveToNextPosition(playerId);
                 Thread.Sleep(500);
                 Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
@@ -331,32 +349,29 @@ namespace TractorServer
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.CardsReady(playerId, myCardIsReady);
             }
         }
 
         //读取牌局
-        public void RestoreGameStateFromFile(bool restoreCardsShoe)
+        public void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.RestoreGameStateFromFile(restoreCardsShoe);
             }
         }
 
         //设置从几打起
-        public void SetBeginRank(string beginRankString)
+        public void SetBeginRank(string playerId, string beginRankString)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.SetBeginRank(beginRankString);
             }
         }
@@ -364,21 +379,19 @@ namespace TractorServer
         //旁观玩家 by id
         public void ObservePlayerById(string playerId, string observerId)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(observerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[observerId];
                 gameRoom.ObservePlayerById(playerId, observerId);
             }
         }
 
         //保存房间游戏设置
-        public void SaveRoomSetting(RoomSetting roomSetting)
+        public void SaveRoomSetting(string playerId, RoomSetting roomSetting)
         {
-            string sessionID = GetSessionID();
-            if (this.SessionIDGameRoom.ContainsKey(sessionID))
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
-                GameRoom gameRoom = this.SessionIDGameRoom[sessionID];
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.SetRoomSetting(roomSetting);
             }
         }

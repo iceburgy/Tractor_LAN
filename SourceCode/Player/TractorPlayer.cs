@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ServiceModel;
 using Duan.Xiugang.Tractor.Objects;
 using System.Collections;
@@ -21,6 +22,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void GetCardEventHandler(int cardNumber);    
     public delegate void TrumpChangedEventHandler(CurrentHandState currentHandState);
     public delegate void DistributingCardsFinishedEventHandler();
+    public delegate void ReenterFromOfflineEventHandler();    
     public delegate void StarterFailedForTrumpEventHandler();
     public delegate void StarterChangedEventHandler();
     public delegate void NotifyMessageEventHandler(string[] msg);
@@ -52,6 +54,7 @@ namespace Duan.Xiugang.Tractor.Player
         public int Rank { get; set; }
         public bool isObserver { get; set; }
         public string MyOwnId { get; set; }
+        public bool IsTryingReenter { get; set; }
 
         public GameState CurrentGameState;
         public CurrentPoker CurrentPoker;
@@ -74,6 +77,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event GetCardEventHandler PlayerOnGetCard;        
         public event TrumpChangedEventHandler TrumpChanged;
         public event DistributingCardsFinishedEventHandler AllCardsGot;
+        public event ReenterFromOfflineEventHandler ReenterFromOfflineEvent;        
         public event StarterFailedForTrumpEventHandler StarterFailedForTrump; //亮不起
         public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
         public event NotifyMessageEventHandler NotifyMessageEvent; //广播消息
@@ -139,24 +143,24 @@ namespace Duan.Xiugang.Tractor.Player
             this.CurrentPoker.Clear();
         }
 
-        public void RestoreGameStateFromFile(bool restoreCardsShoe)
+        public void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe)
         {
-            _tractorHost.RestoreGameStateFromFile(restoreCardsShoe);
+            _tractorHost.RestoreGameStateFromFile(playerId, restoreCardsShoe);
         }
 
-        public void SetBeginRank(string beginRankString)
+        public void SetBeginRank(string playerId, string beginRankString)
         {
-            _tractorHost.SetBeginRank(beginRankString);
+            _tractorHost.SetBeginRank(playerId, beginRankString);
         }
 
-        public void SaveRoomSetting(RoomSetting roomSetting)
+        public void SaveRoomSetting(string playerId, RoomSetting roomSetting)
         {
-            _tractorHost.SaveRoomSetting(roomSetting);
+            _tractorHost.SaveRoomSetting(playerId, roomSetting);
         }
 
-        public void TeamUp()
+        public void TeamUp(string playerId)
         {
-            _tractorHost.TeamUp();
+            _tractorHost.TeamUp(playerId);
         }
 
         public void MoveToNextPosition(string playerId)
@@ -235,13 +239,13 @@ namespace Duan.Xiugang.Tractor.Player
                 HostIsOnline(success);
         }
 
-        public void ShowCards(List<int> cards)
+        public void ShowCards(string playerId, List<int> cards)
         {
             if (this.CurrentTrickState.NextPlayer() == PlayerId)
             {
                 this.CurrentTrickState.ShowedCards[PlayerId] = cards;
 
-                _tractorHost.PlayerShowCards(this.CurrentTrickState);
+                _tractorHost.PlayerShowCards(playerId, this.CurrentTrickState);
                 
             }
         }
@@ -283,6 +287,19 @@ namespace Duan.Xiugang.Tractor.Player
             starterChanged = this.CurrentHandState.Starter  != currentHandState.Starter;
 
             this.CurrentHandState = currentHandState;
+
+            //断线重连后重画手牌
+            if (this.IsTryingReenter)
+            {
+                this.CurrentPoker = (CurrentPoker)this.CurrentHandState.PlayerHoldingCards[this.MyOwnId].Clone();
+                this.CurrentPoker.Rank = this.CurrentHandState.Rank;
+                this.CurrentPoker.Trump = this.CurrentHandState.Trump;
+                if (AllCardsGot != null)
+                    AllCardsGot();
+
+                return;
+            }
+
             this.CurrentPoker.Trump = this.CurrentHandState.Trump;
 
             if (trumpChanged)
@@ -387,6 +404,8 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyCurrentTrickState(CurrentTrickState currentTrickState)
         {
             this.CurrentTrickState = currentTrickState;
+            if (this.IsTryingReenter) return;
+
             if (this.CurrentHandState.CurrentHandStep == HandStep.Ending || this.CurrentHandState.CurrentHandStep == HandStep.SpecialEnding)
             {
                 return;
@@ -467,12 +486,6 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
-            if (NewPlayerJoined != null)
-            {
-                NewPlayerJoined();
-            }
-
-
             if (teamMade || observerAdded)
             {
                 if (PlayersTeamMade != null)
@@ -481,6 +494,19 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
+            if (NewPlayerJoined != null)
+            {
+                NewPlayerJoined();
+            }
+
+            if (this.IsTryingReenter)
+            {
+                if (ReenterFromOfflineEvent != null)
+                {
+                    ReenterFromOfflineEvent();
+                }
+                this.IsTryingReenter = false;
+            }
         }
 
         public void NotifyGameHall(List<RoomState> roomStates, List<string> names)
@@ -515,13 +541,13 @@ namespace Duan.Xiugang.Tractor.Player
             }
         }
 
-        public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards)
+        public ShowingCardsValidationResult ValidateDumpingCards(string playerId, List<int> selectedCards)
         {
 
             var result = _tractorHost.ValidateDumpingCards(selectedCards, this.PlayerId);
             if (result.ResultType != ShowingCardsValidationResultType.DumpingSuccess)
             {
-                _tractorHost.RefreshPlayersCurrentHandState();
+                _tractorHost.RefreshPlayersCurrentHandState(playerId);
             }
             
             return result;
@@ -537,13 +563,12 @@ namespace Duan.Xiugang.Tractor.Player
             }
         }
 
-
-        public void DiscardCards(int[] cards)
+        public void DiscardCards(string playerId, int[] cards)
         {
             if (this.CurrentHandState.Last8Holder != PlayerId)
                 return;
 
-            _tractorHost.StoreDiscardedCards(cards);
+            _tractorHost.StoreDiscardedCards(playerId, cards);
             
         }
 

@@ -25,6 +25,9 @@ namespace Duan.Xiugang.Tractor.Objects
         public bool IsRobot { get; set; }
 
         [DataMember]
+        public bool IsOffline { get; set; }
+
+        [DataMember]
         public HashSet<string> Observers { get; set; }
     }
 }

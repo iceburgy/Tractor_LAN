@@ -165,6 +165,7 @@ namespace Duan.Xiugang.Tractor
             
             ThisPlayer.TrumpChanged += ThisPlayer_TrumpUpdated;
             ThisPlayer.AllCardsGot += ResortMyCards;
+            ThisPlayer.ReenterFromOfflineEvent += ThisPlayer_ReenterFromOfflineEventHandler;            
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.GameHallUpdatedEvent += ThisPlayer_GameHallUpdatedEventHandler;
@@ -314,6 +315,13 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[]{"游戏中途不允许退出","请完成此盘游戏后再退"});
+                e.Cancel = true;
+                return; 
+            }
             try
             {
                 ThisPlayer.Quit();
@@ -528,7 +536,7 @@ namespace Duan.Xiugang.Tractor
                         }
                         else
                         {
-                            ThisPlayer_PlayerCurrentTrickShowedCards(true);
+                            ThisPlayer_PlayerCurrentTrickShowedCards();
                         }
                     }
                 }
@@ -617,7 +625,7 @@ namespace Duan.Xiugang.Tractor
                         ThisPlayer.CurrentPoker.RemoveCard(card);
                     }
 
-                    ThisPlayer.DiscardCards(SelectedCards.ToArray());
+                    ThisPlayer.DiscardCards(ThisPlayer.MyOwnId, SelectedCards.ToArray());
 
                     ResortMyCards();
                 }
@@ -641,7 +649,7 @@ namespace Duan.Xiugang.Tractor
                     {
                         ThisPlayer.CurrentPoker.RemoveCard(card);
                     }
-                    ThisPlayer.ShowCards(SelectedCards);
+                    ThisPlayer.ShowCards(ThisPlayer.MyOwnId, SelectedCards);
                     drawingFormHelper.DrawMyHandCards();
                     SelectedCards.Clear();
                 }
@@ -650,14 +658,14 @@ namespace Duan.Xiugang.Tractor
                     //擦去小猪
                     this.btnPig.Visible = false;
 
-                    ShowingCardsValidationResult result = ThisPlayer.ValidateDumpingCards(SelectedCards);
+                    ShowingCardsValidationResult result = ThisPlayer.ValidateDumpingCards(ThisPlayer.MyOwnId, SelectedCards);
                     if (result.ResultType == ShowingCardsValidationResultType.DumpingSuccess) //甩牌成功.
                     {
                         foreach (int card in SelectedCards)
                         {
                             ThisPlayer.CurrentPoker.RemoveCard(card);
                         }
-                        ThisPlayer.ShowCards(SelectedCards);
+                        ThisPlayer.ShowCards(ThisPlayer.MyOwnId, SelectedCards);
 
                         drawingFormHelper.DrawMyHandCards();
                         SelectedCards.Clear();
@@ -671,7 +679,7 @@ namespace Duan.Xiugang.Tractor
                         {
                             ThisPlayer.CurrentPoker.RemoveCard(card);
                         }
-                        ThisPlayer.ShowCards(result.MustShowCardsForDumpingFail);
+                        ThisPlayer.ShowCards(ThisPlayer.MyOwnId, result.MustShowCardsForDumpingFail);
 
                         drawingFormHelper.DrawMyHandCards();
                         SelectedCards = result.MustShowCardsForDumpingFail;
@@ -703,7 +711,7 @@ namespace Duan.Xiugang.Tractor
             else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank") && !ThisPlayer.isObserver)
             {
                 string beginRankString = menuItem.Name.Substring("toolStripMenuItemBeginRank".Length, 1);
-                ThisPlayer.SetBeginRank(beginRankString);
+                ThisPlayer.SetBeginRank(ThisPlayer.MyOwnId, beginRankString);
             }
         }
 
@@ -778,6 +786,14 @@ namespace Duan.Xiugang.Tractor
         private void ResortMyCards()
         {
             drawingFormHelper.DrawMySortedCards(ThisPlayer.CurrentPoker, ThisPlayer.CurrentPoker.Count);
+        }
+
+        //断线重连，重画手牌和出的牌
+        private void ThisPlayer_ReenterFromOfflineEventHandler()
+        {
+            this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+            this.ThisPlayer_PlayerCurrentTrickShowedCards();
+            drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
         }
 
         //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为主毙牌
@@ -872,7 +888,7 @@ namespace Duan.Xiugang.Tractor
             if (this.ThisPlayer.ShowLastTrickCards && latestPlayer == ThisPlayer.PlayerId)
             {
                 this.ThisPlayer.ShowLastTrickCards = false;
-                ThisPlayer_PlayerCurrentTrickShowedCards(false);
+                ThisPlayer_PlayerCurrentTrickShowedCards();
             }
 
             if (!gameConfig.IsDebug && ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId)
@@ -940,7 +956,7 @@ namespace Duan.Xiugang.Tractor
         }
 
         //绘制当前轮各家所出的牌（仅用于切换视角或当前回合大牌变更时）
-        private void ThisPlayer_PlayerCurrentTrickShowedCards(bool fromRightClick)
+        private void ThisPlayer_PlayerCurrentTrickShowedCards()
         {
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
@@ -1029,7 +1045,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
-            if (this.ToolStripMenuItemEnterRoom0.Enabled)
+            if (this.ToolStripMenuItemEnterRoom0.Enabled || ThisPlayer.IsTryingReenter)
             {
                 this.ToolStripMenuItemEnterRoom0.Enabled = false;
                 HideRoomControls();
@@ -1048,6 +1064,10 @@ namespace Duan.Xiugang.Tractor
             }
             this.btnExitRoom.Show();
             this.btnRoomSetting.Show();
+
+            //在大厅里，左边的label挡住了online玩家名字，只好先隐藏，进了房间再显示
+            this.lblWestNickName.Show();
+            this.lblWestStarter.Show();
 
             int curIndex = -1;
             for (int i = 0; i < 4; i++)
@@ -1125,7 +1145,11 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer != null && curPlayer.IsRobot)
+                if (curPlayer != null && curPlayer.IsOffline)
+                {
+                    readyLabels[i].Text = "离线中";
+                }
+                else if (curPlayer != null && curPlayer.IsRobot)
                 {
                     readyLabels[i].Text = "托管中";
                 }
@@ -1167,7 +1191,11 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer != null && curPlayer.IsRobot)
+                if (curPlayer != null && curPlayer.IsOffline)
+                {
+                    readyLabels[i].Text = "离线中";
+                }
+                else if (curPlayer != null && curPlayer.IsRobot)
                 {
                     readyLabels[i].Text = "托管中";
                 }
@@ -1263,13 +1291,19 @@ namespace Duan.Xiugang.Tractor
             this.lblEastNickName.Text = "";
             this.lblNorthNickName.Text = "";
             this.lblWestNickName.Text = "";
+            this.lblWestNickName.Hide();
             this.lblSouthNickName.Text = ThisPlayer.MyOwnId;
             this.lblEastStarter.Text = "";
             this.lblNorthStarter.Text = "";
             this.lblWestStarter.Text = "";
+            this.lblWestStarter.Hide();
             this.lblSouthStarter.Text = "";
             this.ToolStripMenuItemInRoom.Visible = false;
             this.ToolStripMenuItemObserve.Visible = false;
+
+            //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
+            this.ThisPlayer.CurrentGameState = new GameState();
+            this.ThisPlayer.CurrentHandState = new CurrentHandState(this.ThisPlayer.CurrentGameState);
 
             Graphics g = Graphics.FromImage(bmp);
             drawingFormHelper.DrawBackground(g);
@@ -1468,7 +1502,7 @@ namespace Duan.Xiugang.Tractor
 
         private void Mainform_RoomSettingChangedByClientEventHandler()
         {
-            this.ThisPlayer.SaveRoomSetting(this.ThisPlayer.CurrentRoomSetting);
+            this.ThisPlayer.SaveRoomSetting(ThisPlayer.MyOwnId, this.ThisPlayer.CurrentRoomSetting);
         }
 
         private void ThisPlayer_TrickStarted()
@@ -1589,7 +1623,11 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 4; i++)
             {
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
-                if (curPlayer != null && curPlayer.IsRobot)
+                if (curPlayer != null && curPlayer.IsOffline)
+                {
+                    starterLabels[i].Text = "离线中";
+                }
+                else if (curPlayer != null && curPlayer.IsRobot)
                 {
                     starterLabels[i].Text = "托管中";
                 }
@@ -1613,9 +1651,17 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NotifyMessageEventHandler(string[] msgs)
         {
-            if (msgs.Length >= 2 && msgs[1] == "获胜！" && this.enableSound)
+            foreach (string m in msgs)
             {
-                MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+                if (m.Contains("获胜！") && this.enableSound)
+                {
+                    MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+                }
+                else if (m.Contains("断线重连中"))
+                {
+                    ThisPlayer.IsTryingReenter = true;
+                    this.btnEnterHall.Hide();
+                }
             }
             this.drawingFormHelper.DrawMessages(msgs);
         }
@@ -1812,13 +1858,13 @@ namespace Duan.Xiugang.Tractor
         private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
-            ThisPlayer.RestoreGameStateFromFile(false);
+            ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, false);
         }
 
         private void RestoreGameStateCardsShoeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
-            ThisPlayer.RestoreGameStateFromFile(true);
+            ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, true);
         }
 
         private void theTimer_Tick(object sender, EventArgs e)
@@ -1848,7 +1894,7 @@ namespace Duan.Xiugang.Tractor
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
-            ThisPlayer.TeamUp();
+            ThisPlayer.TeamUp(ThisPlayer.MyOwnId);
         }
 
         private void MoveToNextPositionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1934,7 +1980,29 @@ namespace Duan.Xiugang.Tractor
 
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
+            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许退出", "请完成此盘游戏后再退" });
+                return;
+            }
+
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
+        }
+
+        private bool AllOnline()
+        {
+            bool allOnline = true;
+            foreach (PlayerEntity player in ThisPlayer.CurrentGameState.Players)
+            {
+            	if (player ==  null) continue;
+                if (player.IsOffline)
+                {
+                    allOnline = false;
+                    break;
+                }
+            }
+            return allOnline;
         }
 
         private void btnSurrender_Click(object sender, EventArgs e)

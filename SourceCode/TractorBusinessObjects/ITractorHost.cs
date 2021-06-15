@@ -41,27 +41,27 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerMakeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump, string playerId);
 
         [OperationContract(IsOneWay = true)]
-        void StoreDiscardedCards(int[] cards);
+        void StoreDiscardedCards(string playerId, int[] cards);
 
         //玩家出牌
         [OperationContract(IsOneWay = true)]
-        void PlayerShowCards(CurrentTrickState currentTrickState);
+        void PlayerShowCards(string playerId, CurrentTrickState currentTrickState);
 
         //更新玩家分数显示（用于甩牌失败后显示惩罚分数）
         [OperationContract(IsOneWay = true)]
-        void RefreshPlayersCurrentHandState();
+        void RefreshPlayersCurrentHandState(string playerId);
 
         //读取牌局
         [OperationContract(IsOneWay = true)]
-        void RestoreGameStateFromFile(bool restoreCardsShoe);
+        void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe);
 
         //设置从几打起
         [OperationContract(IsOneWay = true)]
-        void SetBeginRank(string beginRankString);
+        void SetBeginRank(string playerId, string beginRankString);
 
         //随机组队
         [OperationContract(IsOneWay = true)]
-        void TeamUp();
+        void TeamUp(string playerId);
 
         //和下家互换座位
         [OperationContract(IsOneWay = true)]
@@ -77,7 +77,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //保存房间游戏设置
         [OperationContract(IsOneWay = true)]
-        void SaveRoomSetting(RoomSetting roomSetting);
+        void SaveRoomSetting(string playerId, RoomSetting roomSetting);
 
         //甩牌检查
         [OperationContract]
