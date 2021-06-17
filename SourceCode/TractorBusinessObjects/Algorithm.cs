@@ -41,6 +41,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 selectedCards.Add(currentTractors[i]);
                 selectedCards.Add(currentTractors[i]);
                 allSuitCards[currentTractors[i]] -= 2;
+                leadingPairs.Remove(currentTractors[i]);
             }
             //对子
             var currentPairs = currentCards.GetPairs((int)leadingSuit);
@@ -100,6 +101,61 @@ namespace Duan.Xiugang.Tractor.Objects
                     selectedCards.Add(i);
                     allSuitCards[i]--;
                 }
+            }
+        }
+
+        //跟选：在有必选牌的情况下自动选择必选牌，方便玩家快捷出牌
+        public static void MustSelectedCardsNoShow(List<int> selectedCards, CurrentTrickState currentTrickState, CurrentPoker currentPoker)
+        {
+            var currentCards = (CurrentPoker)currentPoker.Clone();
+            var leadingCardsCp = new CurrentPoker();
+            leadingCardsCp.TrumpInt = (int)currentTrickState.Trump;
+            leadingCardsCp.Rank = currentTrickState.Rank;
+            foreach (int card in currentTrickState.LeadingCards)
+            {
+                leadingCardsCp.AddCard(card);
+            }
+
+            Suit leadingSuit = currentTrickState.LeadingSuit;
+            bool isTrump = PokerHelper.IsTrump(currentTrickState.LeadingCards[0], currentCards.Trump, currentCards.Rank);
+            if (isTrump) leadingSuit = currentCards.Trump;
+
+            selectedCards.Clear();
+            List<int> currentSuitCards = currentCards.GetSuitCardsWithJokerAndRank((int)leadingSuit).ToList<int>();
+
+            List<int> leadingTractors = leadingCardsCp.GetTractor(leadingSuit);
+            var leadingPairs = leadingCardsCp.GetPairs((int)leadingSuit);
+
+            //如果别人出拖拉机，则选择我手中相同花色的拖拉机
+            List<int> currentTractors = currentCards.GetTractor(leadingSuit);
+            if (currentTractors.Count <= leadingTractors.Count)
+            {
+                for (int i = 0; i < leadingTractors.Count && i < currentTractors.Count && selectedCards.Count < leadingCardsCp.Count; i++)
+                {
+                    selectedCards.Add(currentTractors[i]);
+                    selectedCards.Add(currentTractors[i]);
+                    currentSuitCards.Remove(currentTractors[i]);
+                    currentSuitCards.Remove(currentTractors[i]);
+                    leadingPairs.Remove(currentTractors[i]);
+                }
+            }
+            //如果别人出对子，则选择我手中相同花色的对子
+            var currentPairs = currentCards.GetPairs((int)leadingSuit);
+            if (currentPairs.Count <= leadingPairs.Count)
+            {
+                for (int i = 0; i < leadingPairs.Count && i < currentPairs.Count && selectedCards.Count < leadingCardsCp.Count; i++)
+                {
+                    if (selectedCards.Contains((int)currentPairs[i])) continue;
+                    selectedCards.Add((int)currentPairs[i]);
+                    selectedCards.Add((int)currentPairs[i]);
+                    currentSuitCards.Remove((int)currentPairs[i]);
+                    currentSuitCards.Remove((int)currentPairs[i]);
+                }
+            }
+            //如果别人出单张，则选择我手中相同花色的单张
+            if (currentSuitCards.Count() <= leadingCardsCp.Count - selectedCards.Count)
+            {
+                selectedCards.AddRange(currentSuitCards);
             }
         }
 

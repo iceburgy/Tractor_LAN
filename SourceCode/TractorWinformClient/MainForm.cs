@@ -1535,6 +1535,34 @@ namespace Duan.Xiugang.Tractor
                 {
                     MessageBox.Show(string.Format("failed to auto select cards: {0}, please manually select", SelectedCards));
                 }
+                return;
+            }
+
+            //跟选：在有必选牌的情况下自动选择必选牌，方便玩家快捷出牌
+            if (!ThisPlayer.isObserver &&
+                ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
+                ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentTrickState.IsStarted())
+            {
+                //如果选了牌，则重画手牌，方便直接点确定出牌
+                SelectedCards.Clear();
+                Algorithm.MustSelectedCardsNoShow(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                if (SelectedCards.Count > 0)
+                {
+                    //将选定的牌向上提升 via myCardIsReady
+                    for (int i = 0; i < myCardsNumber.Count; i++)
+                    {
+                        if (SelectedCards.Contains((int)myCardsNumber[i]))
+                        {
+                            myCardIsReady[i] = true;
+                        }
+                    }
+
+                    drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+                    Refresh();
+
+                    ThisPlayer.CardsReady(ThisPlayer.PlayerId, myCardIsReady);
+                }
             }
         }
 
