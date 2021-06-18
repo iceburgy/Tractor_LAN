@@ -44,7 +44,7 @@ namespace TractorServer
         {
             if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
-                if (PlayersProxy.Count >= 4)
+                if (IsRoomFull())
                 {
                     //防止双开旁观
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
@@ -102,7 +102,7 @@ namespace TractorServer
                 {
                     CurrentRoomState.roomSetting.RoomOwner = playerID;
                 }
-                if (PlayersProxy.Count == 4)
+                if (IsAllOnline())
                 {
                     //create team
                     CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
@@ -136,9 +136,24 @@ namespace TractorServer
             }
         }
 
+        private bool IsRoomFull()
+        {
+            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null).Count() >= 4;
+        }
+
+        private bool IsAllOnline()
+        {
+            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null && p.IsOffline == false).Count() >= 4;
+        }
+
+        private bool IsPlayerOffline(string playerID)
+        {
+            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null && p.IsOffline == true).Count() == 1;
+        }
+
         public bool PlayerReenterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP)
         {
-            if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
+            if (IsPlayerOffline(playerID) && !PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
                 if (PlayersProxy.Count >= 4)
                 {
@@ -1197,7 +1212,7 @@ namespace TractorServer
             {
                 if (DistributeLast8Cards()) return;
             }
-            else if (PlayersProxy.Count == 4)
+            else if (IsAllOnline())
                 RestartGame(curRank);
         }
 
@@ -1248,7 +1263,7 @@ namespace TractorServer
             {
                 if (DistributeLast8Cards()) return;
             }
-            else if (PlayersProxy.Count == 4)
+            else if (IsAllOnline())
             {
                 //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
                 var nextStarter2 = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentRoomState.CurrentHandState.Starter);
@@ -1279,7 +1294,7 @@ namespace TractorServer
                 {
                     if (DistributeLast8Cards()) return;
                 }
-                else if (PlayersProxy.Count == 4)
+                else if (IsAllOnline())
                 {
                     //如果下家也亮不起，重新发牌
                     StartNextHand(nextStarter);

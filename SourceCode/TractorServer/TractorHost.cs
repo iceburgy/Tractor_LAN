@@ -155,41 +155,34 @@ namespace TractorServer
             if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
 
             GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            //如果退出的是正常玩家，先记录旁观玩家
+            //如果退出的是正常玩家，先记录旁观玩家和离线玩家
             List<string> obs = new List<string>();
+            List<string> quitPlayers = new List<string>() { playerID };
             if (gameRoom.IsActualPlayer(playerID))
             {
                 obs = gameRoom.ObserversProxy.Keys.ToList<string>();
+                foreach (var player in gameRoom.CurrentRoomState.CurrentGameState.Players)
+                {
+                    if (player == null) continue;
+                    if (player.IsOffline)
+                    {
+                        quitPlayers.Add(player.PlayerId);
+                    }
+                }
             }
 
-            //先将正常玩家移出房间
-            gameRoom.PlayerQuit(new List<string>() { playerID });
-            SessionIDGameRoom.Remove(playerID);
+            //先将退出的玩家和离线玩家移出房间
+            gameRoom.PlayerQuit(quitPlayers);
+            foreach (string qp in quitPlayers)
+            {
+                SessionIDGameRoom.Remove(qp);
+            }
 
             //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
             foreach (string ob in obs)
             {
                 gameRoom.PlayerQuit(new List<string>() { ob });
                 SessionIDGameRoom.Remove(playerID);
-            }
-
-            //再将离线玩家移出房间
-            List<string> offlinePlayers = new List<string>();
-            foreach (var player in gameRoom.CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player == null) continue;
-                if (player.IsOffline)
-                {
-                    offlinePlayers.Add(player.PlayerId);
-                }
-            }
-            if (offlinePlayers.Count > 0)
-            {
-                foreach (string offp in offlinePlayers)
-                {
-                    gameRoom.PlayerQuit(new List<string>() { offp });
-                    SessionIDGameRoom.Remove(offp);
-                }
             }
 
             log.Debug(string.Format("player {0} exited room.", playerID));
