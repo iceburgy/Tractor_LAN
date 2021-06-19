@@ -1545,10 +1545,12 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentTrickState.IsStarted())
             {
                 //如果选了牌，则重画手牌，方便直接点确定出牌
-                SelectedCards.Clear();
-                Algorithm.MustSelectedCardsNoShow(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
-                if (SelectedCards.Count > 0)
+                List<int> tempSelectedCards = new List<int>();
+                Algorithm.MustSelectedCardsNoShow(tempSelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                if (tempSelectedCards.Count > 0)
                 {
+                    SelectedCards.Clear();
+                    SelectedCards.AddRange(tempSelectedCards);
                     //将选定的牌向上提升 via myCardIsReady
                     for (int i = 0; i < myCardsNumber.Count; i++)
                     {
