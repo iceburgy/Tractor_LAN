@@ -1692,6 +1692,11 @@ namespace Duan.Xiugang.Tractor
                     ThisPlayer.IsTryingReenter = true;
                     this.btnEnterHall.Hide();
                 }
+                else if (m.Contains("新游戏即将开始"))
+                {
+                    //新游戏开始前播放提示音，告诉玩家要抢庄
+                    if (this.enableSound) MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+                }
             }
             this.drawingFormHelper.DrawMessages(msgs);
         }
@@ -1908,6 +1913,10 @@ namespace Duan.Xiugang.Tractor
             Thread.Sleep(200);
             this.drawingFormHelper.DrawCountDown(false);
             this.theTimer.Stop();
+            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.BeforeDistributingCards)
+            {
+                this.drawingFormHelper.DrawCenterImage();
+            }
         }
 
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)

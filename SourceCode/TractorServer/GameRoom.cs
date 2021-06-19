@@ -1190,6 +1190,13 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
+
+            //新游戏开始前给出提示信息，开始倒计时，并播放提示音，告诉玩家要抢庄
+            PublishMessage(new string[] { "新游戏即将开始", "做好准备抢庄！" });
+            PublishStartTimer(5);
+            //加一秒缓冲时间，让客户端倒计时完成
+            Thread.Sleep(5000 + 1000);
+
             if (DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
