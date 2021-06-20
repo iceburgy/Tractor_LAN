@@ -219,6 +219,15 @@ namespace TractorServer
                 PlayerQuitWorker(playerID);
             }
 
+            //如果房主退出，则选择位置最靠前的玩家为房主
+            if (playerIDs.Contains(CurrentRoomState.roomSetting.RoomOwner))
+            {
+                PlayerEntity next = this.CurrentRoomState.CurrentGameState.Players.FirstOrDefault(p => p != null);
+                if (next != null) CurrentRoomState.roomSetting.RoomOwner = next.PlayerId;
+                else CurrentRoomState.roomSetting.RoomOwner = string.Empty;
+                UpdatePlayerRoomSettings();
+            }
+
             if (needsRestart && !this.isGameOver) ResetAndRestartGame();
 
             return needsRestart;

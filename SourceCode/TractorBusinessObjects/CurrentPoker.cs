@@ -1309,7 +1309,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 c[3] = Math.Max(c[3], c[4]);
             }
 
-            c[4] = 0;
+            if (Trump != Suit.Joker) c[4] = 0;
             return c.Sum() > 1;
         }
 

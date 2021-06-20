@@ -1897,6 +1897,7 @@ namespace Duan.Xiugang.Tractor
         /// <param name="g">»º³åÇøÍ¼ÏñµÄGraphics</param>
         internal void DrawBackground(Graphics g)
         {
+            this.mainForm.btnPig.Hide();
             this.HideOverridingLabels();
             //Bitmap image = global::Kuaff.Tractor.Properties.Resources.Backgroud;
             g.DrawImage(mainForm.image, 0, 0, mainForm.ClientRectangle.Width, mainForm.ClientRectangle.Height);
