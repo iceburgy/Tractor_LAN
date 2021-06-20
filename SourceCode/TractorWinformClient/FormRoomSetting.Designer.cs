@@ -54,6 +54,12 @@
             this.lblRoomOwner = new System.Windows.Forms.Label();
             this.lblRoomNameLabel = new System.Windows.Forms.Label();
             this.lblMustDoRanksLabel = new System.Windows.Forms.Label();
+            this.lblKickPlayer = new System.Windows.Forms.Label();
+            this.cbbKickPlayer = new System.Windows.Forms.ComboBox();
+            this.btnKickPlayer = new System.Windows.Forms.Button();
+            this.btnKickObserver = new System.Windows.Forms.Button();
+            this.cbbKickObserver = new System.Windows.Forms.ComboBox();
+            this.lblKickObserver = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblAllowRiotByScore
@@ -277,7 +283,7 @@
             // btnOK
             // 
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(31, 599);
+            this.btnOK.Location = new System.Drawing.Point(31, 701);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(92, 32);
             this.btnOK.TabIndex = 5;
@@ -288,7 +294,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(200, 599);
+            this.btnCancel.Location = new System.Drawing.Point(200, 701);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(98, 32);
             this.btnCancel.TabIndex = 5;
@@ -339,13 +345,79 @@
             this.lblMustDoRanksLabel.TabIndex = 10;
             this.lblMustDoRanksLabel.Text = "必打";
             // 
+            // lblKickPlayer
+            // 
+            this.lblKickPlayer.AutoSize = true;
+            this.lblKickPlayer.Location = new System.Drawing.Point(27, 593);
+            this.lblKickPlayer.Name = "lblKickPlayer";
+            this.lblKickPlayer.Size = new System.Drawing.Size(137, 20);
+            this.lblKickPlayer.TabIndex = 11;
+            this.lblKickPlayer.Text = "将玩家请出房间：";
+            // 
+            // cbbKickPlayer
+            // 
+            this.cbbKickPlayer.DisplayMember = "0";
+            this.cbbKickPlayer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbbKickPlayer.FormattingEnabled = true;
+            this.cbbKickPlayer.Location = new System.Drawing.Point(177, 590);
+            this.cbbKickPlayer.Name = "cbbKickPlayer";
+            this.cbbKickPlayer.Size = new System.Drawing.Size(121, 28);
+            this.cbbKickPlayer.TabIndex = 12;
+            // 
+            // btnKickPlayer
+            // 
+            this.btnKickPlayer.Enabled = false;
+            this.btnKickPlayer.Location = new System.Drawing.Point(336, 587);
+            this.btnKickPlayer.Name = "btnKickPlayer";
+            this.btnKickPlayer.Size = new System.Drawing.Size(92, 32);
+            this.btnKickPlayer.TabIndex = 13;
+            this.btnKickPlayer.Text = "请出房间";
+            this.btnKickPlayer.UseVisualStyleBackColor = true;
+            this.btnKickPlayer.Click += new System.EventHandler(this.btnKickPlayer_Click);
+            // 
+            // btnKickObserver
+            // 
+            this.btnKickObserver.Enabled = false;
+            this.btnKickObserver.Location = new System.Drawing.Point(336, 635);
+            this.btnKickObserver.Name = "btnKickObserver";
+            this.btnKickObserver.Size = new System.Drawing.Size(92, 32);
+            this.btnKickObserver.TabIndex = 16;
+            this.btnKickObserver.Text = "请出房间";
+            this.btnKickObserver.UseVisualStyleBackColor = true;
+            this.btnKickObserver.Click += new System.EventHandler(this.btnKickObserver_Click);
+            // 
+            // cbbKickObserver
+            // 
+            this.cbbKickObserver.DisplayMember = "0";
+            this.cbbKickObserver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbbKickObserver.FormattingEnabled = true;
+            this.cbbKickObserver.Location = new System.Drawing.Point(177, 638);
+            this.cbbKickObserver.Name = "cbbKickObserver";
+            this.cbbKickObserver.Size = new System.Drawing.Size(121, 28);
+            this.cbbKickObserver.TabIndex = 15;
+            // 
+            // lblKickObserver
+            // 
+            this.lblKickObserver.AutoSize = true;
+            this.lblKickObserver.Location = new System.Drawing.Point(27, 641);
+            this.lblKickObserver.Name = "lblKickObserver";
+            this.lblKickObserver.Size = new System.Drawing.Size(137, 20);
+            this.lblKickObserver.TabIndex = 14;
+            this.lblKickObserver.Text = "将旁观请出房间：";
+            // 
             // FormRoomSetting
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(562, 671);
+            this.ClientSize = new System.Drawing.Size(562, 774);
+            this.Controls.Add(this.btnKickObserver);
+            this.Controls.Add(this.cbbKickObserver);
+            this.Controls.Add(this.lblKickObserver);
+            this.Controls.Add(this.btnKickPlayer);
+            this.Controls.Add(this.cbbKickPlayer);
+            this.Controls.Add(this.lblKickPlayer);
             this.Controls.Add(this.lblMustDoRanksLabel);
             this.Controls.Add(this.cbxMust_12);
             this.Controls.Add(this.lblRoomNameLabel);
@@ -407,5 +479,11 @@
         private System.Windows.Forms.Label lblRoomOwner;
         private System.Windows.Forms.Label lblRoomNameLabel;
         private System.Windows.Forms.Label lblMustDoRanksLabel;
+        private System.Windows.Forms.Label lblKickPlayer;
+        private System.Windows.Forms.ComboBox cbbKickPlayer;
+        private System.Windows.Forms.Button btnKickPlayer;
+        private System.Windows.Forms.Button btnKickObserver;
+        private System.Windows.Forms.ComboBox cbbKickObserver;
+        private System.Windows.Forms.Label lblKickObserver;
     }
 }

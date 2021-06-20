@@ -9,17 +9,25 @@ namespace Duan.Xiugang.Tractor
     /// <summary>
     /// 提供声音播放的方法
     /// </summary>
-    class MciSoundPlayer
+    public class MciSoundPlayer
     {
 
-        [DllImport("winmm.dll", EntryPoint = "mciSendString", SetLastError = true, CharSet = CharSet.Auto)] 
+        [DllImport("winmm.dll", EntryPoint = "mciSendString", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int mciSendString(string lpstrCommand, [MarshalAs(UnmanagedType.LPTStr)]string lpstrReturnString, int uReturnLength, int hwndCallback);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        public static extern int GetShortPathName([MarshalAs(UnmanagedType.LPTStr)]string path,[MarshalAs(UnmanagedType.LPTStr)]StringBuilder shortPath,int shortPathLength);
-        
-        
-        public static void Play(string FileName,String alias)
+        public static extern int GetShortPathName([MarshalAs(UnmanagedType.LPTStr)]string path, [MarshalAs(UnmanagedType.LPTStr)]StringBuilder shortPath, int shortPathLength);
+
+        public string FileName;
+        public string Alias;
+
+        public MciSoundPlayer(string fn, string al)
+        {
+            this.FileName = fn;
+            this.Alias = al;
+        }
+
+        public void LoadMediaFiles()
         {
             Stop();
             Close();
@@ -28,40 +36,42 @@ namespace Duan.Xiugang.Tractor
             int result = GetShortPathName(FileName, shortPathTemp, shortPathTemp.Capacity);
             string ShortPath = shortPathTemp.ToString();
 
-            mciSendString("open " + ShortPath + " alias " + alias, "", 0, 0);
-            mciSendString("play " + alias, "", 0, 0);
+            mciSendString(string.Format("open {0} alias {1}", ShortPath, Alias), "", 0, 0);
         }
 
-        public static  void Stop()
+        public void Play(bool enableSound)
         {
-            mciSendString("stop song", "", 0, 0);
+            if (!enableSound) return;
+            mciSendString(string.Format("play {0} from 0", Alias), "", 0, 0);
         }
 
-        public static void Pause()
+        public void Stop()
         {
-            mciSendString("pause song", "", 0, 0);
+            mciSendString(string.Format("stop {0}", Alias), "", 0, 0);
         }
 
-        public static void Close()
+        public void Pause()
         {
-            mciSendString("close song", "", 0, 0);
+            mciSendString(string.Format("pause {0}", Alias), "", 0, 0);
         }
 
-        public static void CloseAll()
+        public void Close()
+        {
+            mciSendString(string.Format("close {0}", Alias), "", 0, 0);
+        }
+
+        public void CloseAll()
         {
             mciSendString("close all", "", 0, 0);
         }
 
-        public static bool IsPlaying()
+        public bool IsPlaying()
         {
-                string durLength = "";
-                durLength = durLength.PadLeft(128, Convert.ToChar(" "));
-                mciSendString("status song mode", durLength, 128, 0);
-               
-                return durLength.Substring(0, 7).ToLower() == "playing".ToLower();
+            string durLength = "";
+            durLength = durLength.PadLeft(128, Convert.ToChar(" "));
+            mciSendString(string.Format("status {0} mode", Alias), durLength, 128, 0);
+
+            return durLength.Substring(0, 7).ToLower() == "playing".ToLower();
         }
-
-       
-
     }
 }

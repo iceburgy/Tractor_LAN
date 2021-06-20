@@ -44,7 +44,15 @@ namespace Duan.Xiugang.Tractor
                 }
             }
 
-            if (!this.mainForm.ThisPlayer.isObserver && this.mainForm.ThisPlayer.PlayerId == this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner)
+            foreach (PlayerEntity player in this.mainForm.ThisPlayer.CurrentGameState.Players)
+            {
+                if (player == null) continue;
+                if (player.Observers.Count > 0) this.cbbKickObserver.Items.AddRange(player.Observers.ToArray());
+                if (player.PlayerId == this.mainForm.ThisPlayer.MyOwnId) continue;
+                this.cbbKickPlayer.Items.Add(player.PlayerId);
+            }
+
+            if (!this.mainForm.ThisPlayer.isObserver && this.mainForm.ThisPlayer.MyOwnId == this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner)
             {
                 foreach (Control control in this.Controls)
                 {
@@ -89,6 +97,30 @@ namespace Duan.Xiugang.Tractor
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void btnKickPlayer_Click(object sender, EventArgs e)
+        {
+            if (this.mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.BeforeDistributingCards ||
+                this.mainForm.ThisPlayer.CurrentHandState.CurrentHandStep >= HandStep.SpecialEnding)
+            {
+                string toKickId = this.cbbKickPlayer.SelectedItem.ToString();
+                DialogResult dialogResult = MessageBox.Show(string.Format("确定将玩家【{0}】请出房间？", toKickId), "请出房间", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    this.mainForm.ThisPlayer.ExitRoom(toKickId);
+                }
+            }
+        }
+
+        private void btnKickObserver_Click(object sender, EventArgs e)
+        {
+            string toKickId = this.cbbKickObserver.SelectedItem.ToString();
+            DialogResult dialogResult = MessageBox.Show(string.Format("确定将旁观【{0}】请出房间？", toKickId), "请出房间", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                this.mainForm.ThisPlayer.ExitRoom(toKickId);
+            }
         }
     }
 }

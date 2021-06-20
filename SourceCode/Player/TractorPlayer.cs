@@ -180,12 +180,12 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void PlayerEnterHall(string playerID)
         {
-            _tractorHost.PlayerEnterHall(this.MyOwnId);
+            _tractorHost.PlayerEnterHall(playerID);
         }
 
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
-            _tractorHost.PlayerEnterRoom(this.MyOwnId, roomID, posID);
+            _tractorHost.PlayerEnterRoom(playerID, roomID, posID);
         }
 
         public void ReadyToStart()
@@ -200,12 +200,12 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void ExitRoom(string playerID)
         {
-            _tractorHost.PlayerExitRoom(this.MyOwnId);
+            _tractorHost.PlayerExitRoom(playerID);
         }
 
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
         {
-            _tractorHost.SpecialEndGame(this.MyOwnId, endType);
+            _tractorHost.SpecialEndGame(playerID, endType);
         }
 
         public void Quit()

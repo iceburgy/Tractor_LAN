@@ -36,10 +36,12 @@ namespace Duan.Xiugang.Tractor
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
         internal bool enableSound = false;
-        internal string[] showCardSoundFiles;
-        internal string trumpUpdatedSoundFile;
-        internal string discardingLast8CardsFinishedSoundFile;
-        internal string gameOverSoundFile;
+        internal MciSoundPlayer[] soundPlayersShowCard;
+        internal MciSoundPlayer soundPlayerTrumpUpdated;
+        internal MciSoundPlayer soundPlayerDiscardingLast8CardsFinished;
+        internal MciSoundPlayer soundPlayerGameOver;
+        internal MciSoundPlayer soundPlayerDraw;
+        internal MciSoundPlayer soundPlayerDrawx;
 
         internal CurrentPoker[] currentAllSendPokers =
         {
@@ -133,22 +135,7 @@ namespace Duan.Xiugang.Tractor
             updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
             enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
 
-            //加载音效
-            //get the full location of the assembly with DaoTests in it
-            string fullPath = Assembly.GetExecutingAssembly().Location;
-            //get the folder that's in
-            string fullFolder = Path.GetDirectoryName(fullPath);
-            showCardSoundFiles = new string[] 
-            { 
-                Path.Combine(fullFolder, "music\\equip1.mp3"),
-                Path.Combine(fullFolder, "music\\equip2.mp3"),
-                Path.Combine(fullFolder, "music\\sha.mp3"),
-                Path.Combine(fullFolder, "music\\sha_fire.mp3"),
-                Path.Combine(fullFolder, "music\\sha_thunder.mp3"),
-            };
-            trumpUpdatedSoundFile = "music\\biyue1.mp3";
-            discardingLast8CardsFinishedSoundFile = "music\\tie.mp3";
-            gameOverSoundFile = "music\\win.mp3";
+            LoadSoundResources();
 
             //创建大牌标记labels
             CreateOverridingLabels();
@@ -199,6 +186,38 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //初始化
             }
+        }
+
+        private void LoadSoundResources()
+        {
+            //加载音效
+            //get the full location of the assembly with DaoTests in it
+            string fullPath = Assembly.GetExecutingAssembly().Location;
+            //get the folder that's in
+            string fullFolder = Path.GetDirectoryName(fullPath);
+            soundPlayersShowCard = new MciSoundPlayer[] 
+            { 
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\equip1.mp3"), "equip1"),
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\equip2.mp3"), "equip2"),
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha.mp3"), "sha"),
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha_fire.mp3"), "sha_fire"),
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha_thunder.mp3"), "sha_thunder"),
+            };
+            soundPlayerTrumpUpdated = new MciSoundPlayer(Path.Combine(fullFolder, "music\\biyue1.mp3"), "biyue1");
+            soundPlayerDiscardingLast8CardsFinished = new MciSoundPlayer(Path.Combine(fullFolder, "music\\tie.mp3"), "tie");
+            soundPlayerGameOver = new MciSoundPlayer(Path.Combine(fullFolder, "music\\win.mp3"), "win");
+            soundPlayerDraw = new MciSoundPlayer(Path.Combine(fullFolder, "music\\draw.mp3"), "draw");
+            soundPlayerDrawx = new MciSoundPlayer(Path.Combine(fullFolder, "music\\drawx.mp3"), "drawx");
+
+            foreach (MciSoundPlayer sp in soundPlayersShowCard)
+            {
+                sp.LoadMediaFiles();
+            }
+            soundPlayerTrumpUpdated.LoadMediaFiles();
+            soundPlayerDiscardingLast8CardsFinished.LoadMediaFiles();
+            soundPlayerGameOver.LoadMediaFiles();
+            soundPlayerDraw.LoadMediaFiles();
+            soundPlayerDrawx.LoadMediaFiles();
         }
 
         private void CreateOverridingLabels()
@@ -738,6 +757,12 @@ namespace Duan.Xiugang.Tractor
 
         private void PlayerGetCard(int cardNumber)
         {
+            //发牌播放提示音
+            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards)
+            {
+                soundPlayerDraw.Play(this.enableSound);
+            }
+
             drawingFormHelper.IGetCard(cardNumber);
 
             //托管代打：亮牌
@@ -766,10 +791,9 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_TrumpUpdated(CurrentHandState currentHandState)
         {
             if (HandStep.DistributingCards <= this.ThisPlayer.CurrentHandState.CurrentHandStep &&
-                this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.Playing &&
-                this.enableSound)
+                this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.Playing)
             {
-                MciSoundPlayer.Play(this.trumpUpdatedSoundFile, "song");
+                soundPlayerTrumpUpdated.Play(this.enableSound);
             }
 
             ThisPlayer.CurrentHandState = currentHandState;
@@ -859,11 +883,10 @@ namespace Duan.Xiugang.Tractor
                 int soundInex = winResult;
                 if (winResult > 0) soundInex = this.ThisPlayer.playerLocalCache.WinResult;
                 if (!this.ThisPlayer.playerLocalCache.isLastTrick &&
-                    this.enableSound &&
                     !gameConfig.IsDebug &&
                     !ThisPlayer.CurrentTrickState.serverLocalCache.muteSound)
                 {
-                    MciSoundPlayer.Play(this.showCardSoundFiles[soundInex], "song");
+                    soundPlayersShowCard[soundInex].Play(this.enableSound);
                 }
 
                 if (position == 1)
@@ -1538,8 +1561,9 @@ namespace Duan.Xiugang.Tractor
                 return;
             }
 
-            //跟选：在有必选牌的情况下自动选择必选牌，方便玩家快捷出牌
-            if (!ThisPlayer.isObserver &&
+            //跟选：如果玩家没有事先手动选牌，在有必选牌的情况下自动选择必选牌，方便玩家快捷出牌
+            if (SelectedCards.Count == 0 &&
+                !ThisPlayer.isObserver &&
                 ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing &&
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentTrickState.IsStarted())
@@ -1683,9 +1707,9 @@ namespace Duan.Xiugang.Tractor
         {
             foreach (string m in msgs)
             {
-                if (m.Contains("获胜！") && this.enableSound)
+                if (m.Contains("获胜！"))
                 {
-                    MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+                    soundPlayerGameOver.Play(this.enableSound);
                 }
                 else if (m.Contains("断线重连中"))
                 {
@@ -1695,7 +1719,7 @@ namespace Duan.Xiugang.Tractor
                 else if (m.Contains("新游戏即将开始"))
                 {
                     //新游戏开始前播放提示音，告诉玩家要抢庄
-                    if (this.enableSound) MciSoundPlayer.Play(this.gameOverSoundFile, "song");
+                    soundPlayerGameOver.Play(this.enableSound);
                 }
             }
             this.drawingFormHelper.DrawMessages(msgs);
@@ -1727,7 +1751,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_Last8Discarded()
         {
-            if (this.enableSound) MciSoundPlayer.Play(this.discardingLast8CardsFinishedSoundFile, "song");
+            soundPlayerDiscardingLast8CardsFinished.Play(this.enableSound);
 
             Graphics g = Graphics.FromImage(bmp);
             for (int i = 0; i < 8; i++)
@@ -1762,6 +1786,11 @@ namespace Duan.Xiugang.Tractor
             if (position > 1)
             {
                 drawingFormHelper.DrawDistributingLast8Cards(position);
+            }
+            else
+            {
+                //播放摸底音效
+                soundPlayerDrawx.Play(this.enableSound);
             }
 
             if (ThisPlayer.isObserver)
@@ -2019,7 +2048,6 @@ namespace Duan.Xiugang.Tractor
 
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
-            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
             if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
                 this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许退出", "请完成此盘游戏后再退" });
