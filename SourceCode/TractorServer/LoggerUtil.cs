@@ -1,5 +1,6 @@
 ﻿using log4net;
 using log4net.Appender;
+using log4net.Core;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using System;
@@ -11,29 +12,40 @@ namespace TractorServer
 {
     public class LoggerUtil
     {
-        public static ILog Setup(string logFilePath, string logName)
+        public static ILog Setup(string logName, string logFilePath)
         {
-            var patternLayout = new PatternLayout();
-            patternLayout.ConversionPattern = "%date [%thread] %-5level %logger - %message%newline";
+            var hierarchy = (Hierarchy)LogManager.GetRepository();
+            hierarchy.Threshold = Level.Debug;
+
+            // Configure logger
+            var loggerRaw = hierarchy.LoggerFactory.CreateLogger(hierarchy, logName);
+            loggerRaw.Hierarchy = hierarchy;
+            loggerRaw.AddAppender(CreateFileAppender(logName, logFilePath));
+            loggerRaw.Repository.Configured = true;
+            loggerRaw.Level = Level.Debug;
+
+            ILog logger = new LogImpl(loggerRaw);
+            return logger;
+        }
+
+        private static IAppender CreateFileAppender(string name, string fileName)
+        {
+            PatternLayout patternLayout = new PatternLayout();
+            patternLayout.ConversionPattern = "%date %level %logger: %message%newline";
             patternLayout.ActivateOptions();
 
-            var roller = new RollingFileAppender();
-            roller.AppendToFile = true;
-            roller.File = logFilePath;
-            roller.Layout = patternLayout;
-            roller.MaxSizeRollBackups = 10;
-            roller.MaximumFileSize = "10MB";
-            roller.RollingStyle = RollingFileAppender.RollingMode.Size;
-            roller.StaticLogFileName = true;
-            roller.ActivateOptions();
-
-            ILog log = LogManager.GetLogger(logName);
-            var l = (Logger)log.Logger;
-            l.AddAppender(roller);
-
-            l.Level = l.Hierarchy.LevelMap["Debug"];
-            l.Repository.Configured = true;
-            return log;
+            RollingFileAppender appender = new RollingFileAppender();
+            appender.Name = name;
+            appender.File = fileName;
+            appender.AppendToFile = true;
+            appender.MaxSizeRollBackups = 10;
+            appender.RollingStyle = RollingFileAppender.RollingMode.Size;
+            appender.MaximumFileSize = "10MB";
+            appender.Layout = patternLayout;
+            appender.LockingModel = new FileAppender.MinimalLock();
+            appender.StaticLogFileName = true;
+            appender.ActivateOptions();
+            return appender;
         }
     }
 }

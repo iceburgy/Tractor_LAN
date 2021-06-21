@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace TractorServer
 {
     public class GameRoom
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private log4net.ILog log;
         public static string LogsFolder = "logs";
         public string LogsByRoomFolder;
 
@@ -37,6 +38,11 @@ namespace TractorServer
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
+
+            string fullPath = Assembly.GetExecutingAssembly().Location;
+            string fullFolder = Path.GetDirectoryName(fullPath);
+            string fullLogFilePath = string.Format("{0}\\{1}\\myroom_{2}_logfile.txt", fullFolder, LogsByRoomFolder, roomID);
+            log = LoggerUtil.Setup(string.Format("myroom_{0}_logfile", roomID), fullLogFilePath);
         }
 
         #region implement interface ITractorHost
@@ -1739,8 +1745,6 @@ namespace TractorServer
             }
             catch (Exception ex)
             {
-                log.Debug(string.Format("failed update clientinfo for {0}-{1}-{2}", clientIP, playerID, isCheating));
-                log.Debug(string.Format("exception: {0}", ex.Message));
             }
             finally
             {
