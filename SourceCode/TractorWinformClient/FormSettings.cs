@@ -24,9 +24,10 @@ namespace Duan.Xiugang.Tractor
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
         public static string KeyEnableSound = "enableSound";
+        public static string KeyShowSuitSeq = "showSuitSeq";
         public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyFullDebug = "fullDebug";
-        public static string[] initToTrue = new string[] { KeyEnableSound };
+        public static string[] initToTrue = new string[] { KeyEnableSound, KeyShowSuitSeq };
 
         public FormSettings()
         {
@@ -37,6 +38,7 @@ namespace Duan.Xiugang.Tractor
             this.tbxNickName.Text = GetSettingString(KeyNickName);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
             this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
+            this.cbxShowSuitSeq.Checked = GetSettingBool(KeyShowSuitSeq);
         }
 
         public static string GetHostAndPortFromConfig()
@@ -152,6 +154,7 @@ namespace Duan.Xiugang.Tractor
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
+            SetSetting(KeyShowSuitSeq, cbxShowSuitSeq.Checked.ToString().ToLower());
             SettingsUpdatedEvent();
             this.Close();
         }

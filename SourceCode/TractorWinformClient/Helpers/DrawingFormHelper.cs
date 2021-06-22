@@ -34,6 +34,9 @@ namespace Duan.Xiugang.Tractor
         public int[][][] overridingFlagLocations;
         public int[][] overridingFlagSizes;
 
+        private int suitSequence = 0;
+        private Font suitSequenceFont = new Font("Arial", 9, FontStyle.Bold);
+
         internal DrawingFormHelper(MainForm mainForm)
         {
             this.mainForm = mainForm;
@@ -1256,38 +1259,38 @@ namespace Duan.Xiugang.Tractor
         #region 画自己的牌面(四种花色、四种花色Rank、大小王)
         private int DrawBigJack(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.RedJoker, 53, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.RedJoker, 53, j, start, false);
             return j;
         }
 
 
         private int DrawSmallJack(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.BlackJoker, 52, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.BlackJoker, 52, j, start, false);
             return j;
         }
 
         private int DrawDiamondsRank(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.DiamondsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 26, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.DiamondsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 26, j, start, false);
             return j;
         }
 
         private int DrawClubsRank(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.ClubsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 39, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.ClubsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 39, j, start, false);
             return j;
         }
 
         private int DrawPeachsRank(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.SpadesRankCount, mainForm.ThisPlayer.CurrentHandState.Rank + 13, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.SpadesRankCount, mainForm.ThisPlayer.CurrentHandState.Rank + 13, j, start, false);
             return j;
         }
 
         private int DrawHeartsRank(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
-            j = DrawMyOneOrTwoCards(g, currentPoker.HeartsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank, j, start);
+            j = DrawMyOneOrTwoCards(g, currentPoker.HeartsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank, j, start, mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker || mainForm.ThisPlayer.CurrentHandState.Trump == Suit.None);
             return j;
         }
 
@@ -1295,7 +1298,7 @@ namespace Duan.Xiugang.Tractor
         {
             for (int i = 0; i < 13; i++)
             {
-                j = DrawMyOneOrTwoCards(g, currentPoker.ClubsNoRank[i], i + 39, j, start);
+                j = DrawMyOneOrTwoCards(g, currentPoker.ClubsNoRank[i], i + 39, j, start, i == 0);
             }
             return j;
         }
@@ -1304,7 +1307,7 @@ namespace Duan.Xiugang.Tractor
         {
             for (int i = 0; i < 13; i++)
             {
-                j = DrawMyOneOrTwoCards(g, currentPoker.DiamondsNoRank[i], i + 26, j, start);
+                j = DrawMyOneOrTwoCards(g, currentPoker.DiamondsNoRank[i], i + 26, j, start, i == 0);
             }
             return j;
         }
@@ -1313,7 +1316,7 @@ namespace Duan.Xiugang.Tractor
         {
             for (int i = 0; i < 13; i++)
             {
-                j = DrawMyOneOrTwoCards(g, currentPoker.PeachsNoRank[i], i + 13, j, start);
+                j = DrawMyOneOrTwoCards(g, currentPoker.PeachsNoRank[i], i + 13, j, start, i == 0);
 
             }
             return j;
@@ -1323,14 +1326,16 @@ namespace Duan.Xiugang.Tractor
         {
             for (int i = 0; i < 13; i++)
             {
-                j = DrawMyOneOrTwoCards(g, currentPoker.HeartsNoRank[i], i, j, start);
+                j = DrawMyOneOrTwoCards(g, currentPoker.HeartsNoRank[i], i, j, start, i == 0);
             }
             return j;
         }
 
         //辅助方法
-        private int DrawMyOneOrTwoCards(Graphics g, int count, int number, int j, int start)
+        private int DrawMyOneOrTwoCards(Graphics g, int count, int number, int j, int start, bool resetSuitSequence)
         {
+            if (resetSuitSequence) suitSequence = 1;
+
             //如果是我亮的主，我需要将亮的主往上提一下
             bool b = (number == 52) || (number == 53);
             b = b & (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker);
@@ -1362,8 +1367,11 @@ namespace Duan.Xiugang.Tractor
                 {
                     g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
-
+                //画牌的张数
+                if (this.mainForm.showSuitSeq) g.DrawString(suitSequence.ToString(), suitSequenceFont, Brushes.Gray, start + j * 12 * scaleDividend / scaleDivisor + 1, 375 + offsetY + 54 * scaleDividend / scaleDivisor);
+                
                 j++;
+                suitSequence++;
             }
             else if (count == 2)
             {
@@ -1378,8 +1386,10 @@ namespace Duan.Xiugang.Tractor
                 {
                     g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
+                if (this.mainForm.showSuitSeq) g.DrawString(suitSequence.ToString(), suitSequenceFont, Brushes.Gray, start + j * 12 * scaleDividend / scaleDivisor + 1, 375 + offsetY + 54 * scaleDividend / scaleDivisor);
 
                 j++;
+                suitSequence++;
                 SetCardsInformation(start + j * 12 * scaleDividend / scaleDivisor, number, false);
                 if (mainForm.ThisPlayer.PlayerId == mainForm.ThisPlayer.CurrentHandState.TrumpMaker && b &&
                     mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker >= TrumpExposingPoker.PairRank)
@@ -1390,8 +1400,10 @@ namespace Duan.Xiugang.Tractor
                 {
                     g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, 375 + offsetY, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
                 }
+                if (this.mainForm.showSuitSeq) g.DrawString(suitSequence.ToString(), suitSequenceFont, Brushes.Gray, start + j * 12 * scaleDividend / scaleDivisor + 1, 375 + offsetY + 54 * scaleDividend / scaleDivisor);
 
                 j++;
+                suitSequence++;
             }
             return j;
         }
@@ -1472,6 +1484,7 @@ namespace Duan.Xiugang.Tractor
 
         private int DrawHeartsRank2(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
+            if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker || mainForm.ThisPlayer.CurrentHandState.Trump == Suit.None) suitSequence = 1;
             if (currentPoker.HeartsRankTotal == 1)
             {
                 j = DrawMyOneOrTwoCards2(g, j, mainForm.ThisPlayer.CurrentHandState.Rank, start, 355, 71, 96) + 1;
@@ -1486,6 +1499,7 @@ namespace Duan.Xiugang.Tractor
 
         private int DrawMyClubs2(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
+            suitSequence = 1;
             for (int i = 0; i < 13; i++)
             {
                 if (currentPoker.ClubsNoRank[i] == 1)
@@ -1503,6 +1517,7 @@ namespace Duan.Xiugang.Tractor
 
         private int DrawMyDiamonds2(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
+            suitSequence = 1;
             for (int i = 0; i < 13; i++)
             {
                 if (currentPoker.DiamondsNoRank[i] == 1)
@@ -1520,6 +1535,7 @@ namespace Duan.Xiugang.Tractor
 
         private int DrawMyPeachs2(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
+            suitSequence = 1;
             for (int i = 0; i < 13; i++)
             {
                 if (currentPoker.PeachsNoRank[i] == 1)
@@ -1537,6 +1553,7 @@ namespace Duan.Xiugang.Tractor
 
         private int DrawMyHearts2(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
+            suitSequence = 1;
             for (int i = 0; i < 13; i++)
             {
                 if (currentPoker.HeartsNoRank[i] == 1)
@@ -1563,6 +1580,9 @@ namespace Duan.Xiugang.Tractor
             {
                 g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, y + offsetY + 20, width * scaleDividend / scaleDivisor, height * scaleDividend / scaleDivisor);
             }
+            //画牌的张数
+            if (this.mainForm.showSuitSeq) g.DrawString(suitSequence.ToString(), suitSequenceFont, Brushes.Gray, start + j * 12 * scaleDividend / scaleDivisor + 1, 375 + offsetY + 54 * scaleDividend / scaleDivisor);
+            suitSequence++;
 
             mainForm.cardsOrderNumber++;
             return j;

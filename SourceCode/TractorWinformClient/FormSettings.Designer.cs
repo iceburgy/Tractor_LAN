@@ -36,6 +36,7 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.cbxUpdateOnLoad = new System.Windows.Forms.CheckBox();
             this.cbxEnableSound = new System.Windows.Forms.CheckBox();
+            this.cbxShowSuitSeq = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblHostName
@@ -72,7 +73,7 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(70, 314);
+            this.btnOK.Location = new System.Drawing.Point(70, 350);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
             this.btnOK.TabIndex = 4;
@@ -83,7 +84,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(173, 314);
+            this.btnCancel.Location = new System.Drawing.Point(173, 350);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
             this.btnCancel.TabIndex = 5;
@@ -111,13 +112,24 @@
             this.cbxEnableSound.Text = "开启音效";
             this.cbxEnableSound.UseVisualStyleBackColor = true;
             // 
+            // cbxShowSuitSeq
+            // 
+            this.cbxShowSuitSeq.AutoSize = true;
+            this.cbxShowSuitSeq.Location = new System.Drawing.Point(70, 295);
+            this.cbxShowSuitSeq.Name = "cbxShowSuitSeq";
+            this.cbxShowSuitSeq.Size = new System.Drawing.Size(131, 24);
+            this.cbxShowSuitSeq.TabIndex = 8;
+            this.cbxShowSuitSeq.Text = "显示手牌张数";
+            this.cbxShowSuitSeq.UseVisualStyleBackColor = true;
+            // 
             // FormSettings
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(422, 390);
+            this.ClientSize = new System.Drawing.Size(422, 417);
+            this.Controls.Add(this.cbxShowSuitSeq);
             this.Controls.Add(this.cbxEnableSound);
             this.Controls.Add(this.cbxUpdateOnLoad);
             this.Controls.Add(this.btnCancel);
@@ -143,5 +155,6 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.CheckBox cbxUpdateOnLoad;
         private System.Windows.Forms.CheckBox cbxEnableSound;
+        private System.Windows.Forms.CheckBox cbxShowSuitSeq;
     }
 }

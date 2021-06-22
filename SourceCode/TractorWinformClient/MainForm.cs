@@ -36,6 +36,7 @@ namespace Duan.Xiugang.Tractor
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
         internal bool enableSound = false;
+        internal bool showSuitSeq = false;
         internal MciSoundPlayer[] soundPlayersShowCard;
         internal MciSoundPlayer soundPlayerTrumpUpdated;
         internal MciSoundPlayer soundPlayerDiscardingLast8CardsFinished;
@@ -134,6 +135,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.MyOwnId = nickName;
             updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
             enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
+            showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
 
             LoadSoundResources();
 
