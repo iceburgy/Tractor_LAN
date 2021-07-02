@@ -400,8 +400,9 @@ namespace TractorServer
                 bool isInRoom = false;
                 foreach (GameRoom room in this.GameRooms)
                 {
-                    if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
-                        room.ObserversProxy.ContainsValue(PlayersProxy[name]))
+                    if (PlayersProxy.ContainsKey(name) &&
+                        (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
+                        room.ObserversProxy.ContainsValue(PlayersProxy[name])))
                     {
                         isInRoom = true;
                         break;

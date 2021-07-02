@@ -2116,7 +2116,7 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n- 进入大厅：F1";
             userManual += "\n- 进入第一个房间：F2";
             userManual += "\n- 就绪：F3、按键Z（Zhunbei准备）";
-            userManual += "\n- 托管：F4、按键A（Auto）";
+            userManual += "\n- 托管：F4、按键R（Robot）";
             userManual += "\n- 旁观下家：F5（仅限旁观模式下）";
             userManual += "\n\n此帮助信息可在菜单【帮助】【使用说明】中再次查看";
             userManual += "\n\n不再提示？";
@@ -2171,7 +2171,7 @@ namespace Duan.Xiugang.Tractor
         {
             switch (keyData)
             {
-                case Keys.A:
+                case Keys.R:
                     if (this.btnRobot.Visible && this.btnRobot.Enabled)
                     {
                         this.btnRobot.PerformClick();
