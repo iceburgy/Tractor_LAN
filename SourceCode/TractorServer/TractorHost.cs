@@ -397,12 +397,12 @@ namespace TractorServer
             List<string> namesToCall = new List<string>();
             foreach (var name in names)
             {
+                if (!PlayersProxy.ContainsKey(name)) continue;
                 bool isInRoom = false;
                 foreach (GameRoom room in this.GameRooms)
                 {
-                    if (PlayersProxy.ContainsKey(name) &&
-                        (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
-                        room.ObserversProxy.ContainsValue(PlayersProxy[name])))
+                    if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
+                        room.ObserversProxy.ContainsValue(PlayersProxy[name]))
                     {
                         isInRoom = true;
                         break;
@@ -426,6 +426,7 @@ namespace TractorServer
             List<string> badPlayerIDs = new List<string>();
             foreach (var playerID in playerIDs)
             {
+                if (!PlayersProxyToCall.ContainsKey(playerID)) continue;
                 string badPlayerID = IPlayerInvoke(playerID, PlayersProxyToCall[playerID], methodName, args, false);
                 if (!string.IsNullOrEmpty(badPlayerID))
                 {
