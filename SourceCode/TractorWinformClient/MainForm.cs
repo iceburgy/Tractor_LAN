@@ -114,8 +114,12 @@ namespace Duan.Xiugang.Tractor
         string[] knownErrors = new string[] { 
             "Could not load file or assembly 'AutoUpdater.NET.XmlSerializers",
             "Application identity is not set",
-            "does not exist in the appSettings configuration section"
+            "does not exist in the appSettings configuration section",
+            "because it is in the Faulted state",
+            "The socket connection was aborted",
+            "cannot be used for communication because it is in the Faulted state"
         };
+        string hostCrash = "An existing connection was forcibly closed by the remote host";
 
         internal MainForm()
         {
@@ -228,8 +232,9 @@ namespace Duan.Xiugang.Tractor
             {
                 if (errMsg.Contains(knownErr)) return;
             }
-            log.Error(errMsg);
-            MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n并将日志文件发送给系统管理员：\n{0}", fullLogFilePath));
+            log.Error("===game error encountered\n" + errMsg);
+            if (errMsg == hostCrash) MessageBox.Show("服务器出错，请重启服务器");
+            else MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n\n请将以下日志文件发送给客服：\n{0}", fullLogFilePath));
         }
 
         private void LoadSoundResources()
