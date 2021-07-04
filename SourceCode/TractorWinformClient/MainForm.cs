@@ -120,6 +120,8 @@ namespace Duan.Xiugang.Tractor
             "cannot be used for communication because it is in the Faulted state"
         };
         string hostCrash = "An existing connection was forcibly closed by the remote host";
+        int firstWinNormal = 1;
+        int firstWinBySha = 3;
 
         internal MainForm()
         {
@@ -248,6 +250,7 @@ namespace Duan.Xiugang.Tractor
             { 
                 new MciSoundPlayer(Path.Combine(fullFolder, "music\\equip1.mp3"), "equip1"),
                 new MciSoundPlayer(Path.Combine(fullFolder, "music\\equip2.mp3"), "equip2"),
+                new MciSoundPlayer(Path.Combine(fullFolder, "music\\zhu_junlve.mp3"), "zhu_junlve"),
                 new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha.mp3"), "sha"),
                 new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha_fire.mp3"), "sha_fire"),
                 new MciSoundPlayer(Path.Combine(fullFolder, "music\\sha_thunder.mp3"), "sha_thunder"),
@@ -869,16 +872,20 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
         }
 
-        //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为主毙牌
+        //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为吊主；3 - 是且为主毙牌
         private int IsWinningWithTrump(CurrentTrickState trickState, string playerID)
         {
-            if (playerID == trickState.Learder) return 1;
+            bool isLeaderTrump = PokerHelper.IsTrump(trickState.LeadingCards[0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
+            if (playerID == trickState.Learder)
+            {
+                if (isLeaderTrump) return 2;
+                else return 1;
+            }
             string winnerID = TractorRules.GetWinnerWithoutAllShowedCards(trickState);
             if (playerID == winnerID)
             {
-                bool isLeaderTrump = PokerHelper.IsTrump(trickState.LeadingCards[0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
                 bool isWinnerTrump = PokerHelper.IsTrump(trickState.ShowedCards[winnerID][0], ThisPlayer.CurrentHandState.Trump, ThisPlayer.CurrentHandState.Rank);
-                if (!isLeaderTrump && isWinnerTrump) return 2;
+                if (!isLeaderTrump && isWinnerTrump) return 3;
                 return 1;
             }
             return 0;
@@ -903,16 +910,15 @@ namespace Duan.Xiugang.Tractor
             int winResult = this.IsWinningWithTrump(ThisPlayer.CurrentTrickState, latestPlayer);
             int position = PlayerPosition[latestPlayer];
             //如果大牌变更，更新缓存相关信息
-            if (winResult > 0)
+            if (winResult >= firstWinNormal)
             {
-                if (winResult == 1)
+                if (winResult < firstWinBySha || this.ThisPlayer.playerLocalCache.WinResult < firstWinBySha)
                 {
                     this.ThisPlayer.playerLocalCache.WinResult = winResult;
                 }
                 else
                 {
-                    if (this.ThisPlayer.playerLocalCache.WinResult == 1) this.ThisPlayer.playerLocalCache.WinResult = winResult;
-                    else this.ThisPlayer.playerLocalCache.WinResult++;
+                    this.ThisPlayer.playerLocalCache.WinResult++;
                 }
                 this.ThisPlayer.playerLocalCache.WinnerPosition = position;
                 this.ThisPlayer.playerLocalCache.WinnderID = latestPlayer;

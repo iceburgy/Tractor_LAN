@@ -281,6 +281,10 @@
     <Content Include="music\win.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="music\zhu_junlve.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\zhugong.png" />
     <Content Include="Tractor.ico" />
   </ItemGroup>
   <ItemGroup>

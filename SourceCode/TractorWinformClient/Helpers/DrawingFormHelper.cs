@@ -49,7 +49,7 @@ namespace Duan.Xiugang.Tractor
             int width = 75;
             int height = 50;
             this.overridingFlagLabels = new PictureBox[] { this.mainForm.imbOverridingFlag_1, this.mainForm.imbOverridingFlag_2, this.mainForm.imbOverridingFlag_3, this.mainForm.imbOverridingFlag_4 };
-            this.overridingFlagPictures = new Bitmap[] { Properties.Resources.bagua, Properties.Resources.sha, Properties.Resources.huosha, Properties.Resources.leisha };
+            this.overridingFlagPictures = new Bitmap[] { Properties.Resources.bagua, Properties.Resources.zhugong, Properties.Resources.sha, Properties.Resources.huosha, Properties.Resources.leisha };
             this.overridingFlagLocations = new int[2][][];
             this.overridingFlagSizes = new int[2][];
 
