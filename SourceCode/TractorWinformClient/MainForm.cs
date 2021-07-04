@@ -50,6 +50,8 @@ namespace Duan.Xiugang.Tractor
             new CurrentPoker()
         };
 
+        private log4net.ILog log;
+
         //原始背景图片
 
         //画图的次数（仅在发牌时使用）
@@ -108,6 +110,13 @@ namespace Duan.Xiugang.Tractor
 
         private readonly string roomControlPrefix = "roomControl";
 
+        string fullLogFilePath = string.Format("{0}\\logs\\logfile.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        string[] knownErrors = new string[] { 
+            "Could not load file or assembly 'AutoUpdater.NET.XmlSerializers",
+            "Application identity is not set",
+            "does not exist in the appSettings configuration section"
+        };
+
         internal MainForm()
         {
             InitializeComponent();
@@ -138,6 +147,17 @@ namespace Duan.Xiugang.Tractor
             showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
 
             LoadSoundResources();
+
+            // setup logger
+            log = LogUtilClient.Setup("logfile", fullLogFilePath);
+            log.Debug(string.Format("player {0} launched game", ThisPlayer.MyOwnId));
+
+            AppDomain currentDomain = default(AppDomain);
+            currentDomain = AppDomain.CurrentDomain;
+            // Handler for unhandled exceptions.
+            currentDomain.FirstChanceException += GlobalFirstChanceExceptionHandler;
+            // Handler for exceptions in threads behind forms.
+            System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
 
             //创建大牌标记labels
             CreateOverridingLabels();
@@ -188,6 +208,28 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //初始化
             }
+        }
+
+        private void GlobalFirstChanceExceptionHandler(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            LogAndAlert(e.Exception.Message + "\n" + e.Exception.StackTrace);
+        }
+
+        private void GlobalThreadExceptionHandler(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            Exception ex = default(Exception);
+            ex = e.Exception;
+            LogAndAlert(ex.Message + "\n" + ex.StackTrace);
+        }
+
+        private void LogAndAlert(string errMsg)
+        {
+            foreach (string knownErr in knownErrors)
+            {
+                if (errMsg.Contains(knownErr)) return;
+            }
+            log.Error(errMsg);
+            MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n并将日志文件发送给系统管理员：\n{0}", fullLogFilePath));
         }
 
         private void LoadSoundResources()
