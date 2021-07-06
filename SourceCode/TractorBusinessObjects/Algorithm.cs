@@ -172,7 +172,7 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 if (st == Suit.None || st == Suit.Joker || st == currentCards.Trump) continue;
                 int maxCards = currentCards.GetMaxCards((int)st);
-                if (maxCards % 13 == maxValue && allSuitCards[maxCards] == 1) 
+                if (maxCards % 13 == maxValue && allSuitCards[maxCards] == 1)
                 {
                     selectedCards.Add(maxCards);
                     return;
@@ -238,7 +238,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
 
             int minMaster = currentCards.GetMinMasterCards((int)currentTrickState.Trump);
-            if (minMaster>=0)
+            if (minMaster >= 0)
             {
                 selectedCards.Add(minMaster);
                 return;
@@ -315,7 +315,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 badCardsBySuit.Add(badCardsCp.GetSuitCardsWithJokerAndRank((int)st));
             }
             badCardsBySuit.Sort((a, b) => (a.Length - b.Length));
-            var masterCards=badCardsCp.GetSuitCardsWithJokerAndRank((int)currentCards.Trump);
+            var masterCards = badCardsCp.GetSuitCardsWithJokerAndRank((int)currentCards.Trump);
             badCardsBySuit.Add(masterCards);
 
             //从差到好选出8张牌
@@ -341,17 +341,13 @@ namespace Duan.Xiugang.Tractor.Objects
             Suit nonJoker = Suit.None;
             Suit mayJoker = Suit.None;
             var currentCards = (CurrentPoker)currentPoker.Clone();
-            int heartCount = currentCards.HeartsNoRankTotal;
-            int spadeCount = currentCards.SpadesNoRankCount;
-            int diamondCount = currentCards.DiamondsNoRankTotal;
-            int clubCount = currentCards.ClubsNoRankTotal;
-            int jokerAndRankCount = currentCards.GetSuitCardsWithJokerAndRank((int)Suit.Joker).Length;
 
             foreach (Suit st in availableTrump)
             {
                 switch (st)
                 {
                     case Suit.Heart:
+                        int heartCount = currentCards.HeartsNoRankTotal;
                         if (heartCount >= exposeTrumpThreshold && heartCount > nonJokerMaxCount)
                         {
                             nonJokerMaxCount = heartCount;
@@ -359,6 +355,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                         break;
                     case Suit.Spade:
+                        int spadeCount = currentCards.SpadesNoRankCount;
                         if (spadeCount >= exposeTrumpThreshold && spadeCount > nonJokerMaxCount)
                         {
                             nonJokerMaxCount = spadeCount;
@@ -366,6 +363,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                         break;
                     case Suit.Diamond:
+                        int diamondCount = currentCards.DiamondsNoRankTotal;
                         if (diamondCount >= exposeTrumpThreshold && diamondCount > nonJokerMaxCount)
                         {
                             nonJokerMaxCount = diamondCount;
@@ -373,6 +371,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                         break;
                     case Suit.Club:
+                        int clubCount = currentCards.ClubsNoRankTotal;
                         if (clubCount >= exposeTrumpThreshold && clubCount > nonJokerMaxCount)
                         {
                             nonJokerMaxCount = clubCount;
@@ -380,6 +379,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                         break;
                     case Suit.Joker:
+                        int jokerAndRankCount = currentCards.GetSuitCardsWithJokerAndRank((int)Suit.Joker).Length;
                         if (fullDebug && jokerAndRankCount >= exposeTrumpJokerThreshold) mayJoker = Suit.Joker;
                         break;
                     default:
