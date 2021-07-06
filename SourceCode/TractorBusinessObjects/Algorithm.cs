@@ -337,31 +337,57 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public static Suit TryExposingTrump(List<Suit> availableTrump, CurrentPoker currentPoker, bool fullDebug)
         {
+            int nonJokerMaxCount = 0;
+            Suit nonJoker = Suit.None;
+            Suit mayJoker = Suit.None;
             var currentCards = (CurrentPoker)currentPoker.Clone();
+            int heartCount = currentCards.HeartsNoRankTotal;
+            int spadeCount = currentCards.SpadesNoRankCount;
+            int diamondCount = currentCards.DiamondsNoRankTotal;
+            int clubCount = currentCards.ClubsNoRankTotal;
+            int jokerAndRankCount = currentCards.GetSuitCardsWithJokerAndRank((int)Suit.Joker).Length;
+
             foreach (Suit st in availableTrump)
             {
                 switch (st)
                 {
                     case Suit.Heart:
-                        if (currentCards.HeartsNoRankTotal >= exposeTrumpThreshold) return st;
+                        if (heartCount >= exposeTrumpThreshold && heartCount > nonJokerMaxCount)
+                        {
+                            nonJokerMaxCount = heartCount;
+                            nonJoker = st;
+                        }
                         break;
                     case Suit.Spade:
-                        if (currentCards.SpadesNoRankCount >= exposeTrumpThreshold) return st;
+                        if (spadeCount >= exposeTrumpThreshold && spadeCount > nonJokerMaxCount)
+                        {
+                            nonJokerMaxCount = spadeCount;
+                            nonJoker = st;
+                        }
                         break;
                     case Suit.Diamond:
-                        if (currentCards.DiamondsNoRankTotal >= exposeTrumpThreshold) return st;
+                        if (diamondCount >= exposeTrumpThreshold && diamondCount > nonJokerMaxCount)
+                        {
+                            nonJokerMaxCount = diamondCount;
+                            nonJoker = st;
+                        }
                         break;
                     case Suit.Club:
-                        if (currentCards.ClubsNoRankTotal >= exposeTrumpThreshold) return st;
+                        if (clubCount >= exposeTrumpThreshold && clubCount > nonJokerMaxCount)
+                        {
+                            nonJokerMaxCount = clubCount;
+                            nonJoker = st;
+                        }
                         break;
                     case Suit.Joker:
-                        if (fullDebug && currentCards.GetSuitCardsWithJokerAndRank((int)Suit.Joker).Length >= exposeTrumpJokerThreshold) return st;
+                        if (fullDebug && jokerAndRankCount >= exposeTrumpJokerThreshold) mayJoker = Suit.Joker;
                         break;
                     default:
                         break;
                 }
             }
-            return Suit.None;
+            if (nonJokerMaxCount > 0) return nonJoker;
+            else return mayJoker;
         }
     }
 }

@@ -52,6 +52,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlgorithmTest.cs" />
     <Compile Include="CurrentPokerTest.cs" />
     <Compile Include="GameStateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
