@@ -36,6 +36,7 @@ namespace Duan.Xiugang.Tractor
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
         internal bool enableSound = false;
+        internal string soundVolume = "5";
         internal bool showSuitSeq = false;
         internal MciSoundPlayer[] soundPlayersShowCard;
         internal MciSoundPlayer soundPlayerTrumpUpdated;
@@ -117,9 +118,15 @@ namespace Duan.Xiugang.Tractor
             "does not exist in the appSettings configuration section",
             "because it is in the Faulted state",
             "The socket connection was aborted",
-            "cannot be used for communication because it is in the Faulted state"
+            "cannot be used for communication because it is in the Faulted state",
+            "An existing connection was forcibly closed by the remote host",
+            "while closing. You should only close your channel when you are not expecting any more input messages",
+            "Exception has been thrown by the target of an invocation",
+            "The server did not provide a meaningful reply; this might be caused by a contract mismatch, a premature session shutdown or an internal server error",
+            "You should only close your channel when you are not expecting any more input messages",
+            "No connection could be made",
+            "connection attempt failed because the connected party did not properly respond after a period of time",
         };
-        string hostCrash = "An existing connection was forcibly closed by the remote host";
         int firstWinNormal = 1;
         int firstWinBySha = 3;
 
@@ -143,16 +150,10 @@ namespace Duan.Xiugang.Tractor
             bmp = new Bitmap(ClientRectangle.Width, ClientRectangle.Height);
             ThisPlayer = new TractorPlayer();
 
-            //加载当前设置
-            var nickName = FormSettings.GetSettingString(FormSettings.KeyNickName);
-            this.lblSouthNickName.Text = nickName;
-            ThisPlayer.PlayerId = nickName;
-            ThisPlayer.MyOwnId = nickName;
-            updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
-            enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
-            showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
-
             LoadSoundResources();
+
+            //加载当前设置
+            LoadSettings();
 
             // setup logger
             log = LogUtilClient.Setup("logfile", fullLogFilePath);
@@ -216,6 +217,19 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
+        private void LoadSettings()
+        {
+            var nickName = FormSettings.GetSettingString(FormSettings.KeyNickName);
+            this.lblSouthNickName.Text = nickName;
+            ThisPlayer.PlayerId = nickName;
+            ThisPlayer.MyOwnId = nickName;
+            updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
+            enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
+            soundVolume = FormSettings.GetSettingString(FormSettings.KeySoundVolume);
+            showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
+            setGameSoundVolume();
+        }
+
         private void GlobalFirstChanceExceptionHandler(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
             LogAndAlert(e.Exception.Message + "\n" + e.Exception.StackTrace);
@@ -235,8 +249,7 @@ namespace Duan.Xiugang.Tractor
                 if (errMsg.Contains(knownErr)) return;
             }
             log.Error("===game error encountered\n" + errMsg);
-            if (errMsg == hostCrash) MessageBox.Show("服务器出错，请重启服务器");
-            else MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n\n请将以下日志文件发送给客服：\n{0}", fullLogFilePath));
+            MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n\n请将以下日志文件发送给客服：\n{0}", fullLogFilePath));
         }
 
         private void LoadSoundResources()
@@ -270,6 +283,19 @@ namespace Duan.Xiugang.Tractor
             soundPlayerGameOver.LoadMediaFiles();
             soundPlayerDraw.LoadMediaFiles();
             soundPlayerDrawx.LoadMediaFiles();
+        }
+
+        private void setGameSoundVolume()
+        {
+            foreach (MciSoundPlayer sp in soundPlayersShowCard)
+            {
+                sp.SetVolume(Int32.Parse(soundVolume));
+            }
+            soundPlayerTrumpUpdated.SetVolume(Int32.Parse(soundVolume));
+            soundPlayerDiscardingLast8CardsFinished.SetVolume(Int32.Parse(soundVolume));
+            soundPlayerGameOver.SetVolume(Int32.Parse(soundVolume));
+            soundPlayerDraw.SetVolume(Int32.Parse(soundVolume)); ;
+            soundPlayerDrawx.SetVolume(Int32.Parse(soundVolume));
         }
 
         private void CreateOverridingLabels()
@@ -1575,7 +1601,13 @@ namespace Duan.Xiugang.Tractor
 
         private void Mainform_SettingsUpdatedEventHandler()
         {
-            Application.Restart();
+            LoadSettings();
+        }
+
+        private void Mainform_SettingsSoundVolumeUpdatedEventHandler(int volume)
+        {
+            soundPlayerTrumpUpdated.SetVolume(volume);
+            soundPlayerTrumpUpdated.Play(true);
         }
 
         private void Mainform_RoomSettingChangedByClientEventHandler()
@@ -1966,6 +1998,7 @@ namespace Duan.Xiugang.Tractor
         {
             FormSettings formSettings = new FormSettings();
             formSettings.SettingsUpdatedEvent += Mainform_SettingsUpdatedEventHandler;
+            formSettings.SettingsSoundVolumeUpdatedEvent += Mainform_SettingsSoundVolumeUpdatedEventHandler;
             formSettings.Show();
         }
 

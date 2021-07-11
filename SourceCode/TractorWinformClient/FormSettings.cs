@@ -14,16 +14,19 @@ using System.Xml;
 namespace Duan.Xiugang.Tractor
 {
     public delegate void SettingsUpdatedEventHandler();
+    public delegate void SettingsSoundVolumeUpdatedEventHandler(int volume);
 
     public partial class FormSettings : Form
     {
         public event SettingsUpdatedEventHandler SettingsUpdatedEvent;
+        public event SettingsSoundVolumeUpdatedEventHandler SettingsSoundVolumeUpdatedEvent;
         public static string regexHostAndPort = @"net.tcp://(?<host>.*):(?<port>\d*)/";
 
         private static string NodePathEndpoint = "//configuration//system.serviceModel//client//endpoint";
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
         public static string KeyEnableSound = "enableSound";
+        public static string KeySoundVolume = "soundVolume";
         public static string KeyShowSuitSeq = "showSuitSeq";
         public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyFullDebug = "fullDebug";
@@ -38,6 +41,7 @@ namespace Duan.Xiugang.Tractor
             this.tbxNickName.Text = GetSettingString(KeyNickName);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
             this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
+            this.tbrGameSoundVolume.Value = Int32.Parse(GetSettingString(KeySoundVolume));
             this.cbxShowSuitSeq.Checked = GetSettingBool(KeyShowSuitSeq);
         }
 
@@ -108,8 +112,12 @@ namespace Duan.Xiugang.Tractor
                 AppSettingsReader myreader = new AppSettingsReader();
                 return (String)myreader.GetValue(key, typeof(String));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (ex.Message.Contains("does not exist in the appSettings configuration section"))
+                {
+                    if (key == KeySoundVolume) return "5";
+                }
                 return "";
             }
         }
@@ -154,6 +162,7 @@ namespace Duan.Xiugang.Tractor
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
+            SetSetting(KeySoundVolume, tbrGameSoundVolume.Value.ToString().ToLower());
             SetSetting(KeyShowSuitSeq, cbxShowSuitSeq.Checked.ToString().ToLower());
             SettingsUpdatedEvent();
             this.Close();
@@ -161,7 +170,13 @@ namespace Duan.Xiugang.Tractor
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            SettingsUpdatedEvent();
             this.Close();
+        }
+
+        private void tbrGameSoundVolume_Scroll(object sender, EventArgs e)
+        {
+            SettingsSoundVolumeUpdatedEvent(this.tbrGameSoundVolume.Value);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Duan.Xiugang.Tractor
     /// </summary>
     public class MciSoundPlayer
     {
+        private int soundVolumeScale = 100;
 
         [DllImport("winmm.dll", EntryPoint = "mciSendString", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int mciSendString(string lpstrCommand, [MarshalAs(UnmanagedType.LPTStr)]string lpstrReturnString, int uReturnLength, int hwndCallback);
@@ -37,6 +38,11 @@ namespace Duan.Xiugang.Tractor
             string ShortPath = shortPathTemp.ToString();
 
             mciSendString(string.Format("open {0} alias {1}", ShortPath, Alias), "", 0, 0);
+        }
+
+        public void SetVolume(int volume)
+        {
+            mciSendString(string.Format("setaudio {0} volume to {1}", Alias, (volume * soundVolumeScale).ToString()), "", 0, 0);
         }
 
         public void Play(bool enableSound)

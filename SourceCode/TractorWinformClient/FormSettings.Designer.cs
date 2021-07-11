@@ -37,6 +37,9 @@
             this.cbxUpdateOnLoad = new System.Windows.Forms.CheckBox();
             this.cbxEnableSound = new System.Windows.Forms.CheckBox();
             this.cbxShowSuitSeq = new System.Windows.Forms.CheckBox();
+            this.tbrGameSoundVolume = new System.Windows.Forms.TrackBar();
+            this.lblNeedRestart = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).BeginInit();
             this.SuspendLayout();
             // 
             // lblHostName
@@ -52,7 +55,7 @@
             // 
             this.tbxHostName.Location = new System.Drawing.Point(173, 78);
             this.tbxHostName.Name = "tbxHostName";
-            this.tbxHostName.Size = new System.Drawing.Size(157, 26);
+            this.tbxHostName.Size = new System.Drawing.Size(151, 26);
             this.tbxHostName.TabIndex = 1;
             // 
             // lblNickName
@@ -68,12 +71,12 @@
             // 
             this.tbxNickName.Location = new System.Drawing.Point(173, 129);
             this.tbxNickName.Name = "tbxNickName";
-            this.tbxNickName.Size = new System.Drawing.Size(157, 26);
+            this.tbxNickName.Size = new System.Drawing.Size(151, 26);
             this.tbxNickName.TabIndex = 3;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(70, 350);
+            this.btnOK.Location = new System.Drawing.Point(70, 385);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
             this.btnOK.TabIndex = 4;
@@ -84,7 +87,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(173, 350);
+            this.btnCancel.Location = new System.Drawing.Point(173, 385);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
             this.btnCancel.TabIndex = 5;
@@ -105,7 +108,7 @@
             // cbxEnableSound
             // 
             this.cbxEnableSound.AutoSize = true;
-            this.cbxEnableSound.Location = new System.Drawing.Point(70, 247);
+            this.cbxEnableSound.Location = new System.Drawing.Point(70, 300);
             this.cbxEnableSound.Name = "cbxEnableSound";
             this.cbxEnableSound.Size = new System.Drawing.Size(99, 24);
             this.cbxEnableSound.TabIndex = 7;
@@ -115,12 +118,31 @@
             // cbxShowSuitSeq
             // 
             this.cbxShowSuitSeq.AutoSize = true;
-            this.cbxShowSuitSeq.Location = new System.Drawing.Point(70, 295);
+            this.cbxShowSuitSeq.Location = new System.Drawing.Point(70, 249);
             this.cbxShowSuitSeq.Name = "cbxShowSuitSeq";
             this.cbxShowSuitSeq.Size = new System.Drawing.Size(131, 24);
             this.cbxShowSuitSeq.TabIndex = 8;
             this.cbxShowSuitSeq.Text = "显示手牌张数";
             this.cbxShowSuitSeq.UseVisualStyleBackColor = true;
+            // 
+            // tbrGameSoundVolume
+            // 
+            this.tbrGameSoundVolume.Location = new System.Drawing.Point(186, 300);
+            this.tbrGameSoundVolume.Name = "tbrGameSoundVolume";
+            this.tbrGameSoundVolume.Size = new System.Drawing.Size(169, 69);
+            this.tbrGameSoundVolume.TabIndex = 9;
+            this.tbrGameSoundVolume.Tag = "";
+            this.tbrGameSoundVolume.Value = 5;
+            this.tbrGameSoundVolume.Scroll += new System.EventHandler(this.tbrGameSoundVolume_Scroll);
+            // 
+            // lblNeedRestart
+            // 
+            this.lblNeedRestart.AutoSize = true;
+            this.lblNeedRestart.Location = new System.Drawing.Point(330, 78);
+            this.lblNeedRestart.Name = "lblNeedRestart";
+            this.lblNeedRestart.Size = new System.Drawing.Size(67, 20);
+            this.lblNeedRestart.TabIndex = 10;
+            this.lblNeedRestart.Text = "* 需重启";
             // 
             // FormSettings
             // 
@@ -128,7 +150,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(422, 417);
+            this.ClientSize = new System.Drawing.Size(422, 463);
+            this.Controls.Add(this.lblNeedRestart);
+            this.Controls.Add(this.tbrGameSoundVolume);
             this.Controls.Add(this.cbxShowSuitSeq);
             this.Controls.Add(this.cbxEnableSound);
             this.Controls.Add(this.cbxUpdateOnLoad);
@@ -140,6 +164,7 @@
             this.Controls.Add(this.lblHostName);
             this.Name = "FormSettings";
             this.Text = "FormSettings";
+            ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -156,5 +181,7 @@
         private System.Windows.Forms.CheckBox cbxUpdateOnLoad;
         private System.Windows.Forms.CheckBox cbxEnableSound;
         private System.Windows.Forms.CheckBox cbxShowSuitSeq;
+        private System.Windows.Forms.TrackBar tbrGameSoundVolume;
+        private System.Windows.Forms.Label lblNeedRestart;
     }
 }
