@@ -428,30 +428,33 @@ namespace TractorServer
         #region Update Client State
         public void UpdateGameHall()
         {
-            List<string> names = PlayersProxy.Keys.ToList<string>();
             List<string> namesToCall = new List<string>();
-            foreach (var name in names)
+            lock (PlayersProxy)
             {
-                if (!PlayersProxy.ContainsKey(name)) continue;
-                bool isInRoom = false;
-                foreach (GameRoom room in this.GameRooms)
+                List<string> names = PlayersProxy.Keys.ToList<string>();
+                foreach (var name in names)
                 {
-                    if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
-                        room.ObserversProxy.ContainsValue(PlayersProxy[name]))
+                    bool isInRoom = false;
+                    foreach (GameRoom room in this.GameRooms)
                     {
-                        isInRoom = true;
-                        break;
+                        if (!PlayersProxy.ContainsKey(name)) continue;
+                        if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
+                            room.ObserversProxy.ContainsValue(PlayersProxy[name]))
+                        {
+                            isInRoom = true;
+                            break;
+                        }
                     }
-                }
 
-                if (!isInRoom)
-                {
-                    namesToCall.Add(name);
+                    if (!isInRoom)
+                    {
+                        namesToCall.Add(name);
+                    }
                 }
             }
             if (namesToCall.Count > 0)
             {
-                IPlayerInvokeForAll(PlayersProxy, namesToCall, "NotifyGameHall", new List<object>() { this.RoomStates, names });
+                IPlayerInvokeForAll(PlayersProxy, namesToCall, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall });
             }
         }
 
