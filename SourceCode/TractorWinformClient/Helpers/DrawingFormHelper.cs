@@ -649,9 +649,10 @@ namespace Duan.Xiugang.Tractor
         internal void DrawToolbar()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 - 12 + offsetY, 129 * scaleDividend / scaleDivisor, 29 * scaleDividend / scaleDivisor), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
             //画五种暗花色
-            g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter, 327 + offsetY, 125, 25), new Rectangle(125, 0, 125, 25), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Suit, new Rectangle(418 + offsetCenter, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(125, 0, 25, 25), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter + 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 100 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(125, 0, 100, 25), GraphicsUnit.Pixel);
             g.Dispose();
         }
 
@@ -661,7 +662,7 @@ namespace Duan.Xiugang.Tractor
         internal void RemoveToolbar()
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(mainForm.image, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(415, 325, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(mainForm.image, new Rectangle(415 + offsetCenter, 325 - 12 + offsetY, 129 * scaleDividend / scaleDivisor, 29 * scaleDividend / scaleDivisor), new Rectangle(415, 325, 129, 29), GraphicsUnit.Pixel);
             g.Dispose();
         }
 
@@ -686,17 +687,18 @@ namespace Duan.Xiugang.Tractor
         internal void ReDrawToolbar(List<Suit> suits)
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 + offsetY, 129, 29), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
+            g.DrawImage(Properties.Resources.Toolbar, new Rectangle(415 + offsetCenter, 325 - 12 + offsetY, 129 * scaleDividend / scaleDivisor, 29 * scaleDividend / scaleDivisor), new Rectangle(0, 0, 129, 29), GraphicsUnit.Pixel);
             //画五种暗花色
             for (int i = 0; i < 5; i++)
             {
+                int offsetXForHeart = i == 0 ? 1 : 0;
                 if (suits.Exists(s=> (int)s ==i+1))
                 {
-                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter + i * 25, 327 + offsetY, 25, 25), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
+                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetXForHeart + offsetCenter + i * 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
                 else
                 {
-                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetCenter + i * 25, 327 + offsetY, 25, 25), new Rectangle(125 + i * 25, 0, 25, 25), GraphicsUnit.Pixel);
+                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetXForHeart + offsetCenter + i * 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(125 + i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
             }
             g.Dispose();

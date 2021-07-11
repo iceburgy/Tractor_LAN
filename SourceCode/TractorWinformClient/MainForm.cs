@@ -667,15 +667,15 @@ namespace Duan.Xiugang.Tractor
         {
             List<Suit> availableTrumps = ThisPlayer.AvailableTrumps();
             var trumpExposingToolRegion = new Dictionary<Suit, Region>();
-            var spadeRegion = new Region(new Rectangle(443 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
-            trumpExposingToolRegion.Add(Suit.Spade, spadeRegion);
-            var heartRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
+            var heartRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter + 0 * 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 327 - 12 + drawingFormHelper.offsetY, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor));
             trumpExposingToolRegion.Add(Suit.Heart, heartRegion);
-            var clubRegion = new Region(new Rectangle(493 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
-            trumpExposingToolRegion.Add(Suit.Club, clubRegion);
-            var diamondRegion = new Region(new Rectangle(468 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
+            var spadeRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter + 1 * 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 327 - 12 + drawingFormHelper.offsetY, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor));
+            trumpExposingToolRegion.Add(Suit.Spade, spadeRegion);
+            var diamondRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter + 2 * 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 327 - 12 + drawingFormHelper.offsetY, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor));
             trumpExposingToolRegion.Add(Suit.Diamond, diamondRegion);
-            var jokerRegion = new Region(new Rectangle(518 + drawingFormHelper.offsetCenter, 327 + drawingFormHelper.offsetY, 25, 25));
+            var clubRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter + 3 * 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 327 - 12 + drawingFormHelper.offsetY, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor));
+            trumpExposingToolRegion.Add(Suit.Club, clubRegion);
+            var jokerRegion = new Region(new Rectangle(417 + drawingFormHelper.offsetCenter + 4 * 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 327 - 12 + drawingFormHelper.offsetY, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor, 25 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor));
             trumpExposingToolRegion.Add(Suit.Joker, jokerRegion);
             foreach (var keyValuePair in trumpExposingToolRegion)
             {
@@ -1599,9 +1599,10 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void Mainform_SettingsUpdatedEventHandler()
+        private void Mainform_SettingsUpdatedEventHandler(bool needRestart)
         {
             LoadSettings();
+            if (needRestart) Application.Restart();
         }
 
         private void Mainform_SettingsSoundVolumeUpdatedEventHandler(int volume)

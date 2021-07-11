@@ -13,7 +13,7 @@ using System.Xml;
 
 namespace Duan.Xiugang.Tractor
 {
-    public delegate void SettingsUpdatedEventHandler();
+    public delegate void SettingsUpdatedEventHandler(bool needRestart);
     public delegate void SettingsSoundVolumeUpdatedEventHandler(int volume);
 
     public partial class FormSettings : Form
@@ -32,10 +32,12 @@ namespace Duan.Xiugang.Tractor
         public static string KeyFullDebug = "fullDebug";
         public static string[] initToTrue = new string[] { KeyEnableSound, KeyShowSuitSeq };
 
+        string hostName = "";
+
         public FormSettings()
         {
             InitializeComponent();
-            string hostName = GetHostAndPortFromConfig();
+            hostName = GetHostAndPortFromConfig();
 
             this.tbxHostName.Text = hostName;
             this.tbxNickName.Text = GetSettingString(KeyNickName);
@@ -158,19 +160,20 @@ namespace Duan.Xiugang.Tractor
 
         private void btnOK_Click(object sender, EventArgs e)
         {
+            bool needRestart = (!string.IsNullOrEmpty(hostName) && !hostName.Equals(this.tbxHostName.Text, StringComparison.InvariantCultureIgnoreCase));
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
             SetSetting(KeySoundVolume, tbrGameSoundVolume.Value.ToString().ToLower());
             SetSetting(KeyShowSuitSeq, cbxShowSuitSeq.Checked.ToString().ToLower());
-            SettingsUpdatedEvent();
+            SettingsUpdatedEvent(needRestart);
             this.Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            SettingsUpdatedEvent();
+            SettingsUpdatedEvent(false);
             this.Close();
         }
 
