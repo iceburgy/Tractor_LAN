@@ -1285,7 +1285,7 @@ namespace TractorServer
             {
                 if (DistributeLast8Cards()) return;
             }
-            else if (IsAllOnline())
+            else if (IsAllOnline() && !string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
             {
                 //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
                 var nextStarter2 = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentRoomState.CurrentHandState.Starter);

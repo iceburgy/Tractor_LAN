@@ -691,13 +691,14 @@ namespace Duan.Xiugang.Tractor
             //画五种暗花色
             for (int i = 0; i < 5; i++)
             {
-                int offsetXForHeart = i == 0 ? 1 : 0;
                 if (suits.Exists(s=> (int)s ==i+1))
                 {
-                    g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetXForHeart + offsetCenter + i * 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
+                    int offsetXForHeart = i == 0 ? 1 : 0;
+                    g.DrawImage(Properties.Resources.Suit, new Rectangle(418 + offsetXForHeart + offsetCenter + i * 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
                 else
                 {
+                    int offsetXForHeart = i == 0 ? 1 : 0;
                     g.DrawImage(Properties.Resources.Suit, new Rectangle(417 + offsetXForHeart + offsetCenter + i * 25 * scaleDividend / scaleDivisor, 327 - 12 + offsetY, 25 * scaleDividend / scaleDivisor, 25 * scaleDividend / scaleDivisor), new Rectangle(125 + i * 25, 0, 25, 25), GraphicsUnit.Pixel);
                 }
             }
