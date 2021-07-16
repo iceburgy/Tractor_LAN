@@ -274,8 +274,8 @@ namespace Duan.Xiugang.Tractor
         {
             this.HideOverridingLabels();
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Rectangle rect = new Rectangle(77, 120, offsetSideBar, 224 + offsetCenter + 75);
-            g.DrawImage(mainForm.image, 77, 120, rect.Width, rect.Height);
+            Rectangle rect = new Rectangle(20, 120, offsetSideBar, 224 + offsetCenter + 75);
+            g.DrawImage(mainForm.image, 20, 120, rect.Width, rect.Height);
             g.Dispose();
             mainForm.Refresh();
         }
@@ -938,7 +938,7 @@ namespace Duan.Xiugang.Tractor
             //清下面的屏幕
             Rectangle rect = new Rectangle(30, 355 + offsetY, 600 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
             g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
-            DrawScoreImage();
+            DrawScoreImageAndCards();
 
             int start = (int)((2780 - index * 75) / 10);
 
@@ -1660,17 +1660,18 @@ namespace Duan.Xiugang.Tractor
 
         }
 
-        internal void DrawScoreImage()
+        internal void DrawScoreImageAndCards()
         {
+            //画得分图标
             int scores = mainForm.ThisPlayer.CurrentHandState.Score;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             Bitmap bmp = global::Duan.Xiugang.Tractor.Properties.Resources.scores;
             Font font = new Font("宋体", 12, FontStyle.Bold);
 
-            Rectangle rect = new Rectangle(offsetSideBar - 56, 128, 56, 56);
+            Rectangle rect = new Rectangle(20, 128, 56, 56);
             g.DrawImage(mainForm.image, rect, rect, GraphicsUnit.Pixel);
             g.DrawImage(bmp, rect);
-            int x = offsetSideBar - 56 + 16;
+            int x = 20 + 16;
             if (scores.ToString().Length == 2)
             {
                 x -= 4;
@@ -1680,6 +1681,18 @@ namespace Duan.Xiugang.Tractor
                 x -= 8;
             }
             g.DrawString(scores + "", font, Brushes.White, x, 138);
+
+            //画得分牌，画在得分图标的下边
+            int wid = 71 * scaleDividend / scaleDivisor * 2 / 3;
+            int hei = 96 * scaleDividend / scaleDivisor * 2 / 3;
+            int cardsX = 20;
+
+            int cardsY = 130 + 50;
+            for (int i = 0; i < mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count; i++)
+            {
+                //间距加2，看得清楚一点
+                g.DrawImage(getPokerImageByNumber(mainForm.ThisPlayer.CurrentHandState.ScoreCards[i]), cardsX + i * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3), cardsY, wid, hei);
+            }
 
             g.Dispose();
         }

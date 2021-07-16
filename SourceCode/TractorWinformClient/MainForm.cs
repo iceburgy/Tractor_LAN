@@ -628,8 +628,6 @@ namespace Duan.Xiugang.Tractor
                             ThisPlayer_PlayerLastTrickShowedCards();
                             //查看谁亮过什么牌
                             drawingFormHelper.LastTrumpMadeCardsShow();
-                            //查看得分牌
-                            drawingFormHelper.DrawScoreCards();
                         }
                         else
                         {
@@ -653,8 +651,6 @@ namespace Duan.Xiugang.Tractor
                     ThisPlayer_PlayerLastTrickShowedCards();
                     //查看谁亮过什么牌
                     drawingFormHelper.LastTrumpMadeCardsShow();
-                    //查看得分牌
-                    drawingFormHelper.DrawScoreCards();
                 }
                 else
                 {
@@ -957,7 +953,7 @@ namespace Duan.Xiugang.Tractor
                 if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
                 {
                     drawingFormHelper.DrawCenterImage();
-                    drawingFormHelper.DrawScoreImage();
+                    drawingFormHelper.DrawScoreImageAndCards();
                 }
 
                 //播放出牌音效
@@ -1015,7 +1011,7 @@ namespace Duan.Xiugang.Tractor
         {
             //擦掉上一把
             drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImage();
+            drawingFormHelper.DrawScoreImageAndCards();
 
             this.drawingFormHelper.DrawMessages(new string[] { "回看上轮出牌..." });
 
@@ -1064,7 +1060,7 @@ namespace Duan.Xiugang.Tractor
         {
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImage();
+            drawingFormHelper.DrawScoreImageAndCards();
 
             if (this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick != null)
             {
@@ -1109,7 +1105,6 @@ namespace Duan.Xiugang.Tractor
         {
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImage();
 
             ThisPlayer_HandEnding();
         }
@@ -1119,7 +1114,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer_DiscardingLast8();
             drawingFormHelper.RemoveToolbar();
             drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImage();
+            drawingFormHelper.DrawScoreImageAndCards();
 
             //出牌开始前，去掉不需要的controls
             this.btnSurrender.Visible = false;
@@ -1341,7 +1336,7 @@ namespace Duan.Xiugang.Tractor
         {
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImage();
+            drawingFormHelper.DrawScoreImageAndCards();
 
             foreach (var entry in this.ThisPlayer.CurrentHandState.PlayerHoldingCards)
             {
@@ -1707,7 +1702,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_TrickFinished()
         {
-            drawingFormHelper.DrawScoreImage();
+            drawingFormHelper.DrawScoreImageAndCards();
 
             Refresh();
         }
@@ -1952,7 +1947,7 @@ namespace Duan.Xiugang.Tractor
             if (ThisPlayer.CurrentTrickState.AllPlayedShowedCards() || ThisPlayer.CurrentTrickState.IsStarted() == false)
             {
                 drawingFormHelper.DrawCenterImage();
-                drawingFormHelper.DrawScoreImage();
+                drawingFormHelper.DrawScoreImageAndCards();
             }
             ThisPlayer.CurrentTrickState.ShowedCards[result.PlayerId] = result.CardsToShow;
 
