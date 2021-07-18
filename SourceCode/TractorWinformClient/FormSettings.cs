@@ -30,7 +30,21 @@ namespace Duan.Xiugang.Tractor
         public static string KeyShowSuitSeq = "showSuitSeq";
         public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyFullDebug = "fullDebug";
-        public static string[] initToTrue = new string[] { KeyEnableSound, KeyShowSuitSeq };
+        public static string KeyVideoCallUrl = "videoCallUrl";
+
+        public static bool DefaultEnableSound = true;
+        public static bool DefaultShowSuitSeq = true;
+        public static string DefaultSoundVolume = "5";
+        public static string DefaultVideoCallUrl = "https://bit.ly/sgsnight";
+
+        public static Dictionary<string, bool> initToDefaultBool = new Dictionary<string, bool>() {
+            { KeyEnableSound, DefaultEnableSound },
+            { KeyShowSuitSeq, DefaultShowSuitSeq }
+        };
+        public static Dictionary<string, string> initToDefaultString = new Dictionary<string, string>() { 
+            { KeySoundVolume, DefaultSoundVolume },
+            { KeyVideoCallUrl, DefaultVideoCallUrl }
+        };
 
         string hostName = "";
 
@@ -41,6 +55,7 @@ namespace Duan.Xiugang.Tractor
 
             this.tbxHostName.Text = hostName;
             this.tbxNickName.Text = GetSettingString(KeyNickName);
+            this.tbxVideoCallUrl.Text = GetSettingString(KeyVideoCallUrl);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
             this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
             this.tbrGameSoundVolume.Value = Int32.Parse(GetSettingString(KeySoundVolume));
@@ -116,9 +131,11 @@ namespace Duan.Xiugang.Tractor
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("does not exist in the appSettings configuration section"))
+                if (ex.Message.Contains("does not exist in the appSettings configuration section") &&
+                    initToDefaultString.ContainsKey(key))
                 {
-                    if (key == KeySoundVolume) return "5";
+                    SetSetting(key, initToDefaultString[key]);
+                    return initToDefaultString[key];
                 }
                 return "";
             }
@@ -134,10 +151,10 @@ namespace Duan.Xiugang.Tractor
             catch (Exception ex)
             {
                 if (ex.Message.Contains("does not exist in the appSettings configuration section") &&
-                    initToTrue.Contains(key))
+                    initToDefaultBool.ContainsKey(key))
                 {
-                    SetSetting(key, true.ToString().ToLower());
-                    return true;
+                    SetSetting(key, initToDefaultBool[key].ToString().ToLower());
+                    return initToDefaultBool[key];
                 }
                 return false;
             }
@@ -163,6 +180,7 @@ namespace Duan.Xiugang.Tractor
             bool needRestart = (!string.IsNullOrEmpty(hostName) && !hostName.Equals(this.tbxHostName.Text, StringComparison.InvariantCultureIgnoreCase));
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
             SetSetting(KeyNickName, tbxNickName.Text);
+            SetSetting(KeyVideoCallUrl, tbxVideoCallUrl.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
             SetSetting(KeySoundVolume, tbrGameSoundVolume.Value.ToString().ToLower());

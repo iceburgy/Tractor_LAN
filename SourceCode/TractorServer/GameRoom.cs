@@ -836,6 +836,11 @@ namespace TractorServer
                 {
                     IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyDumpingValidationResult", new List<object>() { result });
                     IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
+                    if (ObserversProxy.Count > 0)
+                    {
+                        IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyDumpingValidationResult", new List<object>() { result });
+                        IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
+                    }
                 }
             }
             var cardString = "";

@@ -1913,14 +1913,17 @@ namespace Duan.Xiugang.Tractor.Objects
             else
                 result.Clear();
 
-
             //主花色副花色
-            if (MasterRank == 2)
-                result.Add((TrumpInt - 1)*13 + Rank);
-            else if (result.Count > 1)
-                return result;
-            else
-                result.Clear();
+            if (Trump != Suit.Joker)
+            {
+                //只有在不打无主时才考虑主级牌，从而打无主时副级牌+小王仍被视为拖拉机
+                if (MasterRank == 2)
+                    result.Add((TrumpInt - 1) * 13 + Rank);
+                else if (result.Count > 1)
+                    return result;
+                else
+                    result.Clear();
+            }
             //副花色A时
             if (HasSubRankPairs())
             {

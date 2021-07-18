@@ -36,8 +36,9 @@ namespace Duan.Xiugang.Tractor
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
         internal bool enableSound = false;
-        internal string soundVolume = "5";
+        internal string soundVolume = FormSettings.DefaultSoundVolume;
         internal bool showSuitSeq = false;
+        internal string videoCallUrl = FormSettings.DefaultVideoCallUrl;
         internal MciSoundPlayer[] soundPlayersShowCard;
         internal MciSoundPlayer soundPlayerTrumpUpdated;
         internal MciSoundPlayer soundPlayerDiscardingLast8CardsFinished;
@@ -227,6 +228,7 @@ namespace Duan.Xiugang.Tractor
             enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
             soundVolume = FormSettings.GetSettingString(FormSettings.KeySoundVolume);
             showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
+            videoCallUrl = FormSettings.GetSettingString(FormSettings.KeyVideoCallUrl);
             setGameSoundVolume();
         }
 
@@ -484,17 +486,12 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
-            //旁观不能触发点击效果
-            if (ThisPlayer.isObserver)
-            {
-                return;
-            }
-            //左键
-            //只有发牌时和该我出牌时才能相应鼠标事件
+            //旁观不能触发选牌效果
+            //出牌或者埋底时响应鼠标事件选牌
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing ||
                 ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
             {
-                if (e.Button == MouseButtons.Left)
+                if (!ThisPlayer.isObserver && e.Button == MouseButtons.Left) //左键
                 {
                     if ((e.X >= (int)myCardsLocation[0] &&
                          e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor))
@@ -510,8 +507,10 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (e.Button == MouseButtons.Right) //右键
                 {
-                    if ((e.X >= (int)myCardsLocation[0] &&
-                         e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) && (e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor))
+                    if (!ThisPlayer.isObserver && 
+                        e.X >= (int)myCardsLocation[0] &&
+                        e.X <= ((int)myCardsLocation[myCardsLocation.Count - 1] + 71 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor) && 
+                        e.Y >= 355 + drawingFormHelper.offsetY && e.Y < 472 + drawingFormHelper.offsetY + 96 * (drawingFormHelper.scaleDividend - drawingFormHelper.scaleDivisor) / drawingFormHelper.scaleDivisor)
                     {
                         int i = calculateRegionHelper.CalculateRightClickedRegion(e);
                         if (i > -1 && i < myCardIsReady.Count)
@@ -636,8 +635,11 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
             }
-            else if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards ||
-                     ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
+            //旁观不能触发亮牌效果
+            //发牌时响应鼠标事件亮牌
+            else if (!ThisPlayer.isObserver &&
+                (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards ||
+                ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCardsFinished))
             {
                 ExposeTrump(e);
             }
@@ -1416,6 +1418,16 @@ namespace Duan.Xiugang.Tractor
             int offsetY = 150;
             int offsetYLower = offsetY + 100;
 
+            Button btnJoinVideoCall = new Button();
+            btnJoinVideoCall.Location = new System.Drawing.Point(offsetX, offsetY - 50);
+
+            btnJoinVideoCall.Name = string.Format("{0}_btnJoinVideoCall", roomControlPrefix);
+            btnJoinVideoCall.Size = new System.Drawing.Size(80, 40);
+            btnJoinVideoCall.BackColor = System.Drawing.Color.LightBlue;
+            btnJoinVideoCall.Text = "加入语音";
+            btnJoinVideoCall.Click += new System.EventHandler(this.btnJoinVideoCall_Click);
+            this.Controls.Add(btnJoinVideoCall);
+
             Label labelOnline = new Label();
             labelOnline.AutoSize = true;
             labelOnline.BackColor = System.Drawing.Color.Transparent;
@@ -1847,8 +1859,7 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
                 ResortMyCards();
             }
-            if (!ThisPlayer.isObserver && 
-                ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
+            if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
                 ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentHandState.DiscardedCards != null &&
                 ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
@@ -2094,6 +2105,11 @@ namespace Duan.Xiugang.Tractor
             {
                 MessageBox.Show(string.Format("failed to click button with a bad ID: {0}", roomIDString));
             }
+        }
+
+        private void btnJoinVideoCall_Click(object sender, EventArgs e)
+        {
+            Process.Start(videoCallUrl);
         }
 
         private void ToolStripMenuItemEnterHall_Click(object sender, EventArgs e)

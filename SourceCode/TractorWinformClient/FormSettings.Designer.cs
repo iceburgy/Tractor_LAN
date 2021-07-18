@@ -39,13 +39,15 @@
             this.cbxShowSuitSeq = new System.Windows.Forms.CheckBox();
             this.tbrGameSoundVolume = new System.Windows.Forms.TrackBar();
             this.lblNeedRestart = new System.Windows.Forms.Label();
+            this.tbxVideoCallUrl = new System.Windows.Forms.TextBox();
+            this.lblVideoCallUrl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).BeginInit();
             this.SuspendLayout();
             // 
             // lblHostName
             // 
             this.lblHostName.AutoSize = true;
-            this.lblHostName.Location = new System.Drawing.Point(66, 78);
+            this.lblHostName.Location = new System.Drawing.Point(46, 39);
             this.lblHostName.Name = "lblHostName";
             this.lblHostName.Size = new System.Drawing.Size(89, 20);
             this.lblHostName.TabIndex = 0;
@@ -53,7 +55,7 @@
             // 
             // tbxHostName
             // 
-            this.tbxHostName.Location = new System.Drawing.Point(173, 78);
+            this.tbxHostName.Location = new System.Drawing.Point(153, 39);
             this.tbxHostName.Name = "tbxHostName";
             this.tbxHostName.Size = new System.Drawing.Size(151, 26);
             this.tbxHostName.TabIndex = 1;
@@ -61,25 +63,25 @@
             // lblNickName
             // 
             this.lblNickName.AutoSize = true;
-            this.lblNickName.Location = new System.Drawing.Point(66, 135);
+            this.lblNickName.Location = new System.Drawing.Point(46, 92);
             this.lblNickName.Name = "lblNickName";
             this.lblNickName.Size = new System.Drawing.Size(73, 20);
-            this.lblNickName.TabIndex = 2;
+            this.lblNickName.TabIndex = 0;
             this.lblNickName.Text = "玩家昵称";
             // 
             // tbxNickName
             // 
-            this.tbxNickName.Location = new System.Drawing.Point(173, 129);
+            this.tbxNickName.Location = new System.Drawing.Point(153, 86);
             this.tbxNickName.Name = "tbxNickName";
             this.tbxNickName.Size = new System.Drawing.Size(151, 26);
-            this.tbxNickName.TabIndex = 3;
+            this.tbxNickName.TabIndex = 2;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(70, 385);
+            this.btnOK.Location = new System.Drawing.Point(50, 350);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
-            this.btnOK.TabIndex = 4;
+            this.btnOK.TabIndex = 8;
             this.btnOK.Text = "保存";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -87,10 +89,10 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(173, 385);
+            this.btnCancel.Location = new System.Drawing.Point(153, 350);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
-            this.btnCancel.TabIndex = 5;
+            this.btnCancel.TabIndex = 9;
             this.btnCancel.Text = "取消";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -98,39 +100,39 @@
             // cbxUpdateOnLoad
             // 
             this.cbxUpdateOnLoad.AutoSize = true;
-            this.cbxUpdateOnLoad.Location = new System.Drawing.Point(70, 194);
+            this.cbxUpdateOnLoad.Location = new System.Drawing.Point(50, 182);
             this.cbxUpdateOnLoad.Name = "cbxUpdateOnLoad";
             this.cbxUpdateOnLoad.Size = new System.Drawing.Size(147, 24);
-            this.cbxUpdateOnLoad.TabIndex = 6;
+            this.cbxUpdateOnLoad.TabIndex = 4;
             this.cbxUpdateOnLoad.Text = "启动时检查更新";
             this.cbxUpdateOnLoad.UseVisualStyleBackColor = true;
             // 
             // cbxEnableSound
             // 
             this.cbxEnableSound.AutoSize = true;
-            this.cbxEnableSound.Location = new System.Drawing.Point(70, 300);
+            this.cbxEnableSound.Location = new System.Drawing.Point(50, 266);
             this.cbxEnableSound.Name = "cbxEnableSound";
             this.cbxEnableSound.Size = new System.Drawing.Size(99, 24);
-            this.cbxEnableSound.TabIndex = 7;
+            this.cbxEnableSound.TabIndex = 6;
             this.cbxEnableSound.Text = "开启音效";
             this.cbxEnableSound.UseVisualStyleBackColor = true;
             // 
             // cbxShowSuitSeq
             // 
             this.cbxShowSuitSeq.AutoSize = true;
-            this.cbxShowSuitSeq.Location = new System.Drawing.Point(70, 249);
+            this.cbxShowSuitSeq.Location = new System.Drawing.Point(50, 224);
             this.cbxShowSuitSeq.Name = "cbxShowSuitSeq";
             this.cbxShowSuitSeq.Size = new System.Drawing.Size(131, 24);
-            this.cbxShowSuitSeq.TabIndex = 8;
+            this.cbxShowSuitSeq.TabIndex = 5;
             this.cbxShowSuitSeq.Text = "显示手牌张数";
             this.cbxShowSuitSeq.UseVisualStyleBackColor = true;
             // 
             // tbrGameSoundVolume
             // 
-            this.tbrGameSoundVolume.Location = new System.Drawing.Point(186, 300);
+            this.tbrGameSoundVolume.Location = new System.Drawing.Point(166, 266);
             this.tbrGameSoundVolume.Name = "tbrGameSoundVolume";
             this.tbrGameSoundVolume.Size = new System.Drawing.Size(169, 69);
-            this.tbrGameSoundVolume.TabIndex = 9;
+            this.tbrGameSoundVolume.TabIndex = 7;
             this.tbrGameSoundVolume.Tag = "";
             this.tbrGameSoundVolume.Value = 5;
             this.tbrGameSoundVolume.Scroll += new System.EventHandler(this.tbrGameSoundVolume_Scroll);
@@ -138,11 +140,27 @@
             // lblNeedRestart
             // 
             this.lblNeedRestart.AutoSize = true;
-            this.lblNeedRestart.Location = new System.Drawing.Point(330, 78);
+            this.lblNeedRestart.Location = new System.Drawing.Point(310, 39);
             this.lblNeedRestart.Name = "lblNeedRestart";
             this.lblNeedRestart.Size = new System.Drawing.Size(67, 20);
-            this.lblNeedRestart.TabIndex = 10;
+            this.lblNeedRestart.TabIndex = 0;
             this.lblNeedRestart.Text = "* 需重启";
+            // 
+            // tbxVideoCallUrl
+            // 
+            this.tbxVideoCallUrl.Location = new System.Drawing.Point(153, 134);
+            this.tbxVideoCallUrl.Name = "tbxVideoCallUrl";
+            this.tbxVideoCallUrl.Size = new System.Drawing.Size(151, 26);
+            this.tbxVideoCallUrl.TabIndex = 3;
+            // 
+            // lblVideoCallUrl
+            // 
+            this.lblVideoCallUrl.AutoSize = true;
+            this.lblVideoCallUrl.Location = new System.Drawing.Point(46, 140);
+            this.lblVideoCallUrl.Name = "lblVideoCallUrl";
+            this.lblVideoCallUrl.Size = new System.Drawing.Size(73, 20);
+            this.lblVideoCallUrl.TabIndex = 0;
+            this.lblVideoCallUrl.Text = "语音链接";
             // 
             // FormSettings
             // 
@@ -150,7 +168,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(422, 463);
+            this.ClientSize = new System.Drawing.Size(422, 427);
+            this.Controls.Add(this.tbxVideoCallUrl);
+            this.Controls.Add(this.lblVideoCallUrl);
             this.Controls.Add(this.lblNeedRestart);
             this.Controls.Add(this.tbrGameSoundVolume);
             this.Controls.Add(this.cbxShowSuitSeq);
@@ -183,5 +203,7 @@
         private System.Windows.Forms.CheckBox cbxShowSuitSeq;
         private System.Windows.Forms.TrackBar tbrGameSoundVolume;
         private System.Windows.Forms.Label lblNeedRestart;
+        private System.Windows.Forms.TextBox tbxVideoCallUrl;
+        private System.Windows.Forms.Label lblVideoCallUrl;
     }
 }
