@@ -369,7 +369,7 @@
             this.btnKickPlayer.Enabled = false;
             this.btnKickPlayer.Location = new System.Drawing.Point(336, 587);
             this.btnKickPlayer.Name = "btnKickPlayer";
-            this.btnKickPlayer.Size = new System.Drawing.Size(92, 32);
+            this.btnKickPlayer.Size = new System.Drawing.Size(106, 32);
             this.btnKickPlayer.TabIndex = 13;
             this.btnKickPlayer.Text = "请出房间";
             this.btnKickPlayer.UseVisualStyleBackColor = true;
@@ -380,7 +380,7 @@
             this.btnKickObserver.Enabled = false;
             this.btnKickObserver.Location = new System.Drawing.Point(336, 635);
             this.btnKickObserver.Name = "btnKickObserver";
-            this.btnKickObserver.Size = new System.Drawing.Size(92, 32);
+            this.btnKickObserver.Size = new System.Drawing.Size(106, 32);
             this.btnKickObserver.TabIndex = 16;
             this.btnKickObserver.Text = "请出房间";
             this.btnKickObserver.UseVisualStyleBackColor = true;

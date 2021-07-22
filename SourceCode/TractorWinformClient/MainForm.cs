@@ -2207,8 +2207,8 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n\n【隐藏技】";
             userManual += "\n- 摸牌时开启托管可在达到5张时自动亮牌";
             userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
-            userManual += "\n- 右键单击空白处查看：上轮出牌、谁亮过什么牌、得分牌";
-            userManual += "\n- 小猪图标代表一圈中的大牌，拖拉机图标代表主毙牌";
+            userManual += "\n- 右键单击空白处查看：上轮出牌、谁亮过什么牌";
+            userManual += "\n- 八卦图标代表一圈中的大牌，【杀】图标代表主毙牌";
             userManual += "\n\n【快捷键】";
             userManual += "\n- 出牌：按键S（Show cards）";
             userManual += "\n- 进入大厅：F1";
