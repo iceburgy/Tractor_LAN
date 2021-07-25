@@ -1502,10 +1502,13 @@ namespace TractorServer
                         points += 10;
                 }
 
+                //底牌分数按照2的指数级翻倍
                 int multiplier = 1;
                 if (cardscp.HasTractors())
                 {
-                    multiplier *= (2 * cardscp.GetTractor(CurrentRoomState.CurrentTrickState.LeadingSuit).Count * 2);
+                    double index = cardscp.GetTractor(CurrentRoomState.CurrentTrickState.LeadingSuit).Count * 2;
+                    double multiDouble = Math.Pow(2, index);
+                    multiplier = Convert.ToInt32(multiDouble);
                 }
                 else if (cardscp.GetPairs().Count > 0)
                 {

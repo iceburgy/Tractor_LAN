@@ -58,7 +58,18 @@ namespace TestProject1
             gameRoom.CalculatePointsFromDiscarded8Cards();
             Assert.AreEqual(40, gameRoom.CurrentRoomState.CurrentHandState.Score);
 
-            //带3对拖拉机敲低，且自己为领出，底牌分最终为：120
+            //带2对拖拉机敲低，且自己为领出，底牌分最终为：160
+            gameRoom.CurrentRoomState.CurrentHandState.Score = 0;
+            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8CardsBase = 0;
+            gameRoom.CurrentRoomState.CurrentTrickState.Learder = "p2";
+            gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p1"] = new List<int>() { 12, 12, 11, 10 };
+            gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p2"] = new List<int>() { 25, 25, 24, 24 };
+            gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p3"] = new List<int>() { 1, 2, 3, 4 };
+            gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p4"] = new List<int>() { 4, 5, 6, 7 };
+            gameRoom.CalculatePointsFromDiscarded8Cards();
+            Assert.AreEqual(160, gameRoom.CurrentRoomState.CurrentHandState.Score);
+
+            //带3对拖拉机敲低，且自己为领出，底牌分最终为：640
             gameRoom.CurrentRoomState.CurrentHandState.Score = 0;
             gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8CardsBase = 0;
             gameRoom.CurrentRoomState.CurrentTrickState.Learder = "p2";
@@ -67,7 +78,7 @@ namespace TestProject1
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p3"] = new List<int>() { 1, 2, 3, 4, 5, 6 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p4"] = new List<int>() { 4, 5, 6, 7, 8, 9 };
             gameRoom.CalculatePointsFromDiscarded8Cards();
-            Assert.AreEqual(120, gameRoom.CurrentRoomState.CurrentHandState.Score);
+            Assert.AreEqual(640, gameRoom.CurrentRoomState.CurrentHandState.Score);
 
         }
     }
