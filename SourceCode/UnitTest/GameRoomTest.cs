@@ -40,7 +40,7 @@ namespace TestProject1
 
             //带一对敲低，但领出牌中没有对子，所以底牌分最终为：20
             gameRoom.CurrentRoomState.CurrentHandState.Score = 0;
-            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8Cards = 0;
+            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8CardsBase = 0;
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p1"] = new List<int>() { 12, 11, 10 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p2"] = new List<int>() { 25, 25, 24 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p3"] = new List<int>() { 1, 2, 3 };
@@ -50,7 +50,7 @@ namespace TestProject1
 
             //带一对敲低，且领出牌中有对子，所以底牌分最终为：40
             gameRoom.CurrentRoomState.CurrentHandState.Score = 0;
-            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8Cards = 0;
+            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8CardsBase = 0;
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p1"] = new List<int>() { 12, 12, 11 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p2"] = new List<int>() { 25, 25, 24 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p3"] = new List<int>() { 1, 2, 3 };
@@ -60,7 +60,7 @@ namespace TestProject1
 
             //带3对拖拉机敲低，且自己为领出，底牌分最终为：120
             gameRoom.CurrentRoomState.CurrentHandState.Score = 0;
-            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8Cards = 0;
+            gameRoom.CurrentRoomState.CurrentHandState.ScoreLast8CardsBase = 0;
             gameRoom.CurrentRoomState.CurrentTrickState.Learder = "p2";
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p1"] = new List<int>() { 12, 12, 11, 10, 9, 8 };
             gameRoom.CurrentRoomState.CurrentTrickState.ShowedCards["p2"] = new List<int>() { 25, 25, 24, 24, 23, 23 };

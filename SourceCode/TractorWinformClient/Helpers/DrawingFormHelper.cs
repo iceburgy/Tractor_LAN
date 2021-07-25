@@ -1769,7 +1769,13 @@ namespace Duan.Xiugang.Tractor
 
             //底分
             y += ySpacing;
-            g.DrawString("底分 " + mainForm.ThisPlayer.CurrentHandState.ScoreLast8Cards.ToString().PadLeft(padWidth), font, Brushes.Blue, x, y);
+            g.DrawString("底分 " + (mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase * mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier).ToString().PadLeft(padWidth), font, Brushes.Blue, x, y);
+
+            //底分明细
+            if (mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase > 0)
+            {
+                g.DrawString(string.Format("【{0}x{1}】", mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase, mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier), font, Brushes.Orange, x + 120, y);
+            }
 
             //罚分
             y += ySpacing;
@@ -1817,7 +1823,7 @@ namespace Duan.Xiugang.Tractor
 
             //alert if score cards does not match actual scores
             int points = GetScoreCardsScore();
-            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreLast8Cards + mainForm.ThisPlayer.CurrentHandState.ScorePunishment != mainForm.ThisPlayer.CurrentHandState.Score)
+            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase * mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier + mainForm.ThisPlayer.CurrentHandState.ScorePunishment != mainForm.ThisPlayer.CurrentHandState.Score)
             {
                 MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
             }

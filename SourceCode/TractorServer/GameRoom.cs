@@ -1502,21 +1502,23 @@ namespace TractorServer
                         points += 10;
                 }
 
+                int multiplier = 1;
                 if (cardscp.HasTractors())
                 {
-                    points *= (2 * cardscp.GetTractor(CurrentRoomState.CurrentTrickState.LeadingSuit).Count * 2);
+                    multiplier *= (2 * cardscp.GetTractor(CurrentRoomState.CurrentTrickState.LeadingSuit).Count * 2);
                 }
                 else if (cardscp.GetPairs().Count > 0)
                 {
-                    points *= 4;
+                    multiplier *= 4;
                 }
                 else
                 {
-                    points *= 2;
+                    multiplier *= 2;
                 }
 
-                CurrentRoomState.CurrentHandState.Score += points;
-                CurrentRoomState.CurrentHandState.ScoreLast8Cards += points;
+                CurrentRoomState.CurrentHandState.Score += (points * multiplier);
+                CurrentRoomState.CurrentHandState.ScoreLast8CardsBase += points;
+                CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier += multiplier;
 
             }
         }
