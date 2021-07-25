@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="AlgorithmTest.cs" />
     <Compile Include="CurrentPokerTest.cs" />
+    <Compile Include="GameRoomTest.cs" />
     <Compile Include="GameStateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -61,6 +62,10 @@
     <ProjectReference Include="..\TractorBusinessObjects\TractorBusinessObjects.csproj">
       <Project>{4885F156-FE53-4541-B7FF-369B98BEC32C}</Project>
       <Name>TractorBusinessObjects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TractorServer\TractorServer.csproj">
+      <Project>{7bdae073-3fa4-43cb-b7f8-e077cb65d679}</Project>
+      <Name>TractorServer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

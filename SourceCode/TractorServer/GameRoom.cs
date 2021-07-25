@@ -816,12 +816,12 @@ namespace TractorServer
                                                                 playerId))
                 {
                     CurrentRoomState.CurrentHandState.Score -= punishScore;
-                    CurrentRoomState.CurrentHandState.ScoreAdjustment -= punishScore;
+                    CurrentRoomState.CurrentHandState.ScorePunishment -= punishScore;
                 }
                 else
                 {
                     CurrentRoomState.CurrentHandState.Score += punishScore;
-                    CurrentRoomState.CurrentHandState.ScoreAdjustment += punishScore;
+                    CurrentRoomState.CurrentHandState.ScorePunishment += punishScore;
                 }
                 log.Debug("tried to dump cards and failed, punish score: " + punishScore);
                 List<string> playersIDToCall = new List<string>();
@@ -1475,14 +1475,14 @@ namespace TractorServer
         }
 
         //计算被扣底牌的分数，然后加到CurrentHandState.Score
-        private void CalculatePointsFromDiscarded8Cards()
+        public void CalculatePointsFromDiscarded8Cards()
         {
             if (!CurrentRoomState.CurrentTrickState.AllPlayedShowedCards())
                 return;
             if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
                 return;
 
-            var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Winner];
+            var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Learder];
             var cardscp = new CurrentPoker(cards, (int)CurrentRoomState.CurrentHandState.Trump,
                                            CurrentRoomState.CurrentHandState.Rank);
 
@@ -1504,7 +1504,7 @@ namespace TractorServer
 
                 if (cardscp.HasTractors())
                 {
-                    points *= 8;
+                    points *= (2 * cardscp.GetTractor(CurrentRoomState.CurrentTrickState.LeadingSuit).Count * 2);
                 }
                 else if (cardscp.GetPairs().Count > 0)
                 {
@@ -1516,7 +1516,7 @@ namespace TractorServer
                 }
 
                 CurrentRoomState.CurrentHandState.Score += points;
-                CurrentRoomState.CurrentHandState.ScoreAdjustment += points;
+                CurrentRoomState.CurrentHandState.ScoreLast8Cards += points;
 
             }
         }

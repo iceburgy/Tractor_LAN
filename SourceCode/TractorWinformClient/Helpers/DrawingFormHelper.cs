@@ -1757,9 +1757,27 @@ namespace Duan.Xiugang.Tractor
             //画小丫
             g.DrawImage(global::Duan.Xiugang.Tractor.Properties.Resources.Logo, 160 + offsetCenterHalf, 237 + offsetCenterHalf, 110, 112);
 
-            //画得分
+            //画得分明细
             Font font = new Font("宋体", 16, FontStyle.Bold);
-            g.DrawString("总得分 " + mainForm.ThisPlayer.CurrentHandState.Score, font, Brushes.Blue, 310 + offsetCenterHalf, 286 + offsetCenterHalf);
+            int padWidth = 5;
+            int x = 310 + offsetCenterHalf, y = 237 + offsetCenterHalf;
+            int ySpacing = 25;
+
+            //上分
+            int points = GetScoreCardsScore();
+            g.DrawString("上分 " + points.ToString().PadLeft(padWidth), font, Brushes.Blue, x, y);
+
+            //底分
+            y += ySpacing;
+            g.DrawString("底分 " + mainForm.ThisPlayer.CurrentHandState.ScoreLast8Cards.ToString().PadLeft(padWidth), font, Brushes.Blue, x, y);
+
+            //罚分
+            y += ySpacing;
+            g.DrawString("罚分 " + mainForm.ThisPlayer.CurrentHandState.ScorePunishment.ToString().PadLeft(padWidth), font, Brushes.Blue, x, y);
+
+            //总得分
+            y += ySpacing;
+            g.DrawString("总分 " + mainForm.ThisPlayer.CurrentHandState.Score.ToString().PadLeft(padWidth), font, Brushes.Black, x, y);
 
             g.Dispose();
 
@@ -1798,6 +1816,18 @@ namespace Duan.Xiugang.Tractor
             }
 
             //alert if score cards does not match actual scores
+            int points = GetScoreCardsScore();
+            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreLast8Cards + mainForm.ThisPlayer.CurrentHandState.ScorePunishment != mainForm.ThisPlayer.CurrentHandState.Score)
+            {
+                MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
+            }
+
+            g.Dispose();
+            mainForm.Refresh();
+        }
+
+        private int GetScoreCardsScore()
+        {
             int points = 0;
             foreach (int card in mainForm.ThisPlayer.CurrentHandState.ScoreCards)
             {
@@ -1808,13 +1838,7 @@ namespace Duan.Xiugang.Tractor
                 else if (card % 13 == 11)
                     points += 10;
             }
-            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreAdjustment != mainForm.ThisPlayer.CurrentHandState.Score)
-            {
-                MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
-            }
-
-            g.Dispose();
-            mainForm.Refresh();
+            return points;
         }
 
         //大家都出完牌，则计算得分多少，下次该谁出牌

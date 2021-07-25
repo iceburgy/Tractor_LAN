@@ -115,9 +115,13 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public int Score { get; set; }
 
-        //得分调整：扣底，甩牌罚分
+        //得分调整：扣底
         [DataMember]
-        public int ScoreAdjustment { get; set; }
+        public int ScoreLast8Cards { get; set; }
+
+        //得分调整：甩牌罚分
+        [DataMember]
+        public int ScorePunishment { get; set; }
 
         public int LeftCardsCount { get; set; }
     }
