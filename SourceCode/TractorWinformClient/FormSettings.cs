@@ -29,7 +29,6 @@ namespace Duan.Xiugang.Tractor
         public static string KeySoundVolume = "soundVolume";
         public static string KeyShowSuitSeq = "showSuitSeq";
         public static string KeyIsHelpSeen = "isHelpSeen2";
-        public static string KeyFullDebug = "fullDebug";
         public static string KeyVideoCallUrl = "videoCallUrl";
 
         public static bool DefaultEnableSound = true;

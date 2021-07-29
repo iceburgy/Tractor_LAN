@@ -23,6 +23,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public bool AllowJToBottom;
         [DataMember]
         public bool AllowSurrender;
+        [DataMember]
+        public bool IsFullDebug;
 
         public override bool Equals(object obj)
         {

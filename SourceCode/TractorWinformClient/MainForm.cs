@@ -414,7 +414,6 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
             if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
                 this.ThisPlayer_NotifyMessageEventHandler(new string[]{"游戏中途不允许退出","请完成此盘游戏后再退"});
@@ -842,11 +841,10 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.IGetCard(cardNumber);
 
             //托管代打：亮牌
-            if (gameConfig.IsDebug && !ThisPlayer.isObserver)
+            if (gameConfig.IsDebug && ThisPlayer.CurrentRoomSetting.IsFullDebug && !ThisPlayer.isObserver)
             {
                 var availableTrump = ThisPlayer.AvailableTrumps();
-                var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
-                Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker, fullDebug);
+                Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker, ThisPlayer.CurrentRoomSetting.IsFullDebug);
                 if (trumpToExpose == Suit.None) return;
 
                 var next =
@@ -1893,7 +1891,7 @@ namespace Duan.Xiugang.Tractor
             }
 
             //摸牌结束，如果处于托管状态，则取消托管
-            if (gameConfig.IsDebug && !FormSettings.GetSettingBool(FormSettings.KeyFullDebug))
+            if (gameConfig.IsDebug && !ThisPlayer.CurrentRoomSetting.IsFullDebug)
             {
                 this.btnRobot.PerformClick();
             }
@@ -1932,8 +1930,7 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
 
             //托管代打：埋底
-            var fullDebug = FormSettings.GetSettingBool(FormSettings.KeyFullDebug);
-            if (fullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver)
+            if (ThisPlayer.CurrentRoomSetting.IsFullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver)
             {
                 if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards &&
                     ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId) //如果等我扣牌
@@ -2205,7 +2202,6 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n- 无人亮主，庄家将会自动下台";
             userManual += "\n- 甩牌失败，将会以每张10分进行罚分";
             userManual += "\n\n【隐藏技】";
-            userManual += "\n- 摸牌时开启托管可在达到5张时自动亮牌";
             userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";
             userManual += "\n- 右键单击空白处查看：上轮出牌、谁亮过什么牌";
             userManual += "\n- 八卦图标代表一圈中的大牌，【杀】图标代表主毙牌";

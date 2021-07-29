@@ -38,6 +38,7 @@ namespace TractorServer
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
+            if (TractorHost.gameConfig != null) CurrentRoomState.roomSetting.IsFullDebug = TractorHost.gameConfig.IsFullDebug;
 
             string fullPath = Assembly.GetExecutingAssembly().Location;
             string fullFolder = Path.GetDirectoryName(fullPath);
