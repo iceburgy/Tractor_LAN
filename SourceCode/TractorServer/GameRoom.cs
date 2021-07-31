@@ -79,6 +79,7 @@ namespace TractorServer
 
                     log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
 
+                    player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     ObserversProxy.Add(playerID, player);
                     ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
 

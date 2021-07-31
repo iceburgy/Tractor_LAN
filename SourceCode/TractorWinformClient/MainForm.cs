@@ -915,6 +915,8 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_PlayerShowedCards()
         {
+            if (!ThisPlayer.CurrentHandState.PlayerHoldingCards.ContainsKey(ThisPlayer.CurrentTrickState.Learder)) return;
+
             //如果新的一轮开始，重置缓存信息
             if (ThisPlayer.CurrentTrickState.CountOfPlayerShowedCards() == 1)
             {
