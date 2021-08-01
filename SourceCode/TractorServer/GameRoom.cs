@@ -486,14 +486,24 @@ namespace TractorServer
             {
                 CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].RemoveCard(card);
             }
-            var logMsg = "player " + CurrentRoomState.CurrentHandState.Last8Holder + " discard 8 cards: ";
-            foreach (var card in cards)
-            {
-                logMsg += card.ToString() + ", ";
-            }
-            log.Debug(logMsg);
+            
+            StringBuilder logMsg = new StringBuilder();
+            logMsg.Append("player " + CurrentRoomState.CurrentHandState.Last8Holder + " discard 8 cards: ");
 
-            log.Debug(CurrentRoomState.CurrentHandState.Last8Holder + "'s cards after discard 8 cards: " + CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].ToString());
+            foreach (var cardItem in cards)
+            {
+                logMsg.Append(string.Format("{0} {1}, ", CommonMethods.GetSuitString(cardItem), CommonMethods.GetNumberString(cardItem)));
+            }
+            log.Debug(logMsg.ToString());
+
+            logMsg.Clear();
+            logMsg.Append(CurrentRoomState.CurrentHandState.Last8Holder + "'s cards after discard 8 cards: ");
+
+            foreach (int cardItem in CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].GetCardsInList())
+            {
+                logMsg.Append(string.Format("{0} {1}, ", CommonMethods.GetSuitString(cardItem), CommonMethods.GetNumberString(cardItem)));
+            }
+            log.Debug(logMsg.ToString());
 
             UpdatePlayersCurrentHandState();
 
@@ -526,7 +536,7 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.Trump = trump;
 
                     //log who made what trump
-                    log.Debug(string.Format("player made trump: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), (CurrentRoomState.CurrentHandState.Rank + 2).ToString()));
+                    log.Debug(string.Format("player made trump: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
 
                     TrumpState tempLastTrumState = new TrumpState();
                     tempLastTrumState.TrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
@@ -552,12 +562,13 @@ namespace TractorServer
         {
             string lastestPlayer = currentTrickState.LatestPlayerShowedCard();
             CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
-            string cardsString = "";
+            StringBuilder logMsg = new StringBuilder();
+            logMsg.Append("Player " + lastestPlayer + " showed cards: ");
             foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
             {
-                cardsString += string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card));
+                logMsg.Append(string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card)));
             }
-            log.Debug("Player " + lastestPlayer + " showed cards: " + cardsString);
+            log.Debug(logMsg.ToString());
             //更新每个用户手中的牌在SERVER
             foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
             {
@@ -1407,7 +1418,12 @@ namespace TractorServer
 
             foreach (var keyvalue in CurrentRoomState.CurrentHandState.PlayerHoldingCards)
             {
-                log.Debug(keyvalue.Key + "'s cards:  " + keyvalue.Value.ToString());
+                StringBuilder cardsString = new StringBuilder();
+                foreach (int cardItem in keyvalue.Value.GetCardsInList())
+                {
+                    cardsString.Append(string.Format("{0} {1}, ", CommonMethods.GetSuitString(cardItem), CommonMethods.GetNumberString(cardItem)));
+                }
+                log.Debug(keyvalue.Key + "'s cards:  " + cardsString.ToString());
             }
 
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
@@ -1454,12 +1470,13 @@ namespace TractorServer
                 }
             }
 
-            var logMsg = "distribute last 8 cards to " + CurrentRoomState.CurrentHandState.Last8Holder + ", cards: ";
-            foreach (var card in last8Cards)
+            StringBuilder logMsg = new StringBuilder();
+            logMsg.Append("distribute last 8 cards to " + CurrentRoomState.CurrentHandState.Last8Holder + ", cards: ");
+            foreach (var cardItem in last8Cards)
             {
-                logMsg += card.ToString() + ", ";
+                logMsg.Append(string.Format("{0} {1}, ", CommonMethods.GetSuitString(cardItem), CommonMethods.GetNumberString(cardItem)));
             }
-            log.Debug(logMsg);
+            log.Debug(logMsg.ToString());
 
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingLast8CardsFinished;
             UpdatePlayersCurrentHandState();
