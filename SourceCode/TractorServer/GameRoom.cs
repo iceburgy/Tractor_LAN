@@ -1780,20 +1780,21 @@ namespace TractorServer
 
         public void ShuffleCurrentGameStatePlayers()
         {
-            List<PlayerEntity> shuffledPlayers = new List<PlayerEntity>();
-            int N = CurrentRoomState.CurrentGameState.Players.Count;
-            for (int i = N; i >= 1; i--)
-            {
-                int r = new Random().Next(i);
-                PlayerEntity curPlayer = CurrentRoomState.CurrentGameState.Players[r];
-                shuffledPlayers.Add(curPlayer);
-                CurrentRoomState.CurrentGameState.Players.Remove(curPlayer);
-            }
-            for (int i = 0; i < N; i++)
-            {
-                CurrentRoomState.CurrentGameState.Players.Add(shuffledPlayers[i]);
-            }
-            shuffledPlayers.Clear();
+            //1. randomly choose a different team mate for player 1 
+            int r = new Random().Next(2);
+            int newPlayerPosition = r == 0 ? 1 : 3;
+            SwapPlayers(2, newPlayerPosition);
+
+            //2. randomly set seat for other team
+            int r2 = new Random().Next(2);
+            if (r2 == 1) SwapPlayers(1, 3);
+        }
+
+        private void SwapPlayers(int p1, int p2)
+        {
+            PlayerEntity temp = CurrentRoomState.CurrentGameState.Players[p1];
+            CurrentRoomState.CurrentGameState.Players[p1] = CurrentRoomState.CurrentGameState.Players[p2];
+            CurrentRoomState.CurrentGameState.Players[p2] = temp;
         }
 
         private void RemoveObserver(List<string> badObs)
