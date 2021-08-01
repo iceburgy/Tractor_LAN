@@ -602,6 +602,17 @@ namespace TractorServer
                 {
                     //扣底
                     CalculatePointsFromDiscarded8Cards();
+                    //log score details
+                    int scoreLast8Cards = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase * CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
+                    log.Debug("score from score cards: " + (CurrentRoomState.CurrentHandState.Score - scoreLast8Cards - CurrentRoomState.CurrentHandState.ScorePunishment));
+                    string scoreFromLast8Cards="score from last 8 cards: " + scoreLast8Cards;
+                    if (CurrentRoomState.CurrentHandState.ScoreLast8CardsBase > 0)
+                    {
+                        scoreFromLast8Cards += (string.Format("【{0}x{1}】", CurrentRoomState.CurrentHandState.ScoreLast8CardsBase, CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier));
+                    }
+                    log.Debug(scoreFromLast8Cards);
+                    log.Debug("score from dump punishment: " + CurrentRoomState.CurrentHandState.ScorePunishment);
+                    log.Debug("score total: " + CurrentRoomState.CurrentHandState.Score);
                     PublishStartTimer(2);
                     Thread.Sleep(2000 + 1000);
 
