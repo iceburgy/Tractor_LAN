@@ -60,6 +60,7 @@
             this.btnKickObserver = new System.Windows.Forms.Button();
             this.cbbKickObserver = new System.Windows.Forms.ComboBox();
             this.lblKickObserver = new System.Windows.Forms.Label();
+            this.cbxAllowRobotMakeTrump = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lblAllowRiotByScore
@@ -119,7 +120,7 @@
             // 
             this.cbxJToBottom.AutoSize = true;
             this.cbxJToBottom.Enabled = false;
-            this.cbxJToBottom.Location = new System.Drawing.Point(31, 187);
+            this.cbxJToBottom.Location = new System.Drawing.Point(31, 159);
             this.cbxJToBottom.Name = "cbxJToBottom";
             this.cbxJToBottom.Size = new System.Drawing.Size(267, 24);
             this.cbxJToBottom.TabIndex = 3;
@@ -130,7 +131,7 @@
             // 
             this.cbxAllowSurrender.AutoSize = true;
             this.cbxAllowSurrender.Enabled = false;
-            this.cbxAllowSurrender.Location = new System.Drawing.Point(31, 130);
+            this.cbxAllowSurrender.Location = new System.Drawing.Point(31, 116);
             this.cbxAllowSurrender.Name = "cbxAllowSurrender";
             this.cbxAllowSurrender.Size = new System.Drawing.Size(323, 24);
             this.cbxAllowSurrender.TabIndex = 3;
@@ -405,6 +406,17 @@
             this.lblKickObserver.TabIndex = 14;
             this.lblKickObserver.Text = "将旁观请出房间：";
             // 
+            // cbxAllowRobotMakeTrump
+            // 
+            this.cbxAllowRobotMakeTrump.AutoSize = true;
+            this.cbxAllowRobotMakeTrump.Enabled = false;
+            this.cbxAllowRobotMakeTrump.Location = new System.Drawing.Point(31, 199);
+            this.cbxAllowRobotMakeTrump.Name = "cbxAllowRobotMakeTrump";
+            this.cbxAllowRobotMakeTrump.Size = new System.Drawing.Size(163, 24);
+            this.cbxAllowRobotMakeTrump.TabIndex = 17;
+            this.cbxAllowRobotMakeTrump.Text = "允许托管自动亮牌";
+            this.cbxAllowRobotMakeTrump.UseVisualStyleBackColor = true;
+            // 
             // FormRoomSetting
             // 
             this.AcceptButton = this.btnOK;
@@ -412,6 +424,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(562, 774);
+            this.Controls.Add(this.cbxAllowRobotMakeTrump);
             this.Controls.Add(this.btnKickObserver);
             this.Controls.Add(this.cbbKickObserver);
             this.Controls.Add(this.lblKickObserver);
@@ -485,5 +498,6 @@
         private System.Windows.Forms.Button btnKickObserver;
         private System.Windows.Forms.ComboBox cbbKickObserver;
         private System.Windows.Forms.Label lblKickObserver;
+        private System.Windows.Forms.CheckBox cbxAllowRobotMakeTrump;
     }
 }

@@ -29,6 +29,7 @@ namespace Duan.Xiugang.Tractor
             this.lblRoomName.Text = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomName;
             this.lblRoomOwner.Text = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner;
             this.cbxAllowSurrender.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowSurrender;
+            this.cbxAllowRobotMakeTrump.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump;
             this.cbxJToBottom.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowJToBottom;
             this.cbbRiotByScore.SelectedIndex = this.cbbRiotByScore.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString());
             this.cbbRiotByTrump.SelectedIndex = this.cbbRiotByTrump.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString());
@@ -67,6 +68,7 @@ namespace Duan.Xiugang.Tractor
             rs.RoomName = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomName;
             rs.RoomOwner = this.mainForm.ThisPlayer.CurrentRoomSetting.RoomOwner;
             rs.AllowSurrender = this.cbxAllowSurrender.Checked;
+            rs.AllowRobotMakeTrump = this.cbxAllowRobotMakeTrump.Checked;
             rs.AllowJToBottom = this.cbxJToBottom.Checked;
             rs.AllowRiotWithTooFewScoreCards = Int32.Parse((string)this.cbbRiotByScore.SelectedItem);
             rs.AllowRiotWithTooFewTrumpCards = Int32.Parse((string)this.cbbRiotByTrump.SelectedItem);

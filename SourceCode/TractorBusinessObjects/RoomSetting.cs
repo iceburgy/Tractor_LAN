@@ -24,6 +24,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public bool AllowSurrender;
         [DataMember]
+        public bool AllowRobotMakeTrump;
+        [DataMember]
         public bool IsFullDebug;
 
         public override bool Equals(object obj)
@@ -51,6 +53,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (AllowRiotWithTooFewTrumpCards != rs.AllowRiotWithTooFewTrumpCards) return false;
             if (AllowJToBottom != rs.AllowJToBottom) return false;
             if (AllowSurrender != rs.AllowSurrender) return false;
+            if (AllowRobotMakeTrump != rs.AllowRobotMakeTrump) return false;
             if (!ManditoryRanks.SequenceEqual(rs.ManditoryRanks)) return false;
 
             return true;

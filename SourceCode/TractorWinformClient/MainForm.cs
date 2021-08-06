@@ -841,7 +841,7 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.IGetCard(cardNumber);
 
             //托管代打：亮牌
-            if (gameConfig.IsDebug && ThisPlayer.CurrentRoomSetting.IsFullDebug && !ThisPlayer.isObserver)
+            if (gameConfig.IsDebug && (ThisPlayer.CurrentRoomSetting.IsFullDebug || ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump) && !ThisPlayer.isObserver)
             {
                 var availableTrump = ThisPlayer.AvailableTrumps();
                 Suit trumpToExpose = Algorithm.TryExposingTrump(availableTrump, this.ThisPlayer.CurrentPoker, ThisPlayer.CurrentRoomSetting.IsFullDebug);
@@ -1217,6 +1217,7 @@ namespace Duan.Xiugang.Tractor
             }
             msgs.Add(string.Format("允许投降：{0}", this.ThisPlayer.CurrentRoomSetting.AllowSurrender ? "是" : "否"));
             msgs.Add(string.Format("允许J到底：{0}", this.ThisPlayer.CurrentRoomSetting.AllowJToBottom ? "是" : "否"));
+            msgs.Add(string.Format("允许托管自动亮牌：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump ? "是" : "否"));
             msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards >= 0 ? string.Format("允许分数小于等于{0}时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards) : "不允许分数革命");
             msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards >= 0 ? string.Format("允许主牌小于等于{0}张时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards) : "不允许主牌革命");
 
