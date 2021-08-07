@@ -84,6 +84,13 @@ namespace TractorServer
                     ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
 
                     player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
+
+                    IPlayerInvoke(playerID, player, "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState }, true);
+                    IPlayerInvoke(playerID, player, "NotifyCurrentHandState", new List<object>() { CurrentRoomState.CurrentHandState }, true);
+
+                    Thread.Sleep(2000);
+                    IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
+
                     return true;
                 }
 
