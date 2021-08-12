@@ -276,7 +276,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerGameOver = new MciSoundPlayer(Path.Combine(fullFolder, "music\\win.mp3"), "win");
             soundPlayerDraw = new MciSoundPlayer(Path.Combine(fullFolder, "music\\draw.mp3"), "draw");
             soundPlayerDrawx = new MciSoundPlayer(Path.Combine(fullFolder, "music\\drawx.mp3"), "drawx");
-            soundPlayerDumpFailure = new MciSoundPlayer(Path.Combine(fullFolder, "music\\fankui2.mp3"), "win");
+            soundPlayerDumpFailure = new MciSoundPlayer(Path.Combine(fullFolder, "music\\fankui2.mp3"), "fankui2");
 
             foreach (MciSoundPlayer sp in soundPlayersShowCard)
             {
