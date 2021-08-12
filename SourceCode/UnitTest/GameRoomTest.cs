@@ -1,8 +1,10 @@
-﻿using Duan.Xiugang.Tractor.Objects;
+﻿﻿using Duan.Xiugang.Tractor.Objects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using TractorServer;
+using System.Linq;
 
 namespace TestProject1
 {
@@ -80,6 +82,57 @@ namespace TestProject1
             gameRoom.CalculatePointsFromDiscarded8Cards();
             Assert.AreEqual(640, gameRoom.CurrentRoomState.CurrentHandState.Score);
 
+        }
+
+        [TestMethod()]
+        public void ShuffleCurrentGameStatePlayersTest2()
+        {
+            int total = 24 * 10;
+            int same = 0;
+            Random ran = new Random();
+            for (int x = 0; x < total; x++)
+            {
+                GameRoom gameRoom = new GameRoom(0, "test", null);
+                gameRoom.CurrentRoomState.CurrentGameState = new GameState();
+                gameRoom.CurrentRoomState.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = "p1", Rank = 0, Team = GameTeam.VerticalTeam };
+                gameRoom.CurrentRoomState.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = "p2", Rank = 0, Team = GameTeam.HorizonTeam };
+                gameRoom.CurrentRoomState.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = "p3", Rank = 0, Team = GameTeam.VerticalTeam };
+                gameRoom.CurrentRoomState.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = "p4", Rank = 0, Team = GameTeam.HorizonTeam };
+
+                string[] oldTeams = new string[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    oldTeams[i] = gameRoom.CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                }
+
+                for (int i = 3; i >= 1; i--)
+                {
+                    //randomly choose a player within 0 to i, and put it at position i
+                    int r = ran.Next(i + 1);
+                    if (r != i)
+                    {
+                        PlayerEntity temp = gameRoom.CurrentRoomState.CurrentGameState.Players[r];
+                        gameRoom.CurrentRoomState.CurrentGameState.Players[r] = gameRoom.CurrentRoomState.CurrentGameState.Players[i];
+                        gameRoom.CurrentRoomState.CurrentGameState.Players[i] = temp;
+                    }
+                }
+
+                bool teamChanged = false;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (oldTeams[i] != gameRoom.CurrentRoomState.CurrentGameState.Players[i].PlayerId)
+                    {
+                        teamChanged = true;
+                        break;
+                    }
+                }
+                if (!teamChanged)
+                {
+                    same++;
+                }
+            }
+
+            System.Console.Out.WriteLine("same: {0}, total: {1}", same, total);
         }
     }
 }

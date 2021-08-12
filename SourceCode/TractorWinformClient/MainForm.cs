@@ -45,6 +45,7 @@ namespace Duan.Xiugang.Tractor
         internal MciSoundPlayer soundPlayerGameOver;
         internal MciSoundPlayer soundPlayerDraw;
         internal MciSoundPlayer soundPlayerDrawx;
+        internal MciSoundPlayer soundPlayerDumpFailure;
 
         internal CurrentPoker[] currentAllSendPokers =
         {
@@ -275,6 +276,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerGameOver = new MciSoundPlayer(Path.Combine(fullFolder, "music\\win.mp3"), "win");
             soundPlayerDraw = new MciSoundPlayer(Path.Combine(fullFolder, "music\\draw.mp3"), "draw");
             soundPlayerDrawx = new MciSoundPlayer(Path.Combine(fullFolder, "music\\drawx.mp3"), "drawx");
+            soundPlayerDumpFailure = new MciSoundPlayer(Path.Combine(fullFolder, "music\\fankui2.mp3"), "win");
 
             foreach (MciSoundPlayer sp in soundPlayersShowCard)
             {
@@ -285,6 +287,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerGameOver.LoadMediaFiles();
             soundPlayerDraw.LoadMediaFiles();
             soundPlayerDrawx.LoadMediaFiles();
+            soundPlayerDumpFailure.LoadMediaFiles();
         }
 
         private void setGameSoundVolume()
@@ -298,6 +301,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerGameOver.SetVolume(Int32.Parse(soundVolume));
             soundPlayerDraw.SetVolume(Int32.Parse(soundVolume)); ;
             soundPlayerDrawx.SetVolume(Int32.Parse(soundVolume));
+            soundPlayerDumpFailure.SetVolume(Int32.Parse(soundVolume));
         }
 
         private void CreateOverridingLabels()
@@ -768,6 +772,9 @@ namespace Duan.Xiugang.Tractor
                     else
                     {
                         this.drawingFormHelper.DrawMessages(new string[] { string.Format("甩牌{0}张失败", SelectedCards.Count), string.Format("罚分：{0}", SelectedCards.Count * 10) });
+                        //甩牌失败播放提示音
+                        soundPlayerDumpFailure.Play(this.enableSound);
+
                         Thread.Sleep(5000);
                         foreach (int card in result.MustShowCardsForDumpingFail)
                         {
@@ -1816,6 +1823,11 @@ namespace Duan.Xiugang.Tractor
                 {
                     //新游戏开始前播放提示音，告诉玩家要抢庄
                     soundPlayerGameOver.Play(this.enableSound);
+                }
+                else if (m.Contains("罚分"))
+                {
+                    //甩牌失败播放提示音
+                    soundPlayerDumpFailure.Play(this.enableSound);
                 }
             }
             this.drawingFormHelper.DrawMessages(msgs);

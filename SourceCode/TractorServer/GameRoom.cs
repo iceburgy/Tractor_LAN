@@ -908,6 +908,15 @@ namespace TractorServer
             }
 
             //create team randomly
+            string[] oldTeams = new string[4];
+            string[] msgs = new string[10];
+            msgs[0] = "随机组队前";
+            for (int i = 0; i < 4; i++)
+            {
+                msgs[i + 1] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                oldTeams[i] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+            }
+
             ShuffleCurrentGameStatePlayers();
             CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
             CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
@@ -923,7 +932,15 @@ namespace TractorServer
             ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
-            PublishMessage(new string[] { "随机组队成功", "请点击就绪开始游戏" });
+            msgs[5] = "随机组队后";
+            bool teamChanged = false;
+            for (int i = 0; i < 4; i++)
+            {
+                msgs[i + 6] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                if (oldTeams[i] != CurrentRoomState.CurrentGameState.Players[i].PlayerId) teamChanged = true;
+            }
+            if (!teamChanged) msgs[5] += "，组队未变，可再次尝试！";
+            PublishMessage(msgs);
         }
 
         //和下家互换座位
@@ -1804,14 +1821,13 @@ namespace TractorServer
 
         public void ShuffleCurrentGameStatePlayers()
         {
-            //1. randomly choose a different team mate for player 1 
-            int r = new Random().Next(2);
-            int newPlayerPosition = r == 0 ? 1 : 3;
-            SwapPlayers(2, newPlayerPosition);
-
-            //2. randomly set seat for other team
-            int r2 = new Random().Next(2);
-            if (r2 == 1) SwapPlayers(1, 3);
+            Random ran = new Random();
+            for (int i = 3; i >= 1; i--)
+            {
+                //randomly choose a player within 0 to i, and put it at position i
+                int r = ran.Next(i + 1);
+                if (r != i) SwapPlayers(r, i);
+            }
         }
 
         private void SwapPlayers(int p1, int p2)
