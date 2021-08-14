@@ -361,19 +361,6 @@ namespace TractorServer
             }
         }
 
-        //和下家互换座位
-        public void MoveToNextPosition(string playerId)
-        {
-            if (this.SessionIDGameRoom.ContainsKey(playerId))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
-                gameRoom.MoveToNextPosition(playerId);
-                Thread.Sleep(500);
-                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                thr.Start();
-            }
-        }
-
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {

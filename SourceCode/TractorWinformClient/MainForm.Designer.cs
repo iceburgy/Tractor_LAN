@@ -54,7 +54,6 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankA = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreGameStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RestoreGameStateCardsShoeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MoveToNextPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemRobot = new System.Windows.Forms.ToolStripMenuItem();
@@ -172,7 +171,6 @@ namespace Duan.Xiugang.Tractor
             this.BeginRankToolStripMenuItem,
             this.RestoreGameStateToolStripMenuItem,
             this.RestoreGameStateCardsShoeToolStripMenuItem,
-            this.MoveToNextPositionToolStripMenuItem,
             this.TeamUpToolStripMenuItem,
             this.ToolStripMenuItemGetReady,
             this.ToolStripMenuItemRobot});
@@ -200,6 +198,7 @@ namespace Duan.Xiugang.Tractor
             this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
             this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.BeginRankToolStripMenuItem.Text = "从几打起";
+            this.BeginRankToolStripMenuItem.Visible = false;
             // 
             // toolStripMenuItemBeginRank2
             // 
@@ -297,6 +296,7 @@ namespace Duan.Xiugang.Tractor
             this.RestoreGameStateToolStripMenuItem.Name = "RestoreGameStateToolStripMenuItem";
             this.RestoreGameStateToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.RestoreGameStateToolStripMenuItem.Text = "读取上盘牌局";
+            this.RestoreGameStateToolStripMenuItem.Visible = false;
             this.RestoreGameStateToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateToolStripMenuItem_Click);
             // 
             // RestoreGameStateCardsShoeToolStripMenuItem
@@ -304,20 +304,15 @@ namespace Duan.Xiugang.Tractor
             this.RestoreGameStateCardsShoeToolStripMenuItem.Name = "RestoreGameStateCardsShoeToolStripMenuItem";
             this.RestoreGameStateCardsShoeToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.RestoreGameStateCardsShoeToolStripMenuItem.Text = "读取上盘牌局并还原手牌";
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = false;
             this.RestoreGameStateCardsShoeToolStripMenuItem.Click += new System.EventHandler(this.RestoreGameStateCardsShoeToolStripMenuItem_Click);
-            // 
-            // MoveToNextPositionToolStripMenuItem
-            // 
-            this.MoveToNextPositionToolStripMenuItem.Name = "MoveToNextPositionToolStripMenuItem";
-            this.MoveToNextPositionToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
-            this.MoveToNextPositionToolStripMenuItem.Text = "和下家互换座位";
-            this.MoveToNextPositionToolStripMenuItem.Click += new System.EventHandler(this.MoveToNextPositionToolStripMenuItem_Click);
             // 
             // TeamUpToolStripMenuItem
             // 
             this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
             this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
             this.TeamUpToolStripMenuItem.Text = "随机组队";
+            this.TeamUpToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
             // 
             // ToolStripMenuItemGetReady
@@ -807,7 +802,6 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem AutoUpdaterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FeatureOverviewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem TeamUpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem MoveToNextPositionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemShowVersion;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemGetReady;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserverNextPlayer;

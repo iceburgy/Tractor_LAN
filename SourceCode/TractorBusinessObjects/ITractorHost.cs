@@ -63,10 +63,6 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void TeamUp(string playerId);
 
-        //和下家互换座位
-        [OperationContract(IsOneWay = true)]
-        void MoveToNextPosition(string playerId);
-
         //旁观：选牌
         [OperationContract(IsOneWay = true)]
         void CardsReady(string playerId, ArrayList myCardIsReady);

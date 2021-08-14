@@ -943,60 +943,6 @@ namespace TractorServer
             PublishMessage(msgs);
         }
 
-        //和下家互换座位
-        public void MoveToNextPosition(string playerId)
-        {
-            bool isValid = true;
-            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player == null || player.Team == GameTeam.None)
-                {
-                    isValid = false;
-                    break;
-                }
-            }
-
-            if (!isValid)
-            {
-                PublishMessage(new string[] { "和下家互换座位失败", "玩家人数不够" });
-                return;
-            }
-
-            int meIndex = -1;
-            for (int i = 0; i < 4; i++)
-            {
-                if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerId)
-                {
-                    meIndex = i;
-                    break;
-                }
-            }
-
-            int nextIndex = (meIndex + 1) % 4;
-            string nextPlayerId = CurrentRoomState.CurrentGameState.Players[nextIndex].PlayerId;
-            PlayerEntity temp = CurrentRoomState.CurrentGameState.Players[nextIndex];
-            CurrentRoomState.CurrentGameState.Players[nextIndex] = CurrentRoomState.CurrentGameState.Players[meIndex];
-            CurrentRoomState.CurrentGameState.Players[meIndex] = temp;
-
-            CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
-            CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
-            CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
-            CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
-
-            log.Debug("restart game");
-            foreach (var p in CurrentRoomState.CurrentGameState.Players)
-            {
-                if (p == null) continue;
-                p.Rank = 0;
-                p.IsReadyToStart = false;
-                p.IsRobot = false;
-            }
-            ResetAndRestartGame();
-            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
-
-            PublishMessage(new string[] { string.Format("玩家【{0}】", playerId), string.Format("和下家【{0}】", nextPlayerId), "互换座位成功", "请点击就绪开始游戏" });
-        }
-
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {

@@ -811,6 +811,12 @@ namespace Duan.Xiugang.Tractor
             }
             else if (menuItem.Name.StartsWith("toolStripMenuItemBeginRank") && !ThisPlayer.isObserver)
             {
+                if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+                {
+                    this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许修改从几打起", "请完成此盘游戏后重试" });
+                    return;
+                }
+
                 string beginRankString = menuItem.Name.Substring("toolStripMenuItemBeginRank".Length, 1);
                 ThisPlayer.SetBeginRank(ThisPlayer.MyOwnId, beginRankString);
             }
@@ -1333,6 +1339,14 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified)
         {
             this.ThisPlayer.CurrentRoomSetting = roomSetting;
+            if (this.ThisPlayer.CurrentRoomSetting.RoomOwner == this.ThisPlayer.MyOwnId)
+            {
+                //显示仅房主可见的菜单
+                this.BeginRankToolStripMenuItem.Visible = true;
+                this.RestoreGameStateToolStripMenuItem.Visible = true;
+                this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = true;
+                this.TeamUpToolStripMenuItem.Visible = true;
+            }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
             string prefix = string.Empty;
             if (isRoomSettingModified)
@@ -1409,6 +1423,12 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthStarter.Text = "";
             this.ToolStripMenuItemInRoom.Visible = false;
             this.ToolStripMenuItemObserve.Visible = false;
+
+            //隐藏仅房主可见的菜单
+            this.BeginRankToolStripMenuItem.Visible = false;
+            this.RestoreGameStateToolStripMenuItem.Visible = false;
+            this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = false;
+            this.TeamUpToolStripMenuItem.Visible = false;
 
             //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
             this.ThisPlayer.CurrentGameState = new GameState();
@@ -2029,12 +2049,24 @@ namespace Duan.Xiugang.Tractor
         private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许还原牌局", "请完成此盘游戏后重试" });
+                return;
+            }
+
             ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, false);
         }
 
         private void RestoreGameStateCardsShoeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许还原牌局和手牌", "请完成此盘游戏后重试" });
+                return;
+            }
+
             ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, true);
         }
 
@@ -2069,13 +2101,13 @@ namespace Duan.Xiugang.Tractor
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
-            ThisPlayer.TeamUp(ThisPlayer.MyOwnId);
-        }
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许随机组队", "请完成此盘游戏后重试" });
+                return;
+            }
 
-        private void MoveToNextPositionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ThisPlayer.isObserver) return;
-            ThisPlayer.MoveToNextPosition(ThisPlayer.PlayerId);
+            ThisPlayer.TeamUp(ThisPlayer.MyOwnId);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
