@@ -451,6 +451,7 @@ namespace Duan.Xiugang.Tractor
             this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
             this.btnSurrender.Visible = false;
             this.btnRiot.Visible = false;
+            this.ThisPlayer.CurrentTrickState.serverLocalCache.lastShowedCards = new Dictionary<string, List<int>>();
 
             //每次初始化都重绘背景
             Graphics g = Graphics.FromImage(bmp);
