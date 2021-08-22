@@ -34,54 +34,56 @@
             this.cutCards_btnCutCardsBy_0 = new System.Windows.Forms.Button();
             this.cutCards_btnCutCardsBy_manual = new System.Windows.Forms.Button();
             this.cutCards_cbbCutPoint_manual = new System.Windows.Forms.ComboBox();
+            this.lblTitle = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // cutCards_btnCutCardsBy_random
             // 
-            this.cutCards_btnCutCardsBy_random.Location = new System.Drawing.Point(31, 30);
+            this.cutCards_btnCutCardsBy_random.Location = new System.Drawing.Point(34, 96);
             this.cutCards_btnCutCardsBy_random.Name = "cutCards_btnCutCardsBy_random";
-            this.cutCards_btnCutCardsBy_random.Size = new System.Drawing.Size(100, 50);
+            this.cutCards_btnCutCardsBy_random.Size = new System.Drawing.Size(125, 50);
             this.cutCards_btnCutCardsBy_random.TabIndex = 0;
-            this.cutCards_btnCutCardsBy_random.Text = "随机切牌";
+            this.cutCards_btnCutCardsBy_random.Text = "随机 (enter)";
             this.cutCards_btnCutCardsBy_random.UseVisualStyleBackColor = true;
             this.cutCards_btnCutCardsBy_random.Click += new System.EventHandler(this.btnCutCards_Click);
             // 
             // cutCards_btnCutCardsBy_1
             // 
-            this.cutCards_btnCutCardsBy_1.Location = new System.Drawing.Point(31, 86);
+            this.cutCards_btnCutCardsBy_1.Location = new System.Drawing.Point(34, 206);
             this.cutCards_btnCutCardsBy_1.Name = "cutCards_btnCutCardsBy_1";
-            this.cutCards_btnCutCardsBy_1.Size = new System.Drawing.Size(100, 50);
-            this.cutCards_btnCutCardsBy_1.TabIndex = 1;
-            this.cutCards_btnCutCardsBy_1.Text = "扒皮1";
+            this.cutCards_btnCutCardsBy_1.Size = new System.Drawing.Size(125, 50);
+            this.cutCards_btnCutCardsBy_1.TabIndex = 2;
+            this.cutCards_btnCutCardsBy_1.Text = "扒皮1张";
             this.cutCards_btnCutCardsBy_1.UseVisualStyleBackColor = true;
             this.cutCards_btnCutCardsBy_1.Click += new System.EventHandler(this.btnCutCards_Click);
             // 
             // cutCards_btnCutCardsBy_3
             // 
-            this.cutCards_btnCutCardsBy_3.Location = new System.Drawing.Point(31, 142);
+            this.cutCards_btnCutCardsBy_3.Location = new System.Drawing.Point(187, 206);
             this.cutCards_btnCutCardsBy_3.Name = "cutCards_btnCutCardsBy_3";
-            this.cutCards_btnCutCardsBy_3.Size = new System.Drawing.Size(100, 50);
-            this.cutCards_btnCutCardsBy_3.TabIndex = 2;
-            this.cutCards_btnCutCardsBy_3.Text = "扒皮3";
+            this.cutCards_btnCutCardsBy_3.Size = new System.Drawing.Size(125, 50);
+            this.cutCards_btnCutCardsBy_3.TabIndex = 3;
+            this.cutCards_btnCutCardsBy_3.Text = "扒皮3张";
             this.cutCards_btnCutCardsBy_3.UseVisualStyleBackColor = true;
             this.cutCards_btnCutCardsBy_3.Click += new System.EventHandler(this.btnCutCards_Click);
             // 
             // cutCards_btnCutCardsBy_0
             // 
-            this.cutCards_btnCutCardsBy_0.Location = new System.Drawing.Point(31, 198);
+            this.cutCards_btnCutCardsBy_0.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.cutCards_btnCutCardsBy_0.Location = new System.Drawing.Point(187, 96);
             this.cutCards_btnCutCardsBy_0.Name = "cutCards_btnCutCardsBy_0";
-            this.cutCards_btnCutCardsBy_0.Size = new System.Drawing.Size(100, 50);
-            this.cutCards_btnCutCardsBy_0.TabIndex = 3;
-            this.cutCards_btnCutCardsBy_0.Text = "不切牌";
+            this.cutCards_btnCutCardsBy_0.Size = new System.Drawing.Size(125, 50);
+            this.cutCards_btnCutCardsBy_0.TabIndex = 1;
+            this.cutCards_btnCutCardsBy_0.Text = "取消 (ESC)";
             this.cutCards_btnCutCardsBy_0.UseVisualStyleBackColor = true;
             this.cutCards_btnCutCardsBy_0.Click += new System.EventHandler(this.btnCutCards_Click);
             // 
             // cutCards_btnCutCardsBy_manual
             // 
-            this.cutCards_btnCutCardsBy_manual.Location = new System.Drawing.Point(31, 254);
+            this.cutCards_btnCutCardsBy_manual.Location = new System.Drawing.Point(187, 271);
             this.cutCards_btnCutCardsBy_manual.Name = "cutCards_btnCutCardsBy_manual";
-            this.cutCards_btnCutCardsBy_manual.Size = new System.Drawing.Size(100, 50);
-            this.cutCards_btnCutCardsBy_manual.TabIndex = 4;
+            this.cutCards_btnCutCardsBy_manual.Size = new System.Drawing.Size(125, 50);
+            this.cutCards_btnCutCardsBy_manual.TabIndex = 5;
             this.cutCards_btnCutCardsBy_manual.Text = "手动切牌";
             this.cutCards_btnCutCardsBy_manual.UseVisualStyleBackColor = true;
             this.cutCards_btnCutCardsBy_manual.Click += new System.EventHandler(this.btnCutCards_Click);
@@ -198,16 +200,29 @@
             "105",
             "106",
             "107"});
-            this.cutCards_cbbCutPoint_manual.Location = new System.Drawing.Point(169, 266);
+            this.cutCards_cbbCutPoint_manual.Location = new System.Drawing.Point(34, 283);
             this.cutCards_cbbCutPoint_manual.Name = "cutCards_cbbCutPoint_manual";
-            this.cutCards_cbbCutPoint_manual.Size = new System.Drawing.Size(100, 28);
-            this.cutCards_cbbCutPoint_manual.TabIndex = 5;
+            this.cutCards_cbbCutPoint_manual.Size = new System.Drawing.Size(125, 28);
+            this.cutCards_cbbCutPoint_manual.TabIndex = 4;
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.lblTitle.Location = new System.Drawing.Point(29, 32);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(109, 29);
+            this.lblTitle.TabIndex = 99;
+            this.lblTitle.Text = "选择切牌";
             // 
             // FormCutCards
             // 
+            this.AcceptButton = this.cutCards_btnCutCardsBy_random;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(317, 336);
+            this.CancelButton = this.cutCards_btnCutCardsBy_0;
+            this.ClientSize = new System.Drawing.Size(348, 357);
+            this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.cutCards_cbbCutPoint_manual);
             this.Controls.Add(this.cutCards_btnCutCardsBy_manual);
             this.Controls.Add(this.cutCards_btnCutCardsBy_0);
@@ -217,6 +232,7 @@
             this.Name = "FormCutCards";
             this.Text = "切牌";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -228,5 +244,6 @@
         private System.Windows.Forms.Button cutCards_btnCutCardsBy_0;
         private System.Windows.Forms.Button cutCards_btnCutCardsBy_manual;
         private System.Windows.Forms.ComboBox cutCards_cbbCutPoint_manual;
+        private System.Windows.Forms.Label lblTitle;
     }
 }
