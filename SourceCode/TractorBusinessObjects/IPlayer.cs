@@ -89,6 +89,6 @@ namespace Duan.Xiugang.Tractor.Objects
         ///     切牌
         /// </summary>
         [OperationContract()]
-        int CutCardShoeCards();
+        string CutCardShoeCards();
     }
 }

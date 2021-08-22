@@ -1874,14 +1874,14 @@ namespace Duan.Xiugang.Tractor
             Refresh();
         }
 
-        private int ThisPlayer_CutCardShoeCardsEventHandler()
+        private string ThisPlayer_CutCardShoeCardsEventHandler()
         {
-            if (ThisPlayer.CurrentRoomSetting.IsFullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver) return 0;
+            if (ThisPlayer.CurrentRoomSetting.IsFullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver) return "È¡Ïû,0";
             FormCutCards frmCutCards = new FormCutCards();            
             frmCutCards.StartPosition = FormStartPosition.CenterParent;
             frmCutCards.TopMost = true;
             frmCutCards.ShowDialog();
-            return frmCutCards.cutPoint;
+            return string.Format("{0},{1}", frmCutCards.cutType, frmCutCards.cutPoint);
         }
 
         private void ThisPlayer_ResortMyCardsEventHandler()

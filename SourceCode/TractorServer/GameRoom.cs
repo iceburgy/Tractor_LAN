@@ -1373,13 +1373,20 @@ namespace TractorServer
                     IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
                 }
 
-                int cutPoint = PlayersProxy[preStarterID].CutCardShoeCards();
-                CutCards(this.CardsShoe, cutPoint);
+                string cutInfoString = PlayersProxy[preStarterID].CutCardShoeCards();
+                string[] cutInfos = cutInfoString.Split(',');
+                CutCards(this.CardsShoe, Int32.Parse(cutInfos[1]));
 
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：{1}", preStarterID, cutPoint) } });
+                string cutMsg = cutInfos[0];
+                if (cutInfos[0] == "随机" || cutInfos[0] == "手动")
+                {
+                    cutMsg = string.Format("{0}{1}张", cutInfos[0], cutInfos[1]);
+                }
+
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：", preStarterID), cutMsg } });
                 if (ObserversProxy.Count > 0)
                 {
-                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：{1}", preStarterID, cutPoint) } });
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：", preStarterID, cutMsg), cutMsg } });
                 }
                 PublishStartTimer(2);
                 //加一秒缓冲时间，让客户端倒计时完成

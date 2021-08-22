@@ -29,7 +29,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void NotifyStartTimerEventHandler(int timerLength);
     public delegate void NotifyCardsReadyEventHandler(ArrayList myCardIsReady);
     public delegate void ResortMyCardsEventHandler();
-    public delegate int CutCardShoeCardsEventHandler();
+    public delegate string CutCardShoeCardsEventHandler();
     public delegate void SpecialEndGameShouldAgreeEventHandler();
     
     public delegate void DistributingLast8CardsEventHandler();
@@ -550,13 +550,13 @@ namespace Duan.Xiugang.Tractor.Player
             }
         }
 
-        public int CutCardShoeCards()
+        public string CutCardShoeCards()
         {
             if (CutCardShoeCardsEvent != null)
             {
                 return CutCardShoeCardsEvent();
             }
-            return 0;
+            return "取消,0";
         }
 
         public void SpecialEndGameShouldAgree()

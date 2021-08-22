@@ -11,6 +11,7 @@ namespace Duan.Xiugang.Tractor
 {
     public partial class FormCutCards : Form
     {
+        public string cutType = "取消";
         public int cutPoint = 0;
         public FormCutCards()
         {
@@ -25,16 +26,20 @@ namespace Duan.Xiugang.Tractor
             switch (cutPointString)
             {
                 case "1":
+                    cutType = "扒皮1张";
                     cutPoint = 1;
                     break;
                 case "3":
+                    cutType = "扒皮3张";
                     cutPoint = 3;
                     break;
                 case "random":
+                    cutType = "随机";
                     Random rand = new Random();
                     cutPoint = rand.Next(1, 108);
                     break;
                 case "manual":
+                    cutType = "手动";
                     cutPoint = Int32.Parse((string)cutCards_cbbCutPoint_manual.SelectedItem);
                     break;
                 default:
