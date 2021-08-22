@@ -401,6 +401,18 @@ namespace TractorServer
             CheckOfflinePlayers();
         }
 
+        public void SpecialEndGameRequest(string playerID)
+        {
+            string teammateID = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(true, playerID).PlayerId;
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】发起投降提议", playerID) } });
+            IPlayerInvoke(teammateID, PlayersProxy[teammateID], "SpecialEndGameShouldAgree", new List<object>() { }, true);
+        }
+
+        public void SpecialEndGameDeclined(string playerID)
+        {
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】拒绝投降提议", playerID) } });
+        }
+
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
         {
             if (CurrentRoomState.CurrentHandState.CurrentHandStep != HandStep.DiscardingLast8Cards) return;
@@ -450,7 +462,8 @@ namespace TractorServer
                     }
                     else
                     {
-                        msgs = new string[] { string.Format("玩家【{0}】", playerID), "发动了技能【投降】" };
+                        string initiaterID = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(true, playerID).PlayerId;
+                        msgs = new string[] { string.Format("玩家【{0}】提议【投降】", initiaterID), string.Format("玩家【{0}】附议", playerID) };
                     }
                     break;
                 case SpecialEndingType.RiotByScore:
@@ -1205,12 +1218,6 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
             var currentHandId = CurrentRoomState.CurrentHandState.Id;
 
-            //新游戏开始前给出提示信息，开始倒计时，并播放提示音，告诉玩家要抢庄
-            PublishMessage(new string[] { "新游戏即将开始", "做好准备抢庄！" });
-            PublishStartTimer(5);
-            //加一秒缓冲时间，让客户端倒计时完成
-            Thread.Sleep(5000 + 1000);
-
             if (DistributeCards()) return;
             if (CurrentRoomState.CurrentHandState.Id != currentHandId)
                 return;
@@ -1331,25 +1338,6 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
             string currentHandId = CurrentRoomState.CurrentHandState.Id;
 
-            if (this.CardsShoe.IsCardsRestored)
-            {
-                this.CardsShoe.IsCardsRestored = false;
-            }
-            else
-            {
-                ShuffleCards(this.CardsShoe);
-                //this.CardsShoe.Shuffle();
-            }
-            int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-            int j = 0;
-
-            var LogList = new Dictionary<string, StringBuilder>();
-            foreach (var player in PlayersProxy)
-            {
-                LogList[player.Key] = new StringBuilder();
-            }
-
-            List<string> playerIDs = new List<string>();
             for (int i = 0; i < 4; i++)
             {
                 if (CurrentRoomState.CurrentGameState.Players[i] == null)
@@ -1357,13 +1345,69 @@ namespace TractorServer
                     //玩家退出，停止发牌
                     return true;
                 }
-                playerIDs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
             }
+
+            //保证庄家首先摸牌
+            string starterID = CurrentRoomState.CurrentGameState.Players[0].PlayerId;
+            string preStarterID = CurrentRoomState.CurrentGameState.Players[3].PlayerId;
+            if (!string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter)) starterID = CurrentRoomState.CurrentHandState.Starter;
+            string[] playersFromStarter = new string[4];
+            playersFromStarter[0] = starterID;
+            for (int x = 1; x < 4; x++)
+            {
+                playersFromStarter[x] = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(playersFromStarter[x - 1]).PlayerId;
+                if (x == 3) preStarterID = playersFromStarter[x];
+            }
+
+            if (this.CardsShoe.IsCardsRestored)
+            {
+                this.CardsShoe.IsCardsRestored = false;
+            }
+            else
+            {
+                ShuffleCards(this.CardsShoe);
+                //切牌
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
+                if (ObserversProxy.Count > 0)
+                {
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
+                }
+
+                int cutPoint = PlayersProxy[preStarterID].CutCardShoeCards();
+                CutCards(this.CardsShoe, cutPoint);
+
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：{1}", preStarterID, cutPoint) } });
+                if (ObserversProxy.Count > 0)
+                {
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：{1}", preStarterID, cutPoint) } });
+                }
+                PublishStartTimer(2);
+                //加一秒缓冲时间，让客户端倒计时完成
+                Thread.Sleep(2000 + 1000);
+            }
+
+            if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
+            {
+                //新游戏开始前给出提示信息，开始倒计时，并播放提示音，告诉玩家要抢庄
+                PublishMessage(new string[] { "新游戏即将开始", "做好准备抢庄！" });
+                PublishStartTimer(5);
+                //加一秒缓冲时间，让客户端倒计时完成
+                Thread.Sleep(5000 + 1000);
+            }
+
+            int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            int index = 0;
+
+            var LogList = new Dictionary<string, StringBuilder>();
+            foreach (var player in PlayersProxy)
+            {
+                LogList[player.Key] = new StringBuilder();
+            }
+
             for (int i = 0; i < cardNumberofEachPlayer; i++)
             {
-                foreach (var playerID in playerIDs)
+                foreach (var playerID in playersFromStarter)
                 {
-                    var index = j++;
                     if (CurrentRoomState.CurrentHandState.Id == currentHandId)
                     {
                         if (!string.IsNullOrEmpty(IPlayerInvoke(playerID, PlayersProxy[playerID], "GetDistributedCard", new List<object>() { CardsShoe.Cards[index] }, true))) return true;
@@ -1376,6 +1420,7 @@ namespace TractorServer
                         return true;
 
                     CurrentRoomState.CurrentHandState.PlayerHoldingCards[playerID].AddCard(CardsShoe.Cards[index]);
+                    index++;
                 }
                 Thread.Sleep(500);
             }
@@ -1802,7 +1847,7 @@ namespace TractorServer
             }
         }
 
-        private void ShuffleCards(CardsShoe cardShoe)
+        public void ShuffleCards(CardsShoe cardShoe)
         {
             Random rand = new Random();
             int N = cardShoe.Cards.Length;
@@ -1815,7 +1860,22 @@ namespace TractorServer
             log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
         }
 
-        private void Swap(int[] Cards, int i, int r)
+        //切牌
+        public void CutCards(CardsShoe cardShoe, int cutPoint)
+        {
+            log.Debug(string.Format("cutPoint: {0}", cutPoint));
+            if (cutPoint <= 0 || cutPoint >= cardShoe.Cards.Length) return;
+            log.Debug(string.Format("before cut: {0}", string.Join(", ", cardShoe.Cards)));
+
+            int[] newCards = new int[cardShoe.Cards.Length];
+            Array.Copy(cardShoe.Cards, cutPoint, newCards, 0, cardShoe.Cards.Length-cutPoint);
+            Array.Copy(cardShoe.Cards, 0, newCards, cardShoe.Cards.Length - cutPoint, cutPoint);
+            cardShoe.Cards = newCards;
+
+            log.Debug(string.Format("after cut: {0}", string.Join(", ", cardShoe.Cards)));
+        }
+
+        public void Swap(int[] Cards, int i, int r)
         {
             int temp = Cards[r];
             Cards[r] = Cards[i];

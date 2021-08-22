@@ -271,6 +271,17 @@ namespace TractorServer
             return result.Data;
         }
 
+        //玩家发起投降提议
+        public void SpecialEndGameRequest(string playerID)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.SpecialEndGameRequest(playerID);
+            }
+            log.Debug(string.Format("player {0} requested surrender.", playerID));
+        }
+
         //玩家投降
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
         {
@@ -280,6 +291,17 @@ namespace TractorServer
                 gameRoom.SpecialEndGame(playerID, endType);
             }
             log.Debug(string.Format("player {0} surrendered.", playerID));
+        }
+
+        //玩家拒绝投降提议
+        public void SpecialEndGameDeclined(string playerID)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.SpecialEndGameDeclined(playerID);
+            }
+            log.Debug(string.Format("player {0} declined surrender.", playerID));
         }
 
         public void PlayerIsReadyToStart(string playerID)

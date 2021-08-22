@@ -29,7 +29,9 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void NotifyStartTimerEventHandler(int timerLength);
     public delegate void NotifyCardsReadyEventHandler(ArrayList myCardIsReady);
     public delegate void ResortMyCardsEventHandler();
-
+    public delegate int CutCardShoeCardsEventHandler();
+    public delegate void SpecialEndGameShouldAgreeEventHandler();
+    
     public delegate void DistributingLast8CardsEventHandler();
     public delegate void DiscardingLast8EventHandler();
     public delegate void Last8DiscardedEventHandler();    
@@ -84,6 +86,8 @@ namespace Duan.Xiugang.Tractor.Player
         public event NotifyStartTimerEventHandler NotifyStartTimerEvent; //广播倒计时
         public event NotifyCardsReadyEventHandler NotifyCardsReadyEvent; //旁观：选牌
         public event ResortMyCardsEventHandler ResortMyCardsEvent; //旁观：重新画手牌
+        public event CutCardShoeCardsEventHandler CutCardShoeCardsEvent; //旁观：选牌
+        public event SpecialEndGameShouldAgreeEventHandler SpecialEndGameShouldAgreeEvent; //旁观：选牌
         
         public event DistributingLast8CardsEventHandler DistributingLast8Cards;
         public event DiscardingLast8EventHandler DiscardingLast8;
@@ -198,9 +202,19 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.PlayerExitRoom(playerID);
         }
 
+        public void SpecialEndGameRequest(string playerID)
+        {
+            _tractorHost.SpecialEndGameRequest(playerID);
+        }
+
         public void SpecialEndGame(string playerID, SpecialEndingType endType)
         {
             _tractorHost.SpecialEndGame(playerID, endType);
+        }
+
+        public void SpecialEndGameDeclined(string playerID)
+        {
+            _tractorHost.SpecialEndGameDeclined(playerID);
         }
 
         public void Quit()
@@ -533,6 +547,23 @@ namespace Duan.Xiugang.Tractor.Player
             if (NotifyCardsReadyEvent != null)
             {
                 NotifyCardsReadyEvent(myCardIsReady);
+            }
+        }
+
+        public int CutCardShoeCards()
+        {
+            if (CutCardShoeCardsEvent != null)
+            {
+                return CutCardShoeCardsEvent();
+            }
+            return 0;
+        }
+
+        public void SpecialEndGameShouldAgree()
+        {
+            if (SpecialEndGameShouldAgreeEvent != null)
+            {
+                SpecialEndGameShouldAgreeEvent();
             }
         }
 

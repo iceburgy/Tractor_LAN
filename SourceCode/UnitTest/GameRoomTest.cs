@@ -134,5 +134,77 @@ namespace TestProject1
 
             System.Console.Out.WriteLine("same: {0}, total: {1}", same, total);
         }
+
+        [TestMethod()]
+        public void ShuffleCardsTest()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1000;
+            Random rand = new Random();
+            for (int x = 0; x < testCount; x++)
+            {
+                int N = cardShoe.Cards.Length;
+                for (int i = 0; i < N; i++)
+                {
+                    int r = rand.Next(i, N);
+                    gameRoom.Swap(cardShoe.Cards, i, r);
+                }
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            }
+        }
+
+        [TestMethod()]
+        public void CutCardsTest()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int cutPoint = 0;
+            gameRoom.CutCards(cardShoe, cutPoint);
+            int[] expectedCards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            CollectionAssert.AreEqual(expectedCards, cardShoe.Cards);
+
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            cutPoint = 1;
+            gameRoom.CutCards(cardShoe, cutPoint);
+            expectedCards = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+            CollectionAssert.AreEqual(expectedCards, cardShoe.Cards);
+
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            cutPoint = 5;
+            gameRoom.CutCards(cardShoe, cutPoint);
+            expectedCards = new int[] { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
+            CollectionAssert.AreEqual(expectedCards, cardShoe.Cards);
+
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            cutPoint = 7;
+            gameRoom.CutCards(cardShoe, cutPoint);
+            expectedCards = new int[] { 7, 8, 9, 0, 1, 2, 3, 4, 5, 6 };
+            CollectionAssert.AreEqual(expectedCards, cardShoe.Cards);
+
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            cutPoint = 10;
+            gameRoom.CutCards(cardShoe, cutPoint);
+            expectedCards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            CollectionAssert.AreEqual(expectedCards, cardShoe.Cards);
+        }
     }
 }

@@ -78,5 +78,17 @@ namespace Duan.Xiugang.Tractor.Objects
         /// </summary>
         [OperationContract(IsOneWay = true)]
         void NotifyShowAllHandCards();
+
+        /// <summary>
+        ///     征求队友是否同意投降
+        /// </summary>
+        [OperationContract(IsOneWay = true)]
+        void SpecialEndGameShouldAgree();
+
+        /// <summary>
+        ///     切牌
+        /// </summary>
+        [OperationContract()]
+        int CutCardShoeCards();
     }
 }

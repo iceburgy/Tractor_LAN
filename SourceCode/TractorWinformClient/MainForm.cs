@@ -202,6 +202,8 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.NotifyMessageEvent += ThisPlayer_NotifyMessageEventHandler;
             ThisPlayer.NotifyStartTimerEvent += ThisPlayer_NotifyStartTimerEventHandler;
             ThisPlayer.NotifyCardsReadyEvent += ThisPlayer_NotifyCardsReadyEventHandler;
+            ThisPlayer.CutCardShoeCardsEvent += ThisPlayer_CutCardShoeCardsEventHandler;
+            ThisPlayer.SpecialEndGameShouldAgreeEvent += ThisPlayer_SpecialEndGameShouldAgreeEventHandler;            
             ThisPlayer.ResortMyCardsEvent += ThisPlayer_ResortMyCardsEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
@@ -252,7 +254,7 @@ namespace Duan.Xiugang.Tractor
                 if (errMsg.Contains(knownErr)) return;
             }
             log.Error("===game error encountered\n" + errMsg);
-            MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n\n请将以下日志文件发送给客服：\n{0}", fullLogFilePath));
+            MessageBox.Show(string.Format("游戏出错，请尝试重启游戏\n\n日志文件：\n{0}", fullLogFilePath));
         }
 
         private void LoadSoundResources()
@@ -1872,6 +1874,16 @@ namespace Duan.Xiugang.Tractor
             Refresh();
         }
 
+        private int ThisPlayer_CutCardShoeCardsEventHandler()
+        {
+            if (ThisPlayer.CurrentRoomSetting.IsFullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver) return 0;
+            FormCutCards frmCutCards = new FormCutCards();            
+            frmCutCards.StartPosition = FormStartPosition.CenterParent;
+            frmCutCards.TopMost = true;
+            frmCutCards.ShowDialog();
+            return frmCutCards.cutPoint;
+        }
+
         private void ThisPlayer_ResortMyCardsEventHandler()
         {
             ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
@@ -2219,9 +2231,22 @@ namespace Duan.Xiugang.Tractor
 
         private void btnSurrender_Click(object sender, EventArgs e)
         {
-            ThisPlayer.SpecialEndGame(ThisPlayer.MyOwnId, SpecialEndingType.Surrender);
             this.btnSurrender.Visible = false;
-            this.btnRiot.Visible = false;
+            ThisPlayer.SpecialEndGameRequest(ThisPlayer.MyOwnId);
+        }
+
+        private void ThisPlayer_SpecialEndGameShouldAgreeEventHandler()
+        {
+            this.btnSurrender.Visible = false;
+            DialogResult dialogResult = MessageBox.Show("队友提出投降，是否同意？", "是否同意投降", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                ThisPlayer.SpecialEndGame(ThisPlayer.MyOwnId, SpecialEndingType.Surrender);
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                ThisPlayer.SpecialEndGameDeclined(ThisPlayer.MyOwnId);
+            }
         }
 
         private void btnRiot_Click(object sender, EventArgs e)
