@@ -1887,7 +1887,6 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_ResortMyCardsEventHandler()
         {
             ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
-            ResortMyCards();
         }
 
         private void ThisPlayer_Last8Discarded()
