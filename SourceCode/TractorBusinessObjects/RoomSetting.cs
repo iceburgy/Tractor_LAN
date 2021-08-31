@@ -27,6 +27,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public bool AllowRobotMakeTrump;
         [DataMember]
         public bool IsFullDebug;
+        [DataMember]
+        public int secondsToWaitForReenter;
 
         public override bool Equals(object obj)
         {

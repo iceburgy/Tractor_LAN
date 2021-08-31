@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Duan.Xiugang.Tractor.Objects
@@ -6,6 +7,8 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class PlayerEntity
     {
+        public DateTime OfflineSince { get; set; }
+
         [DataMember]
         public string PlayerId { get; set; }
 

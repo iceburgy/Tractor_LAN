@@ -38,6 +38,7 @@ namespace TractorServer
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
+            CurrentRoomState.roomSetting.secondsToWaitForReenter = 300;
             if (TractorHost.gameConfig != null) CurrentRoomState.roomSetting.IsFullDebug = TractorHost.gameConfig.IsFullDebug;
 
             string fullPath = Assembly.GetExecutingAssembly().Location;
@@ -210,6 +211,10 @@ namespace TractorServer
                 Thread.Sleep(2000);
                 UpdateGameState();
 
+                PublishStartTimer(0);
+                //加一秒缓冲时间，让客户端倒计时完成
+                Thread.Sleep(0 + 1000);
+
                 return true;
             }
             return false;
@@ -301,6 +306,7 @@ namespace TractorServer
         public bool PlayerQuitFromCleanup(List<string> playerIDs)
         {
             bool needsRestart = false;
+            string offlinePlayerID = "";
             foreach (string playerID in playerIDs)
             {
                 if (!IsActualPlayer(playerID))
@@ -332,13 +338,28 @@ namespace TractorServer
                     if (CurrentRoomState.CurrentGameState.Players[i] != null && CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                     {
                         CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
+                        CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
                         CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+
+                        if (string.IsNullOrEmpty(offlinePlayerID))
+                        {
+                            offlinePlayerID = playerID;
+                        }
+
                         break;
                     }
                 }
             }
 
-            var threadUpdateGameState = new Thread(() => this.UpdateGameState());
+            var threadUpdateGameState = new Thread(() => {
+                this.UpdateGameState();
+                if (!string.IsNullOrEmpty(offlinePlayerID))
+                {
+                    Thread.Sleep(1000);
+                    PublishMessage(new string[] { string.Format("玩家【{0}】已离线", offlinePlayerID), "等待断线重连中...", "超时后可点【托管】重新激活游戏", "离线玩家将托管自动出牌" });
+                    PublishStartTimer(CurrentRoomState.roomSetting.secondsToWaitForReenter);
+                }
+            });
             threadUpdateGameState.Start();
 
             return needsRestart &&
@@ -748,6 +769,7 @@ namespace TractorServer
             foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || !player.IsOffline) continue;
+                if ((DateTime.Now - player.OfflineSince).Seconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有5分钟时间断线重连，否则自动托管
                 if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
                     CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                 {

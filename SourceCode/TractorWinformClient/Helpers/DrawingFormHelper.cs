@@ -1701,9 +1701,9 @@ namespace Duan.Xiugang.Tractor
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            int x = 300, y = 500, size=70;
-            Rectangle rectsrc = new Rectangle(0, 0, size, size);
-            Rectangle rect = new Rectangle(x, y, size, size);
+            int x = 200, y = 500, size = 70;
+            Rectangle rectsrc = new Rectangle(0, 0, size * 2, size);
+            Rectangle rect = new Rectangle(x, y, size * 2, size);
             g.DrawImage(mainForm.image, rect, rectsrc, GraphicsUnit.Pixel);
 
             if (shouldDraw)

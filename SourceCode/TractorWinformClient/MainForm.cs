@@ -448,13 +448,6 @@ namespace Duan.Xiugang.Tractor
 
         private void init()
         {
-            //游戏开始前重置各种变量
-            this.ThisPlayer.ShowLastTrickCards = false;
-            this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
-            this.btnSurrender.Visible = false;
-            this.btnRiot.Visible = false;
-            this.ThisPlayer.CurrentTrickState.serverLocalCache.lastShowedCards = new Dictionary<string, List<int>>();
-
             //每次初始化都重绘背景
             Graphics g = Graphics.FromImage(bmp);
             drawingFormHelper.DrawBackground(g);
@@ -843,6 +836,14 @@ namespace Duan.Xiugang.Tractor
 
         private void StartGame()
         {
+            //游戏开始前重置各种变量
+            this.ThisPlayer.ShowLastTrickCards = false;
+            this.ThisPlayer.playerLocalCache = new PlayerLocalCache();
+            this.btnSurrender.Visible = false;
+            this.btnRiot.Visible = false;
+            this.ThisPlayer.CurrentTrickState.serverLocalCache.lastShowedCards = new Dictionary<string, List<int>>();
+            this.timerCountDown = 0;
+
             init();
         }
 
@@ -1437,6 +1438,9 @@ namespace Duan.Xiugang.Tractor
             this.ThisPlayer.CurrentGameState = new GameState();
             this.ThisPlayer.CurrentHandState = new CurrentHandState(this.ThisPlayer.CurrentGameState);
 
+            //停止倒计时
+            this.timerCountDown = 0;
+
             Graphics g = Graphics.FromImage(bmp);
             drawingFormHelper.DrawBackground(g);
             Refresh();
@@ -1837,7 +1841,7 @@ namespace Duan.Xiugang.Tractor
                 {
                     soundPlayerGameOver.Play(this.enableSound);
                 }
-                else if (m.Contains("断线重连中"))
+                else if (m.Equals("断线重连中,请稍后..."))
                 {
                     ThisPlayer.IsTryingReenter = true;
                     this.btnEnterHall.Hide();

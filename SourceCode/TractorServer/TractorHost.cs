@@ -120,7 +120,7 @@ namespace TractorServer
                 {
                     //断线重连
                     log.Debug(string.Format("player {0} re-entered hall from offline.", playerID));
-                    player.NotifyMessage(new string[] { "断线重连中...", "请稍后" });
+                    player.NotifyMessage(new string[] { "断线重连中,请稍后..." });
                     Thread.Sleep(2000);
 
                     GameRoom gameRoom = this.SessionIDGameRoom[playerID];
