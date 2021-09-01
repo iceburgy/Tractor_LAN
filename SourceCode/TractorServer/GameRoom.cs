@@ -211,6 +211,7 @@ namespace TractorServer
                 Thread.Sleep(2000);
                 UpdateGameState();
 
+                PublishMessage(new string[] { string.Format("玩家【{0}】断线重连成功", playerID) });
                 PublishStartTimer(0);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(0 + 1000);
@@ -356,7 +357,7 @@ namespace TractorServer
                 if (!string.IsNullOrEmpty(offlinePlayerID))
                 {
                     Thread.Sleep(1000);
-                    PublishMessage(new string[] { string.Format("玩家【{0}】已离线", offlinePlayerID), "等待断线重连中...", "超时后可点【托管】重新激活游戏", "离线玩家将托管自动出牌" });
+                    PublishMessage(new string[] { string.Format("玩家【{0}】已离线", offlinePlayerID) });
                     PublishStartTimer(CurrentRoomState.roomSetting.secondsToWaitForReenter);
                 }
             });
@@ -364,7 +365,8 @@ namespace TractorServer
 
             return needsRestart &&
                 !(CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
-                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished);
+                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished ||
+                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards);
         }
 
         public void PlayerIsReadyToStart(string playerID)

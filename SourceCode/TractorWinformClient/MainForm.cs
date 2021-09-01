@@ -523,22 +523,18 @@ namespace Duan.Xiugang.Tractor
                             int x = (int)myCardsLocation[i];
                             int clickedCardNumber = (int)myCardsNumber[i];
                             //响应右键的3种情况：
-                            //1. 埋底牌（默认）
-                            int selectMoreCount = Math.Min(i, 8 - 1 - readyCount);
-                            bool isLeader = false;
-                            if (ThisPlayer.CurrentHandState.CurrentHandStep != HandStep.DiscardingLast8Cards)
+                            //1. 首出（默认）
+                            int selectMoreCount = i;
+                            bool isLeader = ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId;
+                            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
                             {
-                                //2. 跟出
-                                if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
-                                {
-                                    selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1 - readyCount);
-                                }
-                                //3. 首出
-                                else if (ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId)
-                                {
-                                    isLeader = true;
-                                    selectMoreCount = i;
-                                }
+                                //2. 埋底牌
+                                selectMoreCount = Math.Min(i, 8 - 1 - readyCount);
+                            }
+                            else if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
+                            {
+                                //3. 跟出
+                                selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1 - readyCount);
                             }
                             if (b)
                             {
@@ -546,6 +542,7 @@ namespace Duan.Xiugang.Tractor
                                 showingCardsCp.TrumpInt = (int)ThisPlayer.CurrentHandState.Trump;
                                 showingCardsCp.Rank = ThisPlayer.CurrentHandState.Rank;
 
+                                bool selectAll = false; //如果右键点的散牌，则向左选中所有本门花色的牌
                                 for (int j = 1; j <= selectMoreCount; j++)
                                 {
                                     //如果候选牌是同一花色
@@ -554,10 +551,13 @@ namespace Duan.Xiugang.Tractor
                                         if (isLeader)
                                         {
                                             //第一个出，候选牌为对子，拖拉机
-                                            int toAddCardNumber = (int)myCardsNumber[i - j];
-                                            int toAddCardNumberOnRight = (int)myCardsNumber[i - j + 1];
-                                            showingCardsCp.AddCard(toAddCardNumberOnRight);
-                                            showingCardsCp.AddCard(toAddCardNumber);
+                                            if (!selectAll)
+                                            {
+                                                int toAddCardNumber = (int)myCardsNumber[i - j];
+                                                int toAddCardNumberOnRight = (int)myCardsNumber[i - j + 1];
+                                                showingCardsCp.AddCard(toAddCardNumberOnRight);
+                                                showingCardsCp.AddCard(toAddCardNumber);
+                                            }
 
                                             if (showingCardsCp.Count == 2 && (showingCardsCp.GetPairs().Count == 1) || //如果是一对
                                                 ((showingCardsCp.GetTractorOfAnySuit().Count > 1) &&
@@ -565,13 +565,18 @@ namespace Duan.Xiugang.Tractor
                                             {
                                                 myCardIsReady[i - j] = b;
                                                 myCardIsReady[i - j + 1] = b;
+                                                x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
+                                                j++;
+                                            }
+                                            else if (j == 1 || selectAll)
+                                            {
+                                                selectAll = true;
+                                                myCardIsReady[i - j] = b;
                                             }
                                             else
                                             {
                                                 break;
                                             }
-                                            x = x - 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor;
-                                            j++;
                                         }
                                         else
                                         {
