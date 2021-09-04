@@ -1575,7 +1575,7 @@ namespace Duan.Xiugang.Tractor
         //¸¨Öú·½·¨
         private int DrawMyOneOrTwoCards2(Graphics g, int j, int number, int start, int y, int width, int height)
         {
-            if ((bool)mainForm.myCardIsReady[mainForm.cardsOrderNumber])
+            if (mainForm.myCardIsReady != null && mainForm.myCardIsReady.Count > mainForm.cardsOrderNumber && (bool)mainForm.myCardIsReady[mainForm.cardsOrderNumber])
             {
                 g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor, y + offsetY, width * scaleDividend / scaleDivisor, height * scaleDividend / scaleDivisor);
             }
