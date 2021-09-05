@@ -35,6 +35,7 @@
             this.cutCards_btnCutCardsBy_manual = new System.Windows.Forms.Button();
             this.cutCards_cbbCutPoint_manual = new System.Windows.Forms.ComboBox();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.cbxNoMoreCut = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // cutCards_btnCutCardsBy_random
@@ -215,13 +216,25 @@
             this.lblTitle.TabIndex = 99;
             this.lblTitle.Text = "选择切牌";
             // 
+            // cbxNoMoreCut
+            // 
+            this.cbxNoMoreCut.AutoSize = true;
+            this.cbxNoMoreCut.Location = new System.Drawing.Point(34, 357);
+            this.cbxNoMoreCut.Name = "cbxNoMoreCut";
+            this.cbxNoMoreCut.Size = new System.Drawing.Size(227, 24);
+            this.cbxNoMoreCut.TabIndex = 6;
+            this.cbxNoMoreCut.Text = "不再提示（关闭切牌功能）";
+            this.cbxNoMoreCut.UseVisualStyleBackColor = true;
+            this.cbxNoMoreCut.CheckedChanged += new System.EventHandler(this.cbxNoMoreCut_CheckedChanged);
+            // 
             // FormCutCards
             // 
             this.AcceptButton = this.cutCards_btnCutCardsBy_random;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cutCards_btnCutCardsBy_0;
-            this.ClientSize = new System.Drawing.Size(348, 357);
+            this.ClientSize = new System.Drawing.Size(348, 415);
+            this.Controls.Add(this.cbxNoMoreCut);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.cutCards_cbbCutPoint_manual);
             this.Controls.Add(this.cutCards_btnCutCardsBy_manual);
@@ -245,5 +258,6 @@
         private System.Windows.Forms.Button cutCards_btnCutCardsBy_manual;
         private System.Windows.Forms.ComboBox cutCards_cbbCutPoint_manual;
         private System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.CheckBox cbxNoMoreCut;
     }
 }

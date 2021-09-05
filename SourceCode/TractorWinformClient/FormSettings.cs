@@ -26,17 +26,20 @@ namespace Duan.Xiugang.Tractor
         public static string KeyNickName = "nickName";
         public static string KeyUpdateOnLoad = "updateOnLoad";
         public static string KeyEnableSound = "enableSound";
+        public static string KeyEnableCutCards = "enableCutCards";
         public static string KeySoundVolume = "soundVolume";
         public static string KeyShowSuitSeq = "showSuitSeq";
         public static string KeyIsHelpSeen = "isHelpSeen2";
         public static string KeyVideoCallUrl = "videoCallUrl";
 
         public static bool DefaultEnableSound = true;
+        public static bool DefaultEnableCutCards = true;
         public static bool DefaultShowSuitSeq = true;
         public static string DefaultSoundVolume = "5";
         public static string DefaultVideoCallUrl = "https://bit.ly/sgsnight";
 
         public static Dictionary<string, bool> initToDefaultBool = new Dictionary<string, bool>() {
+            { KeyEnableCutCards, DefaultEnableCutCards },
             { KeyEnableSound, DefaultEnableSound },
             { KeyShowSuitSeq, DefaultShowSuitSeq }
         };
@@ -57,6 +60,7 @@ namespace Duan.Xiugang.Tractor
             this.tbxVideoCallUrl.Text = GetSettingString(KeyVideoCallUrl);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
             this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
+            this.cbxEnableCutCards.Checked = GetSettingBool(KeyEnableCutCards);
             this.tbrGameSoundVolume.Value = Int32.Parse(GetSettingString(KeySoundVolume));
             this.cbxShowSuitSeq.Checked = GetSettingBool(KeyShowSuitSeq);
         }
@@ -182,6 +186,7 @@ namespace Duan.Xiugang.Tractor
             SetSetting(KeyVideoCallUrl, tbxVideoCallUrl.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());
+            SetSetting(KeyEnableCutCards, cbxEnableCutCards.Checked.ToString().ToLower());
             SetSetting(KeySoundVolume, tbrGameSoundVolume.Value.ToString().ToLower());
             SetSetting(KeyShowSuitSeq, cbxShowSuitSeq.Checked.ToString().ToLower());
             SettingsUpdatedEvent(needRestart);

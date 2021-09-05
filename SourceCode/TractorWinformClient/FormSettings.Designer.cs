@@ -41,6 +41,7 @@
             this.lblNeedRestart = new System.Windows.Forms.Label();
             this.tbxVideoCallUrl = new System.Windows.Forms.TextBox();
             this.lblVideoCallUrl = new System.Windows.Forms.Label();
+            this.cbxEnableCutCards = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).BeginInit();
             this.SuspendLayout();
             // 
@@ -78,10 +79,10 @@
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(50, 350);
+            this.btnOK.Location = new System.Drawing.Point(50, 391);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(85, 34);
-            this.btnOK.TabIndex = 8;
+            this.btnOK.TabIndex = 9;
             this.btnOK.Text = "保存";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -89,10 +90,10 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(153, 350);
+            this.btnCancel.Location = new System.Drawing.Point(153, 391);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(82, 34);
-            this.btnCancel.TabIndex = 9;
+            this.btnCancel.TabIndex = 10;
             this.btnCancel.Text = "取消";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -100,39 +101,39 @@
             // cbxUpdateOnLoad
             // 
             this.cbxUpdateOnLoad.AutoSize = true;
-            this.cbxUpdateOnLoad.Location = new System.Drawing.Point(50, 182);
+            this.cbxUpdateOnLoad.Location = new System.Drawing.Point(50, 227);
             this.cbxUpdateOnLoad.Name = "cbxUpdateOnLoad";
             this.cbxUpdateOnLoad.Size = new System.Drawing.Size(147, 24);
-            this.cbxUpdateOnLoad.TabIndex = 4;
+            this.cbxUpdateOnLoad.TabIndex = 5;
             this.cbxUpdateOnLoad.Text = "启动时检查更新";
             this.cbxUpdateOnLoad.UseVisualStyleBackColor = true;
             // 
             // cbxEnableSound
             // 
             this.cbxEnableSound.AutoSize = true;
-            this.cbxEnableSound.Location = new System.Drawing.Point(50, 266);
+            this.cbxEnableSound.Location = new System.Drawing.Point(50, 311);
             this.cbxEnableSound.Name = "cbxEnableSound";
             this.cbxEnableSound.Size = new System.Drawing.Size(99, 24);
-            this.cbxEnableSound.TabIndex = 6;
+            this.cbxEnableSound.TabIndex = 7;
             this.cbxEnableSound.Text = "开启音效";
             this.cbxEnableSound.UseVisualStyleBackColor = true;
             // 
             // cbxShowSuitSeq
             // 
             this.cbxShowSuitSeq.AutoSize = true;
-            this.cbxShowSuitSeq.Location = new System.Drawing.Point(50, 224);
+            this.cbxShowSuitSeq.Location = new System.Drawing.Point(50, 269);
             this.cbxShowSuitSeq.Name = "cbxShowSuitSeq";
             this.cbxShowSuitSeq.Size = new System.Drawing.Size(131, 24);
-            this.cbxShowSuitSeq.TabIndex = 5;
+            this.cbxShowSuitSeq.TabIndex = 6;
             this.cbxShowSuitSeq.Text = "显示手牌张数";
             this.cbxShowSuitSeq.UseVisualStyleBackColor = true;
             // 
             // tbrGameSoundVolume
             // 
-            this.tbrGameSoundVolume.Location = new System.Drawing.Point(166, 266);
+            this.tbrGameSoundVolume.Location = new System.Drawing.Point(166, 311);
             this.tbrGameSoundVolume.Name = "tbrGameSoundVolume";
             this.tbrGameSoundVolume.Size = new System.Drawing.Size(169, 69);
-            this.tbrGameSoundVolume.TabIndex = 7;
+            this.tbrGameSoundVolume.TabIndex = 8;
             this.tbrGameSoundVolume.Tag = "";
             this.tbrGameSoundVolume.Value = 5;
             this.tbrGameSoundVolume.Scroll += new System.EventHandler(this.tbrGameSoundVolume_Scroll);
@@ -162,13 +163,24 @@
             this.lblVideoCallUrl.TabIndex = 0;
             this.lblVideoCallUrl.Text = "语音链接";
             // 
+            // cbxEnableCutCards
+            // 
+            this.cbxEnableCutCards.AutoSize = true;
+            this.cbxEnableCutCards.Location = new System.Drawing.Point(50, 183);
+            this.cbxEnableCutCards.Name = "cbxEnableCutCards";
+            this.cbxEnableCutCards.Size = new System.Drawing.Size(131, 24);
+            this.cbxEnableCutCards.TabIndex = 4;
+            this.cbxEnableCutCards.Text = "开启切牌功能";
+            this.cbxEnableCutCards.UseVisualStyleBackColor = true;
+            // 
             // FormSettings
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(422, 427);
+            this.ClientSize = new System.Drawing.Size(422, 454);
+            this.Controls.Add(this.cbxEnableCutCards);
             this.Controls.Add(this.tbxVideoCallUrl);
             this.Controls.Add(this.lblVideoCallUrl);
             this.Controls.Add(this.lblNeedRestart);
@@ -205,5 +217,6 @@
         private System.Windows.Forms.Label lblNeedRestart;
         private System.Windows.Forms.TextBox tbxVideoCallUrl;
         private System.Windows.Forms.Label lblVideoCallUrl;
+        private System.Windows.Forms.CheckBox cbxEnableCutCards;
     }
 }

@@ -36,6 +36,7 @@ namespace Duan.Xiugang.Tractor
         internal int cardsOrderNumber = 0;
         internal bool updateOnLoad = false;
         internal bool enableSound = false;
+        internal bool enableCutCards = false;
         internal string soundVolume = FormSettings.DefaultSoundVolume;
         internal bool showSuitSeq = false;
         internal string videoCallUrl = FormSettings.DefaultVideoCallUrl;
@@ -229,6 +230,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.MyOwnId = nickName;
             updateOnLoad = FormSettings.GetSettingBool(FormSettings.KeyUpdateOnLoad);
             enableSound = FormSettings.GetSettingBool(FormSettings.KeyEnableSound);
+            enableCutCards = FormSettings.GetSettingBool(FormSettings.KeyEnableCutCards);
             soundVolume = FormSettings.GetSettingString(FormSettings.KeySoundVolume);
             showSuitSeq = FormSettings.GetSettingBool(FormSettings.KeyShowSuitSeq);
             videoCallUrl = FormSettings.GetSettingString(FormSettings.KeyVideoCallUrl);
@@ -1885,11 +1887,16 @@ namespace Duan.Xiugang.Tractor
 
         private string ThisPlayer_CutCardShoeCardsEventHandler()
         {
-            if (ThisPlayer.CurrentRoomSetting.IsFullDebug && gameConfig.IsDebug && !ThisPlayer.isObserver) return "取消,0";
-            FormCutCards frmCutCards = new FormCutCards();            
+            if (gameConfig.IsDebug || !enableCutCards) return "取消,0";
+            FormCutCards frmCutCards = new FormCutCards();
             frmCutCards.StartPosition = FormStartPosition.CenterParent;
             frmCutCards.TopMost = true;
             frmCutCards.ShowDialog();
+            if (frmCutCards.noMoreCut)
+            {
+                FormSettings.SetSetting(FormSettings.KeyEnableCutCards, "false");
+                this.LoadSettings();
+            }
             return string.Format("{0},{1}", frmCutCards.cutType, frmCutCards.cutPoint);
         }
 

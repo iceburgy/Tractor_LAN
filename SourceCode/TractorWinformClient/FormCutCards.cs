@@ -13,6 +13,7 @@ namespace Duan.Xiugang.Tractor
     {
         public string cutType = "取消";
         public int cutPoint = 0;
+        public bool noMoreCut = false;
         public FormCutCards()
         {
             InitializeComponent();
@@ -23,6 +24,7 @@ namespace Duan.Xiugang.Tractor
         {
             string[] nameParts = ((Button)sender).Name.Split('_');
             string cutPointString = nameParts[2];
+            noMoreCut = this.cbxNoMoreCut.Checked;
             switch (cutPointString)
             {
                 case "1":
@@ -46,6 +48,11 @@ namespace Duan.Xiugang.Tractor
                     break;
             }
             this.Close();
+        }
+
+        private void cbxNoMoreCut_CheckedChanged(object sender, EventArgs e)
+        {
+            noMoreCut = this.cbxNoMoreCut.Checked;
         }
     }
 }
