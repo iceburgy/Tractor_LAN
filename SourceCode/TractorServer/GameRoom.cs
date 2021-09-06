@@ -394,6 +394,7 @@ namespace TractorServer
                 switch (CurrentRoomState.CurrentGameState.nextRestartID)
                 {
                     case GameState.RESTART_GAME:
+                        CleanupCaches();
                         RestartGame(CurrentRoomState.CurrentHandState.Rank);
                         break;
                     case GameState.RESTART_CURRENT_HAND:
@@ -401,7 +402,6 @@ namespace TractorServer
                         break;
                     case GameState.START_NEXT_HAND:
                         CleanupCaches();
-
                         StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         break;
                     default:
@@ -1233,7 +1233,6 @@ namespace TractorServer
         {
             this.isGameOver = false;
             log.Debug("restart game with current set rank");
-            CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Rank = curRank;
@@ -1277,7 +1276,6 @@ namespace TractorServer
         public void StartNextHand(PlayerEntity nextStarter)
         {
             this.isGameOver = false;
-            CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
 
             UpdateGameState();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
