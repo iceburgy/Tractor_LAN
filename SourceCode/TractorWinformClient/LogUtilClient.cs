@@ -31,7 +31,7 @@ namespace Duan.Xiugang.Tractor
         private static IAppender CreateFileAppender(string name, string fileName)
         {
             PatternLayout patternLayout = new PatternLayout();
-            patternLayout.ConversionPattern = "%date %level %logger: %message%newline";
+            patternLayout.ConversionPattern = "%date: %message%newline";
             patternLayout.ActivateOptions();
 
             RollingFileAppender appender = new RollingFileAppender();
