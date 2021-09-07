@@ -59,7 +59,7 @@ namespace TractorServer
                     if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
                     {
                         LogClientInfo(clientIP, playerID, true);
-                        log.Debug(string.Format("observer {0}-{1} attempted double observing.", playerID, clientIP));
+                        log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {
                             msg += "？？失败";
@@ -78,7 +78,7 @@ namespace TractorServer
                         LogClientInfo(clientIP, playerID, false);
                     }
 
-                    log.Debug(string.Format("observer {0}-{1} joined.", playerID, clientIP));
+                    log.Debug(string.Format("observer {0} joined.", playerID));
 
                     player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     ObserversProxy.Add(playerID, player);
