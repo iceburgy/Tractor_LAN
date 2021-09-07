@@ -556,7 +556,7 @@ namespace TractorServer
             if (trump == CurrentRoomState.CurrentHandState.Trump) //没有玩家反
             {
                 //log trump and rank before a new game starts
-                log.Debug(string.Format("starting a new game: starter {0} {1} {2}", CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentHandState.Trump.ToString(), (CurrentRoomState.CurrentHandState.Rank + 2).ToString()));
+                log.Debug(string.Format("starting a new game: starter {0} {1} {2}", CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentHandState.Trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
 
                 BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
                 CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Playing;
@@ -1232,7 +1232,7 @@ namespace TractorServer
         public void RestartGame(int curRank)
         {
             this.isGameOver = false;
-            log.Debug("restart game with current set rank");
+            log.Debug("restart game with current set rank: " + CommonMethods.GetNumberString(curRank));
 
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Rank = curRank;
@@ -1269,7 +1269,7 @@ namespace TractorServer
 
         public void RestartCurrentHand()
         {
-            log.Debug("restart current hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
+            log.Debug("restart current hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
             StartNextHand(CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Starter));
         }
 
@@ -1283,7 +1283,7 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.Rank = nextStarter.Rank;
             CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
 
-            log.Debug("start next hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
+            log.Debug("start next hand, starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
 
             UpdatePlayersCurrentHandState();
 
@@ -1319,7 +1319,7 @@ namespace TractorServer
                 var nextStarter2 = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentRoomState.CurrentHandState.Starter);
                 CurrentRoomState.CurrentHandState.Starter = nextStarter2.PlayerId;
                 CurrentRoomState.CurrentHandState.Rank = nextStarter2.Rank;
-                log.Debug("starter team fail to make trump, next starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CurrentRoomState.CurrentHandState.Rank.ToString());
+                log.Debug("starter team fail to make trump, next starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
 
                 UpdatePlayersCurrentHandState();
 
