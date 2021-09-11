@@ -38,7 +38,7 @@ namespace TractorServer
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
-            CurrentRoomState.roomSetting.secondsToWaitForReenter = 300;
+            CurrentRoomState.roomSetting.secondsToWaitForReenter = 60;
             if (TractorHost.gameConfig != null) CurrentRoomState.roomSetting.IsFullDebug = TractorHost.gameConfig.IsFullDebug;
 
             string fullPath = Assembly.GetExecutingAssembly().Location;
@@ -771,7 +771,7 @@ namespace TractorServer
             foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || !player.IsOffline) continue;
-                if ((DateTime.Now - player.OfflineSince).Seconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有5分钟时间断线重连，否则自动托管
+                if ((DateTime.Now - player.OfflineSince).Seconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
                 if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
                     CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                 {
