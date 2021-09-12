@@ -16,8 +16,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public List<CurrentTrickState> CurrentTrickStates { get; set; }
         [DataMember]
-        public List<string> Players { get; set; }
+        public string[] Players { get; set; }
         [DataMember]
-        public List<int> PlayerRanks { get; set; }
+        public int[] PlayerRanks { get; set; }
     }
 }

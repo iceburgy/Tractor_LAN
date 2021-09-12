@@ -577,12 +577,12 @@ namespace TractorServer
             this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("yyyy-MM-dd{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
             this.replayEntity.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(CurrentRoomState.CurrentHandState);
             this.replayEntity.CurrentTrickStates = new List<CurrentTrickState>();
-            this.replayEntity.Players = new List<string>();
-            this.replayEntity.PlayerRanks = new List<int>();
+            this.replayEntity.Players = new string[4];
+            this.replayEntity.PlayerRanks = new int[4];
             for (int i = 0; i < 4; i++)
             {
-                this.replayEntity.Players.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
-                this.replayEntity.PlayerRanks.Add(CurrentRoomState.CurrentGameState.Players[i].Rank);
+                this.replayEntity.Players[i] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                this.replayEntity.PlayerRanks[i] = CurrentRoomState.CurrentGameState.Players[i].Rank;
             }
         }
 
@@ -1928,10 +1928,7 @@ namespace TractorServer
             if (cutPoint <= 0 || cutPoint >= cardShoe.Cards.Length) return;
             log.Debug(string.Format("before cut: {0}", string.Join(", ", cardShoe.Cards)));
 
-            int[] newCards = new int[cardShoe.Cards.Length];
-            Array.Copy(cardShoe.Cards, cutPoint, newCards, 0, cardShoe.Cards.Length-cutPoint);
-            Array.Copy(cardShoe.Cards, 0, newCards, cardShoe.Cards.Length - cutPoint, cutPoint);
-            cardShoe.Cards = newCards;
+            CommonMethods.RotateArray(cardShoe.Cards, cutPoint);
 
             log.Debug(string.Format("after cut: {0}", string.Join(", ", cardShoe.Cards)));
         }

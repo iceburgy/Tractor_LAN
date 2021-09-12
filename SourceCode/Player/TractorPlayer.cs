@@ -59,6 +59,7 @@ namespace Duan.Xiugang.Tractor.Player
         public bool isReplay { get; set; }
         public ReplayEntity replayEntity { get; set; }
         public Stack<CurrentTrickState> replayedTricks { get; set; }
+        public int replayAngle { get; set; }
         public string MyOwnId { get; set; }
         public bool IsTryingReenter { get; set; }
 

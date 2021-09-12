@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,14 @@ namespace Duan.Xiugang.Tractor.Objects
     {
         public static string replaySeparator = "===";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+        public static void RotateArray<T>(T[] array, int pivot)
+        {
+            T[] newArray = new T[array.Length];
+            Array.Copy(array, pivot, newArray, 0, array.Length - pivot);
+            Array.Copy(array, 0, newArray, array.Length - pivot, pivot);
+            Array.Copy(newArray, 0, array, 0, array.Length);
+        }
 
         public static T DeepClone<T>(this T obj)
         {

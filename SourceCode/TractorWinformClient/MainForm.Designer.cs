@@ -98,6 +98,7 @@ namespace Duan.Xiugang.Tractor
             this.btnPauseReplay = new System.Windows.Forms.Button();
             this.btnPreviousTrick = new System.Windows.Forms.Button();
             this.btnNextTrick = new System.Windows.Forms.Button();
+            this.btnReplayAngle = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -767,11 +768,25 @@ namespace Duan.Xiugang.Tractor
             this.btnNextTrick.Visible = false;
             this.btnNextTrick.Click += new System.EventHandler(this.btnNextTrick_Click);
             // 
+            // btnReplayAngle
+            // 
+            this.btnReplayAngle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnReplayAngle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnReplayAngle.Location = new System.Drawing.Point(601, 776);
+            this.btnReplayAngle.Name = "btnReplayAngle";
+            this.btnReplayAngle.Size = new System.Drawing.Size(117, 45);
+            this.btnReplayAngle.TabIndex = 38;
+            this.btnReplayAngle.Text = "«–ªª ”Ω«";
+            this.btnReplayAngle.UseVisualStyleBackColor = true;
+            this.btnReplayAngle.Visible = false;
+            this.btnReplayAngle.Click += new System.EventHandler(this.btnReplayAngle_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnReplayAngle);
             this.Controls.Add(this.btnNextTrick);
             this.Controls.Add(this.btnPreviousTrick);
             this.Controls.Add(this.btnPauseReplay);
@@ -896,6 +911,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnPauseReplay;
         private System.Windows.Forms.Button btnPreviousTrick;
         private System.Windows.Forms.Button btnNextTrick;
+        private System.Windows.Forms.Button btnReplayAngle;
     }
 }
 

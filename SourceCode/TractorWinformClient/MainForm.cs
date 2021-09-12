@@ -2258,6 +2258,7 @@ namespace Duan.Xiugang.Tractor
                 this.btnReplay.Show();
                 this.btnPauseReplay.Text = "¿ªÊ¼";
                 this.btnPauseReplay.Hide();
+                this.btnReplayAngle.Hide();
                 this.btnPreviousTrick.Hide();
                 this.btnNextTrick.Hide();
                 ThisPlayer.isReplay = false;
@@ -2493,6 +2494,7 @@ namespace Duan.Xiugang.Tractor
                 btnEnterHall.Hide();
                 this.btnReplay.Hide();
                 this.btnPauseReplay.Show();
+                this.btnReplayAngle.Show();
                 this.btnPreviousTrick.Show();
                 this.btnNextTrick.Show();
 
@@ -2508,6 +2510,12 @@ namespace Duan.Xiugang.Tractor
 
             ThisPlayer.replayEntity = replayEntity;
             ThisPlayer.replayedTricks = new Stack<CurrentTrickState>();
+            CommonMethods.RotateArray(ThisPlayer.replayEntity.Players, ThisPlayer.replayAngle);
+            if (ThisPlayer.replayEntity.PlayerRanks != null)
+            {
+                CommonMethods.RotateArray(ThisPlayer.replayEntity.PlayerRanks, ThisPlayer.replayAngle);
+            }
+
             StartReplay();
         }
 
@@ -2515,8 +2523,8 @@ namespace Duan.Xiugang.Tractor
         {
             drawingFormHelper.DrawCenterImage();
             ThisPlayer.isReplay = true;
-            List<string> players = ThisPlayer.replayEntity.Players;
-            List<int> playerRanks = new List<int>();
+            string[] players = ThisPlayer.replayEntity.Players;
+            int[] playerRanks = new int[4];
             if (ThisPlayer.replayEntity.PlayerRanks != null)
             {
                 playerRanks = ThisPlayer.replayEntity.PlayerRanks;
@@ -2524,7 +2532,7 @@ namespace Duan.Xiugang.Tractor
             else
             {
                 int tempRank = ThisPlayer.replayEntity.CurrentHandState.Rank;
-                playerRanks.AddRange(new List<int>() { tempRank, tempRank, tempRank, tempRank });
+                playerRanks = new int[] { tempRank, tempRank, tempRank, tempRank };
             }
             ThisPlayer.PlayerId = players[0];
             lblSouthNickName.Text = players[0];
@@ -2746,6 +2754,17 @@ namespace Duan.Xiugang.Tractor
                     ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[entry.Key].AddCard(card);
                 }
             }
+        }
+
+        private void btnReplayAngle_Click(object sender, EventArgs e)
+        {
+            ThisPlayer.replayAngle = (ThisPlayer.replayAngle + 1) % 4;
+            CommonMethods.RotateArray(ThisPlayer.replayEntity.Players, 1);
+            if (ThisPlayer.replayEntity.PlayerRanks != null)
+            {
+                CommonMethods.RotateArray(ThisPlayer.replayEntity.PlayerRanks, 1);
+            }
+            StartReplay();
         }
     }
 }
