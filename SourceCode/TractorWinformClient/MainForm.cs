@@ -1193,7 +1193,6 @@ namespace Duan.Xiugang.Tractor
                 this.btnObserveNext.Show();
                 this.ToolStripMenuItemObserve.Visible = true;
             }
-            this.btnExitRoom.Show();
             this.btnRoomSetting.Show();
 
             //在大厅里，左边的label挡住了online玩家名字，只好先隐藏，进了房间再显示
@@ -1431,7 +1430,6 @@ namespace Duan.Xiugang.Tractor
             ClearRoom();
             HideRoomControls();
 
-            this.btnExitRoom.Show();
             CreateRoomControls(roomStates, names);
             this.ToolStripMenuItemEnterRoom0.Enabled = true;
         }
@@ -2247,12 +2245,16 @@ namespace Duan.Xiugang.Tractor
 
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
+            if (playerIsOutHall())
+            {
+                this.Close();
+                return;
+            }
             if (ThisPlayer.isReplay)
             {
                 this.ClearRoom();
                 this.btnEnterHall.Show();
                 this.btnReplay.Show();
-                this.btnExitRoom.Hide();
                 this.btnPauseReplay.Text = "开始";
                 this.btnPauseReplay.Hide();
                 this.btnPreviousTrick.Hide();
@@ -2274,7 +2276,6 @@ namespace Duan.Xiugang.Tractor
                 this.ToolStripMenuItemEnterHall.Enabled = true;
                 this.btnEnterHall.Show();
                 this.btnReplay.Show();
-                this.btnExitRoom.Hide();
                 HideRoomControls();
                 return;
             }
@@ -2285,6 +2286,11 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
+        }
+
+        private bool playerIsOutHall()
+        {
+            return this.btnEnterHall.Visible;
         }
 
         private bool playerIsInHall()
@@ -2484,7 +2490,6 @@ namespace Duan.Xiugang.Tractor
                 btnEnterHall.Hide();
                 this.btnReplay.Hide();
                 this.btnPauseReplay.Show();
-                this.btnExitRoom.Show();
                 this.btnPreviousTrick.Show();
                 this.btnNextTrick.Show();
 
@@ -2501,7 +2506,18 @@ namespace Duan.Xiugang.Tractor
         private void StartReplay()
         {
             ThisPlayer.isReplay = true;
-            List<String> players = ThisPlayer.replayEntity.Players;
+            List<string> players = ThisPlayer.replayEntity.Players;
+            List<int> playerRanks = new List<int>();
+            if (ThisPlayer.replayEntity.PlayerRanks != null)
+            {
+                playerRanks = ThisPlayer.replayEntity.PlayerRanks;
+            }
+            else
+            {
+                int tempRank = ThisPlayer.replayEntity.CurrentHandState.Rank;
+                playerRanks.AddRange(new List<int>() { tempRank, tempRank, tempRank, tempRank });
+            }
+            ThisPlayer.PlayerId = players[0];
             lblSouthNickName.Text = players[0];
             lblEastNickName.Text = players[1];
             lblNorthNickName.Text = players[2];
@@ -2515,10 +2531,10 @@ namespace Duan.Xiugang.Tractor
             lblWestStarter.Show();
 
             ThisPlayer.CurrentGameState = new GameState();
-            ThisPlayer.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = players[0], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = players[1], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = players[2], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = players[3], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = players[0], Rank = playerRanks[0], Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = players[1], Rank = playerRanks[1], Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = players[2], Rank = playerRanks[2], Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = players[3], Rank = playerRanks[3], Team = GameTeam.None, Observers = new HashSet<string>() };
             //set player position
             PlayerPosition.Clear();
             PositionPlayer.Clear();
@@ -2564,7 +2580,7 @@ namespace Duan.Xiugang.Tractor
         {
             if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
             {
-                this.timerReplay.Stop();
+                if (this.timerReplay.Enabled) this.btnPauseReplay.PerformClick();
                 return;
             }
             CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates.Pop();
@@ -2640,7 +2656,7 @@ namespace Duan.Xiugang.Tractor
                 this.btnPreviousTrick.Enabled = false;
                 this.btnNextTrick.Enabled = false;
             }
-            this.btnPauseReplay.Text = this.timerReplay.Enabled ? "暂停" : "继续";
+            this.btnPauseReplay.Text = this.timerReplay.Enabled ? "暂停" : "播放";
         }
 
         private void btnPreviousTrick_Click(object sender, EventArgs e)

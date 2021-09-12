@@ -81,7 +81,7 @@ namespace Duan.Xiugang.Tractor
             this.btnEnterHall = new System.Windows.Forms.Button();
             this.btnRobot = new System.Windows.Forms.Button();
             this.btnObserveNext = new System.Windows.Forms.Button();
-            this.btnExitRoom = new System.Windows.Forms.Button();
+            this.btnExitHere = new System.Windows.Forms.Button();
             this.progressBarPingHost = new System.Windows.Forms.ProgressBar();
             this.tmrGeneral = new System.Windows.Forms.Timer(this.components);
             this.btnPig = new System.Windows.Forms.Button();
@@ -583,18 +583,17 @@ namespace Duan.Xiugang.Tractor
             this.btnObserveNext.Visible = false;
             this.btnObserveNext.Click += new System.EventHandler(this.btnObserveNext_Click);
             // 
-            // btnExitRoom
+            // btnExitHere
             // 
-            this.btnExitRoom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnExitRoom.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnExitRoom.Location = new System.Drawing.Point(736, 776);
-            this.btnExitRoom.Name = "btnExitRoom";
-            this.btnExitRoom.Size = new System.Drawing.Size(72, 45);
-            this.btnExitRoom.TabIndex = 25;
-            this.btnExitRoom.Text = "退出";
-            this.btnExitRoom.UseVisualStyleBackColor = true;
-            this.btnExitRoom.Visible = false;
-            this.btnExitRoom.Click += new System.EventHandler(this.btnExitRoom_Click);
+            this.btnExitHere.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnExitHere.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnExitHere.Location = new System.Drawing.Point(736, 776);
+            this.btnExitHere.Name = "btnExitHere";
+            this.btnExitHere.Size = new System.Drawing.Size(72, 45);
+            this.btnExitHere.TabIndex = 25;
+            this.btnExitHere.Text = "退出";
+            this.btnExitHere.UseVisualStyleBackColor = true;
+            this.btnExitHere.Click += new System.EventHandler(this.btnExitRoom_Click);
             // 
             // progressBarPingHost
             // 
@@ -737,7 +736,7 @@ namespace Duan.Xiugang.Tractor
             this.btnPauseReplay.Name = "btnPauseReplay";
             this.btnPauseReplay.Size = new System.Drawing.Size(72, 45);
             this.btnPauseReplay.TabIndex = 35;
-            this.btnPauseReplay.Text = "开始";
+            this.btnPauseReplay.Text = "播放";
             this.btnPauseReplay.UseVisualStyleBackColor = true;
             this.btnPauseReplay.Visible = false;
             this.btnPauseReplay.Click += new System.EventHandler(this.btnPauseReplay_Click);
@@ -787,7 +786,7 @@ namespace Duan.Xiugang.Tractor
             this.Controls.Add(this.progressBarPingHost);
             this.Controls.Add(this.btnSurrender);
             this.Controls.Add(this.btnRiot);
-            this.Controls.Add(this.btnExitRoom);
+            this.Controls.Add(this.btnExitHere);
             this.Controls.Add(this.btnObserveNext);
             this.Controls.Add(this.btnRobot);
             this.Controls.Add(this.btnEnterHall);
@@ -877,7 +876,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnRobot;
         private System.Windows.Forms.Button btnObserveNext;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemObserve;
-        private System.Windows.Forms.Button btnExitRoom;
+        private System.Windows.Forms.Button btnExitHere;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemUserManual;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItemEnterRoom0;
         private System.Windows.Forms.ProgressBar progressBarPingHost;

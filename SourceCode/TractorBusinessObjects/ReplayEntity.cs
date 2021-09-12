@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -17,5 +17,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public Stack<CurrentTrickState> CurrentTrickStates { get; set; }
         [DataMember]
         public List<string> Players { get; set; }
+        [DataMember]
+        public List<int> PlayerRanks { get; set; }
     }
 }

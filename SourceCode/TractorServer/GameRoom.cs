@@ -1,4 +1,4 @@
-﻿using Duan.Xiugang.Tractor.Objects;
+﻿﻿using Duan.Xiugang.Tractor.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -574,13 +574,15 @@ namespace TractorServer
         private void BuildReplayEntity()
         {
             this.replayEntity = new ReplayEntity();
-            this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("yyyy-dd-MM{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
+            this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("yyyy-MM-dd{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
             this.replayEntity.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(CurrentRoomState.CurrentHandState);
             this.replayEntity.CurrentTrickStates = new Stack<CurrentTrickState>();
-            this.replayEntity.Players=new List<string>();
+            this.replayEntity.Players = new List<string>();
+            this.replayEntity.PlayerRanks = new List<int>();
             for (int i = 0; i < 4; i++)
             {
                 this.replayEntity.Players.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
+                this.replayEntity.PlayerRanks.Add(CurrentRoomState.CurrentGameState.Players[i].Rank);
             }
         }
 
