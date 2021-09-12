@@ -1431,6 +1431,7 @@ namespace Duan.Xiugang.Tractor
             ClearRoom();
             HideRoomControls();
 
+            this.btnExitRoom.Show();
             CreateRoomControls(roomStates, names);
             this.ToolStripMenuItemEnterRoom0.Enabled = true;
         }
@@ -1441,7 +1442,6 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.isObserver = false;
             this.btnReady.Hide();
             this.btnRobot.Hide();
-            this.btnExitRoom.Hide();
             this.btnSurrender.Hide();
             this.btnRiot.Hide();
             this.btnRoomSetting.Hide();
@@ -2255,9 +2255,27 @@ namespace Duan.Xiugang.Tractor
                 this.btnExitRoom.Hide();
                 this.btnPauseReplay.Text = "开始";
                 this.btnPauseReplay.Hide();
+                this.btnPreviousTrick.Hide();
+                this.btnNextTrick.Hide();
                 ThisPlayer.isReplay = false;
                 ThisPlayer.replayEntity = null;
                 this.timerReplay.Stop();
+                return;
+            }
+            if (playerIsInHall())
+            {
+                try
+                {
+                    ThisPlayer.Quit();
+                }
+                catch (Exception)
+                {
+                }
+                this.ToolStripMenuItemEnterHall.Enabled = true;
+                this.btnEnterHall.Show();
+                this.btnReplay.Show();
+                this.btnExitRoom.Hide();
+                HideRoomControls();
                 return;
             }
             if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
@@ -2267,6 +2285,18 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
+        }
+
+        private bool playerIsInHall()
+        {
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl.Name.StartsWith(this.roomControlPrefix))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private bool AllOnline()
@@ -2335,6 +2365,8 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n- 八卦图标代表一圈中的大牌，【杀】图标代表主毙牌";
             userManual += "\n\n【快捷键】";
             userManual += "\n- 出牌：按键S（Show cards）";
+            userManual += "\n- 录像回放上一轮：左箭头";
+            userManual += "\n- 录像回放下一轮：右箭头";
             userManual += "\n- 进入大厅：F1";
             userManual += "\n- 进入第一个房间：F2";
             userManual += "\n- 就绪：F3、按键Z（Zhunbei准备）";
@@ -2411,6 +2443,18 @@ namespace Duan.Xiugang.Tractor
                         this.btnReady.PerformClick();
                     }
                     return true;
+                case Keys.Left:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnPreviousTrick.PerformClick();
+                    }
+                    return true;
+                case Keys.Right:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnNextTrick.PerformClick();
+                    }
+                    return true;
                 default:
                     return base.ProcessCmdKey(ref msg, keyData);
             }
@@ -2441,12 +2485,15 @@ namespace Duan.Xiugang.Tractor
                 this.btnReplay.Hide();
                 this.btnPauseReplay.Show();
                 this.btnExitRoom.Show();
+                this.btnPreviousTrick.Show();
+                this.btnNextTrick.Show();
 
                 string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
                 string jsonString = File.ReadAllText(replayFile);
                 ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
 
                 ThisPlayer.replayEntity = replayEntity;
+                ThisPlayer.replayedTricks = new Stack<CurrentTrickState>();
                 StartReplay();
             }
         }
@@ -2498,6 +2545,7 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.Trump();
 
             drawingFormHelper.DrawDiscardedCards();
+
             drawingFormHelper.DrawMyHandCards();
             drawingFormHelper.LastTrumpMadeCardsShow();
 
@@ -2519,8 +2567,8 @@ namespace Duan.Xiugang.Tractor
                 this.timerReplay.Stop();
                 return;
             }
-            CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
-            ThisPlayer.replayEntity.CurrentTrickStates.RemoveAt(0);
+            CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates.Pop();
+            ThisPlayer.replayedTricks.Push(trick);
             drawingFormHelper.DrawCenterImage();
 
             ThisPlayer.CurrentTrickState = trick;
@@ -2580,9 +2628,64 @@ namespace Duan.Xiugang.Tractor
 
         private void btnPauseReplay_Click(object sender, EventArgs e)
         {
-            if (this.timerReplay.Enabled) this.timerReplay.Stop();
-            else this.timerReplay.Start();
+            if (this.timerReplay.Enabled)
+            {
+                this.timerReplay.Stop();
+                this.btnPreviousTrick.Enabled = true;
+                this.btnNextTrick.Enabled = true;
+            }
+            else
+            {
+                this.timerReplay.Start();
+                this.btnPreviousTrick.Enabled = false;
+                this.btnNextTrick.Enabled = false;
+            }
             this.btnPauseReplay.Text = this.timerReplay.Enabled ? "暂停" : "继续";
+        }
+
+        private void btnPreviousTrick_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.replayedTricks.Count == 0) return;
+            drawingFormHelper.DrawCenterImage();
+            revertReplayTrick();
+            if (ThisPlayer.replayedTricks.Count == 0)
+            {
+                drawingFormHelper.DrawMyHandCards();
+                drawingFormHelper.LastTrumpMadeCardsShow();
+
+                List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
+                drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
+
+                List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
+                drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
+
+                List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
+                drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
+                Refresh();
+            }
+            else
+            {
+                revertReplayTrick();
+                timerReplay_Tick(sender, e);
+            }
+        }
+
+        private void btnNextTrick_Click(object sender, EventArgs e)
+        {
+            timerReplay_Tick(sender, e);
+        }
+
+        private void revertReplayTrick()
+        {
+            CurrentTrickState trick = ThisPlayer.replayedTricks.Pop();
+            ThisPlayer.replayEntity.CurrentTrickStates.Push(trick);
+            foreach (var entry in trick.ShowedCards)
+            {
+                foreach (int card in entry.Value)
+                {
+                    ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[entry.Key].AddCard(card);
+                }
+            }
         }
     }
 }

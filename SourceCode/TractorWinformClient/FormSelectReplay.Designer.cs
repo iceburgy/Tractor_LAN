@@ -72,6 +72,7 @@
             this.cbbReplayDate.Name = "cbbReplayDate";
             this.cbbReplayDate.Size = new System.Drawing.Size(194, 28);
             this.cbbReplayDate.TabIndex = 3;
+            this.cbbReplayDate.SelectedIndexChanged += new System.EventHandler(this.cbbReplayDate_SelectedIndexChanged);
             // 
             // cbbReplayName
             // 

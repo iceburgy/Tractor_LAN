@@ -14,7 +14,7 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public CurrentHandState CurrentHandState { get; set; }
         [DataMember]
-        public List<CurrentTrickState> CurrentTrickStates { get; set; }
+        public Stack<CurrentTrickState> CurrentTrickStates { get; set; }
         [DataMember]
         public List<string> Players { get; set; }
     }

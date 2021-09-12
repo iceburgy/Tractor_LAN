@@ -96,6 +96,8 @@ namespace Duan.Xiugang.Tractor
             this.btnReplay = new System.Windows.Forms.Button();
             this.timerReplay = new System.Windows.Forms.Timer(this.components);
             this.btnPauseReplay = new System.Windows.Forms.Button();
+            this.btnPreviousTrick = new System.Windows.Forms.Button();
+            this.btnNextTrick = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -740,11 +742,39 @@ namespace Duan.Xiugang.Tractor
             this.btnPauseReplay.Visible = false;
             this.btnPauseReplay.Click += new System.EventHandler(this.btnPauseReplay_Click);
             // 
+            // btnPreviousTrick
+            // 
+            this.btnPreviousTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPreviousTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnPreviousTrick.Location = new System.Drawing.Point(91, 776);
+            this.btnPreviousTrick.Name = "btnPreviousTrick";
+            this.btnPreviousTrick.Size = new System.Drawing.Size(62, 45);
+            this.btnPreviousTrick.TabIndex = 36;
+            this.btnPreviousTrick.Text = "¡û";
+            this.btnPreviousTrick.UseVisualStyleBackColor = true;
+            this.btnPreviousTrick.Visible = false;
+            this.btnPreviousTrick.Click += new System.EventHandler(this.btnPreviousTrick_Click);
+            // 
+            // btnNextTrick
+            // 
+            this.btnNextTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnNextTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnNextTrick.Location = new System.Drawing.Point(159, 776);
+            this.btnNextTrick.Name = "btnNextTrick";
+            this.btnNextTrick.Size = new System.Drawing.Size(62, 45);
+            this.btnNextTrick.TabIndex = 37;
+            this.btnNextTrick.Text = "¡ú";
+            this.btnNextTrick.UseVisualStyleBackColor = true;
+            this.btnNextTrick.Visible = false;
+            this.btnNextTrick.Click += new System.EventHandler(this.btnNextTrick_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnNextTrick);
+            this.Controls.Add(this.btnPreviousTrick);
             this.Controls.Add(this.btnPauseReplay);
             this.Controls.Add(this.btnReplay);
             this.Controls.Add(this.imbOverridingFlag_4);
@@ -865,6 +895,8 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Button btnReplay;
         private System.Windows.Forms.Timer timerReplay;
         private System.Windows.Forms.Button btnPauseReplay;
+        private System.Windows.Forms.Button btnPreviousTrick;
+        private System.Windows.Forms.Button btnNextTrick;
     }
 }
 

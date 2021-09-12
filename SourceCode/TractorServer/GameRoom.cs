@@ -372,41 +372,45 @@ namespace TractorServer
 
         public void PlayerIsReadyToStart(string playerID)
         {
-            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+            lock (CurrentRoomState.CurrentGameState)
             {
-                if (p != null && p.PlayerId == playerID)
-                {
-                    p.IsReadyToStart = true;
-                    break;
-                }
-            }
-            UpdateGameState();
-            int isReadyToStart = 0;
-            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
-            {
-                if (p != null && p.IsReadyToStart)
-                {
-                    isReadyToStart++;
-                }
-            }
 
-            if (isReadyToStart == 4)
-            {
-                switch (CurrentRoomState.CurrentGameState.nextRestartID)
+                foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
                 {
-                    case GameState.RESTART_GAME:
-                        CleanupCaches();
-                        RestartGame(CurrentRoomState.CurrentHandState.Rank);
+                    if (p != null && p.PlayerId == playerID)
+                    {
+                        p.IsReadyToStart = true;
                         break;
-                    case GameState.RESTART_CURRENT_HAND:
-                        RestartCurrentHand();
-                        break;
-                    case GameState.START_NEXT_HAND:
-                        CleanupCaches();
-                        StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
-                        break;
-                    default:
-                        break;
+                    }
+                }
+                UpdateGameState();
+                int isReadyToStart = 0;
+                foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+                {
+                    if (p != null && p.IsReadyToStart)
+                    {
+                        isReadyToStart++;
+                    }
+                }
+
+                if (isReadyToStart == 4)
+                {
+                    switch (CurrentRoomState.CurrentGameState.nextRestartID)
+                    {
+                        case GameState.RESTART_GAME:
+                            CleanupCaches();
+                            RestartGame(CurrentRoomState.CurrentHandState.Rank);
+                            break;
+                        case GameState.RESTART_CURRENT_HAND:
+                            RestartCurrentHand();
+                            break;
+                        case GameState.START_NEXT_HAND:
+                            CleanupCaches();
+                            StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
@@ -570,9 +574,9 @@ namespace TractorServer
         private void BuildReplayEntity()
         {
             this.replayEntity = new ReplayEntity();
-            this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("dd-MM-yyyy{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
+            this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("yyyy-dd-MM{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
             this.replayEntity.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(CurrentRoomState.CurrentHandState);
-            this.replayEntity.CurrentTrickStates = new List<CurrentTrickState>();
+            this.replayEntity.CurrentTrickStates = new Stack<CurrentTrickState>();
             this.replayEntity.Players=new List<string>();
             for (int i = 0; i < 4; i++)
             {
@@ -663,7 +667,7 @@ namespace TractorServer
 
                 CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
 
-                this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
+                this.replayEntity.CurrentTrickStates.Push(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
 
                 //开始新的回合
                 if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)

@@ -58,6 +58,7 @@ namespace Duan.Xiugang.Tractor.Player
         public bool isObserver { get; set; }
         public bool isReplay { get; set; }
         public ReplayEntity replayEntity { get; set; }
+        public Stack<CurrentTrickState> replayedTricks { get; set; }
         public string MyOwnId { get; set; }
         public bool IsTryingReenter { get; set; }
 
@@ -224,7 +225,6 @@ namespace Duan.Xiugang.Tractor.Player
         public void Quit()
         {
             _tractorHost.BeginPlayerQuit(this.MyOwnId, PlayerQuitCallback, _tractorHost);
-            (_tractorHost as IDisposable).Dispose();
         }
 
         public void PlayerQuitCallback(IAsyncResult ar)

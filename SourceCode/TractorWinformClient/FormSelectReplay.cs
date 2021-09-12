@@ -16,29 +16,33 @@ namespace Duan.Xiugang.Tractor
         public FormSelectReplay(string rootFolder)
         {
             InitializeComponent();
-
-            DirectoryInfo dir = new DirectoryInfo(rootFolder);
-            initReplays(dir);
+            replayRootFolder = rootFolder;
+            initReplays();
         }
 
-        private void initReplays(DirectoryInfo dir)
+        private void initReplays()
         {
-            DirectoryInfo[] dis = dir.GetDirectories();
-            for (int i = 0; i < dis.Length; i++)
+            DirectoryInfo dirRoot = new DirectoryInfo(replayRootFolder);
+            DirectoryInfo[] dirs = dirRoot.GetDirectories();
+            for (int i = 0; i < dirs.Length; i++)
             {
-                cbbReplayDate.Items.Add(dis[i].Name);
-
-                string replaySubDirectory = dis[i].FullName;
-                FileInfo[] files = dis[i].GetFiles();
-                for (int j = 0; j < files.Length; j++)
-                {
-                    cbbReplayName.Items.Add(files[j].FullName.Substring(replaySubDirectory.Length + 1));
-                }
+                cbbReplayDate.Items.Add(dirs[i].Name);
             }
 
             if (cbbReplayDate.Items.Count > 0)
             {
                 cbbReplayDate.SelectedIndex = 0;
+            }
+        }
+
+        private void cbbReplayDate_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cbbReplayName.Items.Clear();
+            DirectoryInfo selectedDate = new DirectoryInfo(string.Format("{0}\\{1}", replayRootFolder, cbbReplayDate.SelectedItem));
+            FileInfo[] files = selectedDate.GetFiles();
+            for (int j = 0; j < files.Length; j++)
+            {
+                cbbReplayName.Items.Add(files[j].Name);
             }
 
             if (cbbReplayName.Items.Count > 0)
