@@ -2425,6 +2425,12 @@ namespace Duan.Xiugang.Tractor
 
         private void btnReplay_Click(object sender, EventArgs e)
         {
+            if (!Directory.Exists(this.rootReplayFolderPath))
+            {
+                MessageBox.Show("Î´ÕÒµ½Â¼ÏñÎÄ¼þ");
+                return;
+            }
+
             FormSelectReplay frmSR = new FormSelectReplay(this.rootReplayFolderPath);
             frmSR.StartPosition = FormStartPosition.CenterParent;
             frmSR.TopMost = true;
