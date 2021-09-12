@@ -20,6 +20,7 @@ namespace TractorServer
         TractorHost tractorHost;
         public RoomState CurrentRoomState;
         public CardsShoe CardsShoe { get; set; }
+        public ReplayEntity replayEntity;
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
@@ -561,6 +562,21 @@ namespace TractorServer
                 BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
                 CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Playing;
                 UpdatePlayersCurrentHandState();
+
+                BuildReplayEntity();
+            }
+        }
+
+        private void BuildReplayEntity()
+        {
+            this.replayEntity = new ReplayEntity();
+            this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("dd-MM-yyyy{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
+            this.replayEntity.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(CurrentRoomState.CurrentHandState);
+            this.replayEntity.CurrentTrickStates = new List<CurrentTrickState>();
+            this.replayEntity.Players=new List<string>();
+            for (int i = 0; i < 4; i++)
+            {
+                this.replayEntity.Players.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
             }
         }
 
@@ -647,6 +663,8 @@ namespace TractorServer
 
                 CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
 
+                this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
+
                 //开始新的回合
                 if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
                 {
@@ -714,6 +732,8 @@ namespace TractorServer
                     UpdatePlayersCurrentHandState();
 
                     UpdateGameState();
+
+                    UpdateReplayState();
 
                     if (sb != null)
                     {
@@ -1707,6 +1727,12 @@ namespace TractorServer
         {
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState });
+        }
+
+        public void UpdateReplayState()
+        {
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
         }
 
         public void PublishMessage(string[] msg)

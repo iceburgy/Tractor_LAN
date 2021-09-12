@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -6,6 +7,7 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     //一个回合牌的状态
     [DataContract]
+    [Serializable]
     public class CurrentTrickState
     {
         //第一个出牌的玩家

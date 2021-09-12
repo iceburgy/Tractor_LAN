@@ -16,6 +16,7 @@ using Kuaff.CardResouces;
 using AutoUpdaterDotNET;
 using System.Diagnostics;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Duan.Xiugang.Tractor
 {
@@ -115,6 +116,7 @@ namespace Duan.Xiugang.Tractor
         private readonly string roomControlPrefix = "roomControl";
 
         string fullLogFilePath = string.Format("{0}\\logs\\logfile.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        public string rootReplayFolderPath = string.Format("{0}\\replays", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         string[] knownErrors = new string[] { 
             "Could not load file or assembly 'AutoUpdater.NET.XmlSerializers",
             "Application identity is not set",
@@ -191,6 +193,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.RoomSettingUpdatedEvent += ThisPlayer_RoomSettingUpdatedEventHandler;
             ThisPlayer.ShowAllHandCardsEvent += ThisPlayer_ShowAllHandCardsEventHandler;
             ThisPlayer.NewPlayerJoined += ThisPlayer_NewPlayerJoined;
+            ThisPlayer.ReplayStateReceived += ThisPlayer_ReplayStateReceived;
             ThisPlayer.NewPlayerReadyToStart += ThisPlayer_NewPlayerReadyToStart;
             ThisPlayer.PlayerToggleIsRobot += ThisPlayer_PlayerToggleIsRobot;
             ThisPlayer.PlayersTeamMade += ThisPlayer_PlayersTeamMade;
@@ -422,7 +425,7 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
                 this.ThisPlayer_NotifyMessageEventHandler(new string[]{"游戏中途不允许退出","请完成此盘游戏后再退"});
                 e.Cancel = true;
@@ -487,6 +490,9 @@ namespace Duan.Xiugang.Tractor
 
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
+            //录像回放不触发数标点击效果
+            if (ThisPlayer.isReplay) return;
+
             //旁观不能触发选牌效果
             //出牌或者埋底时响应鼠标事件选牌
             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing ||
@@ -1231,6 +1237,25 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
+        private void ThisPlayer_ReplayStateReceived(ReplayEntity replayState)
+        {
+            string[] paths = replayState.ReplayId.Split(new string[] { CommonMethods.replaySeparator }, StringSplitOptions.RemoveEmptyEntries);
+            if (paths.Length != 2)
+            {
+                this.drawingFormHelper.DrawMessages(new string[] { "录像文件名错误", replayState.ReplayId });
+                return;
+            }
+            string fullFolderPath = string.Format("{0}\\{1}", rootReplayFolderPath, paths[0]);
+            if (!Directory.Exists(fullFolderPath))
+            {
+                Directory.CreateDirectory(fullFolderPath);
+            }
+
+            string fullFilePath = string.Format("{0}\\{1}.json", fullFolderPath, paths[1]);
+            string jsonData = JsonConvert.SerializeObject(replayState);
+            File.WriteAllText(fullFilePath, jsonData);            
+        }
+
         private void DisplayRoomSetting(string prefix)
         {
             List<string> msgs = new List<string>();
@@ -1402,6 +1427,7 @@ namespace Duan.Xiugang.Tractor
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
+            this.btnReplay.Hide();
             ClearRoom();
             HideRoomControls();
 
@@ -1852,6 +1878,7 @@ namespace Duan.Xiugang.Tractor
                 {
                     ThisPlayer.IsTryingReenter = true;
                     this.btnEnterHall.Hide();
+                    this.btnReplay.Hide();
                 }
                 else if (m.Contains("新游戏即将开始"))
                 {
@@ -2220,7 +2247,20 @@ namespace Duan.Xiugang.Tractor
 
         private void btnExitRoom_Click(object sender, EventArgs e)
         {
-            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            if (ThisPlayer.isReplay)
+            {
+                this.ClearRoom();
+                this.btnEnterHall.Show();
+                this.btnReplay.Show();
+                this.btnExitRoom.Hide();
+                this.btnPauseReplay.Text = "开始";
+                this.btnPauseReplay.Hide();
+                ThisPlayer.isReplay = false;
+                ThisPlayer.replayEntity = null;
+                this.timerReplay.Stop();
+                return;
+            }
+            if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
                 this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许退出", "请完成此盘游戏后再退" });
                 return;
@@ -2381,6 +2421,162 @@ namespace Duan.Xiugang.Tractor
             FormRoomSetting roomSetting = new FormRoomSetting(this);
             roomSetting.RoomSettingChangedByClientEvent += Mainform_RoomSettingChangedByClientEventHandler;
             roomSetting.Show();
+        }
+
+        private void btnReplay_Click(object sender, EventArgs e)
+        {
+            FormSelectReplay frmSR = new FormSelectReplay(this.rootReplayFolderPath);
+            frmSR.StartPosition = FormStartPosition.CenterParent;
+            frmSR.TopMost = true;
+
+            if (frmSR.ShowDialog(this) == DialogResult.OK)
+            {
+                btnEnterHall.Hide();
+                this.btnReplay.Hide();
+                this.btnPauseReplay.Show();
+                this.btnExitRoom.Show();
+
+                string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
+                string jsonString = File.ReadAllText(replayFile);
+                ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
+
+                ThisPlayer.replayEntity = replayEntity;
+                StartReplay();
+            }
+        }
+
+        private void StartReplay()
+        {
+            ThisPlayer.isReplay = true;
+            List<String> players = ThisPlayer.replayEntity.Players;
+            lblSouthNickName.Text = players[0];
+            lblEastNickName.Text = players[1];
+            lblNorthNickName.Text = players[2];
+            lblWestNickName.Text = players[3];
+            lblWestNickName.Show();
+
+            lblSouthStarter.Text = players[0] == ThisPlayer.replayEntity.CurrentHandState.Starter ? "庄家" : "1";
+            lblEastStarter.Text = players[1] == ThisPlayer.replayEntity.CurrentHandState.Starter ? "庄家" : "2";
+            lblNorthStarter.Text = players[2] == ThisPlayer.replayEntity.CurrentHandState.Starter ? "庄家" : "3";
+            lblWestStarter.Text = players[3] == ThisPlayer.replayEntity.CurrentHandState.Starter ? "庄家" : "4";
+            lblWestStarter.Show();
+
+            ThisPlayer.CurrentGameState = new GameState();
+            ThisPlayer.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = players[0], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = players[1], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = players[2], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = players[3], Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
+            //set player position
+            PlayerPosition.Clear();
+            PositionPlayer.Clear();
+            string nextPlayer = players[0];
+            int postion = 1;
+            PlayerPosition.Add(nextPlayer, postion);
+            PositionPlayer.Add(postion, nextPlayer);
+            nextPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(nextPlayer).PlayerId;
+            while (nextPlayer != players[0])
+            {
+                postion++;
+                PlayerPosition.Add(nextPlayer, postion);
+                PositionPlayer.Add(postion, nextPlayer);
+                nextPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(nextPlayer).PlayerId;
+            }
+
+            ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
+            ThisPlayer.CurrentPoker = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[players[0]];
+
+            Graphics g = Graphics.FromImage(bmp);
+            drawingFormHelper.DrawSidebar(g);
+            drawingFormHelper.Starter();
+            drawingFormHelper.Rank();
+            drawingFormHelper.Trump();
+
+            drawingFormHelper.DrawDiscardedCards();
+            drawingFormHelper.DrawMyHandCards();
+            drawingFormHelper.LastTrumpMadeCardsShow();
+
+            List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
+            drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
+
+            List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
+            drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
+
+            List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
+            drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
+            Refresh();
+        }
+
+        private void timerReplay_Tick(object sender, EventArgs e)
+        {
+            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
+            {
+                this.timerReplay.Stop();
+                return;
+            }
+            CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
+            ThisPlayer.replayEntity.CurrentTrickStates.RemoveAt(0);
+            drawingFormHelper.DrawCenterImage();
+
+            ThisPlayer.CurrentTrickState = trick;
+            string curPlayer = trick.Learder;
+            for (int i = 0; i < 4; i++)
+            {
+                ArrayList cardsList = new ArrayList(trick.ShowedCards[curPlayer]);
+                int position = PlayerPosition[curPlayer];
+                if (position == 1)
+                {
+                    drawingFormHelper.DrawMySendedCardsActionReplay(cardsList);
+                    foreach (int card in trick.ShowedCards[curPlayer])
+                    {
+                        ThisPlayer.CurrentPoker.RemoveCard(card);
+                    }
+                    drawingFormHelper.DrawMyHandCards();
+                }
+                else if (position == 2)
+                {
+                    drawingFormHelper.DrawNextUserSendedCardsActionReplay(cardsList);
+                    foreach (int card in trick.ShowedCards[curPlayer])
+                    {
+                        ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].RemoveCard(card);
+                    }
+                }
+                else if (position == 3)
+                {
+                    drawingFormHelper.DrawFriendUserSendedCardsActionReplay(cardsList);
+                    foreach (int card in trick.ShowedCards[curPlayer])
+                    {
+                        ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].RemoveCard(card);
+                    }
+                }
+                else if (position == 4)
+                {
+                    drawingFormHelper.DrawPreviousUserSendedCardsActionReplay(cardsList);
+                    foreach (int card in trick.ShowedCards[curPlayer])
+                    {
+                        ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].RemoveCard(card);
+                    }
+                }
+                Refresh();
+                curPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(curPlayer).PlayerId;
+            }
+
+            List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
+            drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
+
+            List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
+            drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
+
+            List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
+            drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
+            Refresh();
+
+        }
+
+        private void btnPauseReplay_Click(object sender, EventArgs e)
+        {
+            if (this.timerReplay.Enabled) this.timerReplay.Stop();
+            else this.timerReplay.Start();
+            this.btnPauseReplay.Text = this.timerReplay.Enabled ? "暂停" : "继续";
         }
     }
 }

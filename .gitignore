@@ -57,6 +57,7 @@ SourceCode/TractorWinformClient/bin/Debug/log4net.dll
 SourceCode/TractorWinformClient/bin/Debug/log4net.xml
 SourceCode/TractorWinformClient/bin/Debug/music/*.mp3
 SourceCode/TractorWinformClient/bin/Debug/logs/
+SourceCode/TractorWinformClient/bin/Debug/replays/
 SourceCode/UnitTest/bin/
 
 # NUNIT

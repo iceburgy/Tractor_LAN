@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
@@ -8,9 +10,22 @@ namespace Duan.Xiugang.Tractor.Objects
     ///     通用处理类.
     ///     用来处理程序中常用的方法，比如解析等.
     /// </summary>
-    public class CommonMethods
+    public static class CommonMethods
     {
+        public static string replaySeparator = "===";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+        public static T DeepClone<T>(this T obj)
+        {
+            using (var ms = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(ms, obj);
+                ms.Position = 0;
+
+                return (T)formatter.Deserialize(ms);
+            }
+        }
 
         /// <summary>
         ///     得到一个牌的花色

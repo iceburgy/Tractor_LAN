@@ -1215,7 +1215,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 130, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 130 + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
                 start += 12 * scaleDividend / scaleDivisor * 2 / 3;
             }
 
@@ -1234,7 +1234,7 @@ namespace Duan.Xiugang.Tractor
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 260, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
             }
 
             g.Dispose();
@@ -1248,10 +1248,11 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys"></param>
         internal void DrawNextUserSendedCardsActionAllHandCards(ArrayList readys)
         {
+            int width = 71 * scaleDividend / scaleDivisor * 2 / 3;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 496, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + (i + 25 - readys.Count) * 12 * scaleDividend / scaleDivisor * 2 / 3, 496, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
             }
 
             g.Dispose();
@@ -1864,7 +1865,7 @@ namespace Duan.Xiugang.Tractor
         }
         #endregion // 绘制各家出的牌，并计算结果或者通知下一家
 
-        #region 绘制上一轮各家所出的牌，缩小至一半，放在左下角
+        #region // 绘制上一轮各家所出的牌，缩小至一半，放在左下角
         /// <summary>
         /// 画我上轮的牌
         /// </summary>
@@ -1937,6 +1938,76 @@ namespace Duan.Xiugang.Tractor
             g.Dispose();
         }
         #endregion // 绘制上一轮各家所出的牌，缩小至一半，放在左下角
+
+        #region // 录像回放时，绘制各家所出的牌
+        /// <summary>
+        /// 录像回放时画我的牌
+        /// </summary>
+        /// <param name="readys">我上轮的牌的列表</param>
+        internal void DrawMySendedCardsActionReplay(ArrayList readys)
+        {
+            int start = 285;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 244 + offsetCenter, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
+            }
+            g.Dispose();
+        }
+
+        /// <summary>
+        /// 录像回放时画对家的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawFriendUserSendedCardsActionReplay(ArrayList readys)
+        {
+            int start = 285;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
+            }
+            g.Dispose();
+        }
+
+
+
+        /// <summary>
+        /// 录像回放时画上家的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawPreviousUserSendedCardsActionReplay(ArrayList readys)
+        {
+            int start = 245;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
+            }
+            g.Dispose();
+        }
+
+
+
+        /// <summary>
+        /// 录像回放时画下家的牌
+        /// </summary>
+        /// <param name="readys"></param>
+        internal void DrawNextUserSendedCardsActionReplay(ArrayList readys)
+        {
+            int start = 326;
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+            for (int i = 0; i < readys.Count; i++)
+            {
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenter, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
+                start += 12 * scaleDividend / scaleDivisor;
+            }
+            g.Dispose();
+        }
+        #endregion // 录像回放时，绘制各家所出的牌
 
         #region 画牌时的辅助方法
 

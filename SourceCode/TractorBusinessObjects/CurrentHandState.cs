@@ -6,6 +6,7 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     //当前这把牌的状态
     [DataContract]
+    [Serializable]
     public class CurrentHandState
     {
         //庄
@@ -20,6 +21,12 @@ namespace Duan.Xiugang.Tractor.Objects
         public List<TrumpState> LastTrumpStates;
         [DataMember]
         public List<int> ScoreCards;
+
+        public CurrentHandState()
+        {
+            LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(4);
+            Id = Guid.NewGuid().ToString();
+        }
 
         public CurrentHandState(GameState gameState)
         {

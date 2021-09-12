@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
+    [Serializable]
     public class ServerLocalCache
     {
         public Dictionary<string, List<int>> lastShowedCards;

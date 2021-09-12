@@ -53,6 +53,13 @@ namespace Duan.Xiugang.Tractor.Objects
         void NotifyGameState(GameState gameState);
 
         /// <summary>
+        ///     更新游戏录像
+        /// </summary>
+        /// <param name="replayState"></param>
+        [OperationContract(IsOneWay = true)]
+        void NotifyReplayState(ReplayEntity replayState);        
+
+        /// <summary>
         ///     更新房间游戏设置状态
         /// </summary>
         [OperationContract(IsOneWay = true)]

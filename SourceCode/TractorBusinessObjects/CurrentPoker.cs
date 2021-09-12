@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
+    [Serializable]
     public class CurrentPoker : ICloneable
     {
         //当前的Rank
@@ -76,6 +77,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public int[] Cards
         {
             get { return _cards; }
+            set
+            {
+                _cards = value;
+            }
         }
 
         public int Count

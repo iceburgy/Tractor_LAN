@@ -6,6 +6,7 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     //亮过的牌的信息
     [DataContract]
+    [Serializable]
     public class TrumpState
     {
         [DataMember]

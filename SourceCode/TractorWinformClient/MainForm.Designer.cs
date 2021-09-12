@@ -93,6 +93,9 @@ namespace Duan.Xiugang.Tractor
             this.imbOverridingFlag_2 = new System.Windows.Forms.PictureBox();
             this.imbOverridingFlag_3 = new System.Windows.Forms.PictureBox();
             this.imbOverridingFlag_4 = new System.Windows.Forms.PictureBox();
+            this.btnReplay = new System.Windows.Forms.Button();
+            this.timerReplay = new System.Windows.Forms.Timer(this.components);
+            this.btnPauseReplay = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -708,11 +711,42 @@ namespace Duan.Xiugang.Tractor
             this.imbOverridingFlag_4.TabIndex = 33;
             this.imbOverridingFlag_4.TabStop = false;
             // 
+            // btnReplay
+            // 
+            this.btnReplay.BackColor = System.Drawing.Color.Plum;
+            this.btnReplay.Location = new System.Drawing.Point(372, 456);
+            this.btnReplay.Name = "btnReplay";
+            this.btnReplay.Size = new System.Drawing.Size(109, 55);
+            this.btnReplay.TabIndex = 34;
+            this.btnReplay.Text = "录像回放";
+            this.btnReplay.UseVisualStyleBackColor = false;
+            this.btnReplay.Click += new System.EventHandler(this.btnReplay_Click);
+            // 
+            // timerReplay
+            // 
+            this.timerReplay.Interval = 1000;
+            this.timerReplay.Tick += new System.EventHandler(this.timerReplay_Tick);
+            // 
+            // btnPauseReplay
+            // 
+            this.btnPauseReplay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPauseReplay.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnPauseReplay.Location = new System.Drawing.Point(12, 776);
+            this.btnPauseReplay.Name = "btnPauseReplay";
+            this.btnPauseReplay.Size = new System.Drawing.Size(72, 45);
+            this.btnPauseReplay.TabIndex = 35;
+            this.btnPauseReplay.Text = "开始";
+            this.btnPauseReplay.UseVisualStyleBackColor = true;
+            this.btnPauseReplay.Visible = false;
+            this.btnPauseReplay.Click += new System.EventHandler(this.btnPauseReplay_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnPauseReplay);
+            this.Controls.Add(this.btnReplay);
             this.Controls.Add(this.imbOverridingFlag_4);
             this.Controls.Add(this.imbOverridingFlag_3);
             this.Controls.Add(this.imbOverridingFlag_2);
@@ -828,6 +862,9 @@ namespace Duan.Xiugang.Tractor
         public System.Windows.Forms.PictureBox imbOverridingFlag_2;
         public System.Windows.Forms.PictureBox imbOverridingFlag_3;
         public System.Windows.Forms.PictureBox imbOverridingFlag_4;
+        private System.Windows.Forms.Button btnReplay;
+        private System.Windows.Forms.Timer timerReplay;
+        private System.Windows.Forms.Button btnPauseReplay;
     }
 }
 

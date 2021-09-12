@@ -13,6 +13,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified);
     public delegate void ShowAllHandCardsEventHandler();
     public delegate void NewPlayerJoinedEventHandler();
+    public delegate void ReplayStateReceivedEventHandler(ReplayEntity replayState);
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
     public delegate void PlayersTeamMadeEventHandler();
@@ -55,6 +56,8 @@ namespace Duan.Xiugang.Tractor.Player
         public string PlayerName { get; set; }
         public int Rank { get; set; }
         public bool isObserver { get; set; }
+        public bool isReplay { get; set; }
+        public ReplayEntity replayEntity { get; set; }
         public string MyOwnId { get; set; }
         public bool IsTryingReenter { get; set; }
 
@@ -70,6 +73,7 @@ namespace Duan.Xiugang.Tractor.Player
         public event RoomSettingUpdatedEventHandler RoomSettingUpdatedEvent;
         public event ShowAllHandCardsEventHandler ShowAllHandCardsEvent;        
         public event NewPlayerJoinedEventHandler NewPlayerJoined;
+        public event ReplayStateReceivedEventHandler ReplayStateReceived;        
         public event NewPlayerReadyToStartEventHandler NewPlayerReadyToStart;
         public event PlayerToggleIsRobotEventHandler PlayerToggleIsRobot;
         public event PlayersTeamMadeEventHandler PlayersTeamMade;
@@ -515,6 +519,15 @@ namespace Duan.Xiugang.Tractor.Player
                     ReenterFromOfflineEvent();
                 }
                 this.IsTryingReenter = false;
+            }
+        }
+
+        public void NotifyReplayState(ReplayEntity replayState)
+        {
+
+            if (ReplayStateReceived != null)
+            {
+                ReplayStateReceived(replayState);
             }
         }
 

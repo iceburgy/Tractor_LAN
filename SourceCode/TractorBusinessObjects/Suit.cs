@@ -1,5 +1,7 @@
-﻿namespace Duan.Xiugang.Tractor.Objects
+﻿using System;
+namespace Duan.Xiugang.Tractor.Objects
 {
+    [Serializable]
     public enum Suit
     {
         None,
@@ -10,6 +12,7 @@
         Joker
     }
 
+    [Serializable]
     public enum TrumpExposingPoker
     {
         None,
@@ -20,6 +23,7 @@
     }
 
     //每把牌的不同阶段
+    [Serializable]
     public enum HandStep
     {
         BeforeDistributingCards,
@@ -36,6 +40,7 @@
     }
 
     //特殊结束几种情况
+    [Serializable]
     public enum SpecialEndingType
     {
         Surrender,
