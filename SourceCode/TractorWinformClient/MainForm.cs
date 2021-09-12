@@ -117,6 +117,7 @@ namespace Duan.Xiugang.Tractor
 
         string fullLogFilePath = string.Format("{0}\\logs\\logfile.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         public string rootReplayFolderPath = string.Format("{0}\\replays", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        public FormSelectReplay frmSR;
         string[] knownErrors = new string[] { 
             "Could not load file or assembly 'AutoUpdater.NET.XmlSerializers",
             "Application identity is not set",
@@ -2481,10 +2482,12 @@ namespace Duan.Xiugang.Tractor
                 return;
             }
 
-            FormSelectReplay frmSR = new FormSelectReplay(this.rootReplayFolderPath);
-            frmSR.StartPosition = FormStartPosition.CenterParent;
-            frmSR.TopMost = true;
-
+            if (frmSR == null)
+            {
+                frmSR = new FormSelectReplay(this.rootReplayFolderPath);
+                frmSR.StartPosition = FormStartPosition.CenterParent;
+                frmSR.TopMost = true;
+            }
             if (frmSR.ShowDialog(this) == DialogResult.OK)
             {
                 btnEnterHall.Hide();
@@ -2493,18 +2496,24 @@ namespace Duan.Xiugang.Tractor
                 this.btnPreviousTrick.Show();
                 this.btnNextTrick.Show();
 
-                string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
-                string jsonString = File.ReadAllText(replayFile);
-                ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
-
-                ThisPlayer.replayEntity = replayEntity;
-                ThisPlayer.replayedTricks = new Stack<CurrentTrickState>();
-                StartReplay();
+                LoadReplay();
             }
+        }
+
+        private void LoadReplay()
+        {
+            string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
+            string jsonString = File.ReadAllText(replayFile);
+            ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
+
+            ThisPlayer.replayEntity = replayEntity;
+            ThisPlayer.replayedTricks = new Stack<CurrentTrickState>();
+            StartReplay();
         }
 
         private void StartReplay()
         {
+            drawingFormHelper.DrawCenterImage();
             ThisPlayer.isReplay = true;
             List<string> players = ThisPlayer.replayEntity.Players;
             List<int> playerRanks = new List<int>();
@@ -2662,7 +2671,25 @@ namespace Duan.Xiugang.Tractor
 
         private void btnPreviousTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayedTricks.Count == 0) return;
+            if (ThisPlayer.replayedTricks.Count == 0)
+            {
+                if (this.frmSR.cbbReplayName.SelectedIndex == 0)
+                {
+                    if (this.frmSR.cbbReplayDate.SelectedIndex == 0) return;
+                    this.frmSR.cbbReplayDate.SelectedIndex = this.frmSR.cbbReplayDate.SelectedIndex - 1;
+                    if (this.frmSR.cbbReplayName.Items != null && this.frmSR.cbbReplayName.Items.Count > 0)
+                    {
+                        this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.Items.Count - 1;
+                        LoadReplay();
+                    }
+                }
+                else
+                {
+                    this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.SelectedIndex - 1;
+                    LoadReplay();
+                }
+                return;
+            }
             drawingFormHelper.DrawCenterImage();
             revertReplayTrick();
             if (ThisPlayer.replayedTricks.Count == 0)
@@ -2689,6 +2716,22 @@ namespace Duan.Xiugang.Tractor
 
         private void btnNextTrick_Click(object sender, EventArgs e)
         {
+            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
+            {
+                if (this.frmSR.cbbReplayName.SelectedIndex == this.frmSR.cbbReplayName.Items.Count - 1)
+                {
+                    if (this.frmSR.cbbReplayDate.SelectedIndex == this.frmSR.cbbReplayDate.Items.Count - 1) return;
+                    this.frmSR.cbbReplayDate.SelectedIndex = this.frmSR.cbbReplayDate.SelectedIndex + 1;
+                    if (this.frmSR.cbbReplayName.Items != null && this.frmSR.cbbReplayName.Items.Count > 0) LoadReplay();
+                }
+                else
+                {
+                    this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.SelectedIndex + 1;
+                    LoadReplay();
+                }
+                return;
+            }
+
             timerReplay_Tick(sender, e);
         }
 
