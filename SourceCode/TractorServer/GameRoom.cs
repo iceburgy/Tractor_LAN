@@ -576,7 +576,7 @@ namespace TractorServer
             this.replayEntity = new ReplayEntity();
             this.replayEntity.ReplayId = string.Format("{0}-{1}-{2}", System.DateTime.Now.ToString(string.Format("yyyy-MM-dd{0}HH-mm-ss", CommonMethods.replaySeparator)), CurrentRoomState.CurrentHandState.Starter.Replace(" ", "-"), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
             this.replayEntity.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(CurrentRoomState.CurrentHandState);
-            this.replayEntity.CurrentTrickStates = new Stack<CurrentTrickState>();
+            this.replayEntity.CurrentTrickStates = new List<CurrentTrickState>();
             this.replayEntity.Players = new List<string>();
             this.replayEntity.PlayerRanks = new List<int>();
             for (int i = 0; i < 4; i++)
@@ -669,7 +669,7 @@ namespace TractorServer
 
                 CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
 
-                this.replayEntity.CurrentTrickStates.Push(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
+                this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
 
                 //开始新的回合
                 if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)

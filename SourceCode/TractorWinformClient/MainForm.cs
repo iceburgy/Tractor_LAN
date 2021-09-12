@@ -2583,7 +2583,8 @@ namespace Duan.Xiugang.Tractor
                 if (this.timerReplay.Enabled) this.btnPauseReplay.PerformClick();
                 return;
             }
-            CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates.Pop();
+            CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
+            ThisPlayer.replayEntity.CurrentTrickStates.RemoveAt(0);
             ThisPlayer.replayedTricks.Push(trick);
             drawingFormHelper.DrawCenterImage();
 
@@ -2694,7 +2695,7 @@ namespace Duan.Xiugang.Tractor
         private void revertReplayTrick()
         {
             CurrentTrickState trick = ThisPlayer.replayedTricks.Pop();
-            ThisPlayer.replayEntity.CurrentTrickStates.Push(trick);
+            ThisPlayer.replayEntity.CurrentTrickStates.Insert(0, trick);
             foreach (var entry in trick.ShowedCards)
             {
                 foreach (int card in entry.Value)
