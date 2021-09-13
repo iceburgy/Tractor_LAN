@@ -2569,7 +2569,7 @@ namespace Duan.Xiugang.Tractor
                 nextPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(nextPlayer).PlayerId;
             }
 
-            ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
+            ThisPlayer.CurrentHandState = CommonMethods.DeepClone<CurrentHandState>(ThisPlayer.replayEntity.CurrentHandState);
             ThisPlayer.CurrentHandState.Score = 0;
             ThisPlayer.CurrentHandState.ScoreCards.Clear();
             ThisPlayer.CurrentPoker = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[players[0]];
@@ -2608,8 +2608,8 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.replayedTricks.Push(trick);
             if (trick == null)
             {
-                drawingFormHelper.DrawFinishedSendedCards();
                 ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
+                drawingFormHelper.DrawFinishedSendedCards();
                 return;
             }
             drawingFormHelper.DrawCenterImage();
