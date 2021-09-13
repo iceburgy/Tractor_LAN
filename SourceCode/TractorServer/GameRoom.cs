@@ -680,6 +680,11 @@ namespace TractorServer
                 {
                     //扣底
                     CalculatePointsFromDiscarded8Cards();
+                    this.replayEntity.CurrentHandState.ScoreLast8CardsBase = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase;
+                    this.replayEntity.CurrentHandState.ScoreLast8CardsMultiplier = CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
+                    this.replayEntity.CurrentHandState.Score = CurrentRoomState.CurrentHandState.Score;
+                    this.replayEntity.CurrentHandState.ScoreCards = CurrentRoomState.CurrentHandState.ScoreCards;
+                    this.replayEntity.CurrentHandState.ScorePunishment = CurrentRoomState.CurrentHandState.ScorePunishment;
                     //log score details
                     int scoreLast8Cards = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase * CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
                     log.Debug("score from score cards: " + (CurrentRoomState.CurrentHandState.Score - scoreLast8Cards - CurrentRoomState.CurrentHandState.ScorePunishment));

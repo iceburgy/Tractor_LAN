@@ -2509,6 +2509,7 @@ namespace Duan.Xiugang.Tractor
             ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
 
             ThisPlayer.replayEntity = replayEntity;
+            ThisPlayer.replayEntity.CurrentTrickStates.Add(null); // use null to indicate end of tricks, so that to show ending scores
             ThisPlayer.replayedTricks = new Stack<CurrentTrickState>();
             CommonMethods.RotateArray(ThisPlayer.replayEntity.Players, ThisPlayer.replayAngle);
             if (ThisPlayer.replayEntity.PlayerRanks != null)
@@ -2603,6 +2604,11 @@ namespace Duan.Xiugang.Tractor
             CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
             ThisPlayer.replayEntity.CurrentTrickStates.RemoveAt(0);
             ThisPlayer.replayedTricks.Push(trick);
+            if (trick == null)
+            {
+                drawingFormHelper.DrawFinishedSendedCards();
+                return;
+            }
             drawingFormHelper.DrawCenterImage();
 
             ThisPlayer.CurrentTrickState = trick;
@@ -2747,11 +2753,14 @@ namespace Duan.Xiugang.Tractor
         {
             CurrentTrickState trick = ThisPlayer.replayedTricks.Pop();
             ThisPlayer.replayEntity.CurrentTrickStates.Insert(0, trick);
-            foreach (var entry in trick.ShowedCards)
+            if (trick != null)
             {
-                foreach (int card in entry.Value)
+                foreach (var entry in trick.ShowedCards)
                 {
-                    ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[entry.Key].AddCard(card);
+                    foreach (int card in entry.Value)
+                    {
+                        ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[entry.Key].AddCard(card);
+                    }
                 }
             }
         }
