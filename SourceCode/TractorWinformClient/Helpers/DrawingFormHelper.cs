@@ -1823,9 +1823,10 @@ namespace Duan.Xiugang.Tractor
 
             //alert if score cards does not match actual scores
             int points = GetScoreCardsScore();
-            if (points + mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase * mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier + mainForm.ThisPlayer.CurrentHandState.ScorePunishment != mainForm.ThisPlayer.CurrentHandState.Score)
+            int calculatedScore = points + mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsBase * mainForm.ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier + mainForm.ThisPlayer.CurrentHandState.ScorePunishment;
+            if (calculatedScore != mainForm.ThisPlayer.CurrentHandState.Score)
             {
-                MessageBox.Show(string.Format("bug report: mismatch! score cards score: {0}, actual score: {1}", points, mainForm.ThisPlayer.CurrentHandState.Score));
+                MessageBox.Show(string.Format("bug report: mismatch! calculated score: {0}, actual score: {1}", calculatedScore, mainForm.ThisPlayer.CurrentHandState.Score));
             }
 
             g.Dispose();
