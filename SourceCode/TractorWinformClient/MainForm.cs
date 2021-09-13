@@ -2549,10 +2549,10 @@ namespace Duan.Xiugang.Tractor
             lblWestStarter.Show();
 
             ThisPlayer.CurrentGameState = new GameState();
-            ThisPlayer.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = players[0], Rank = playerRanks[0], Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = players[1], Rank = playerRanks[1], Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = players[2], Rank = playerRanks[2], Team = GameTeam.None, Observers = new HashSet<string>() };
-            ThisPlayer.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = players[3], Rank = playerRanks[3], Team = GameTeam.None, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[0] = new PlayerEntity { PlayerId = players[0], Rank = playerRanks[0], Team = GameTeam.VerticalTeam, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[1] = new PlayerEntity { PlayerId = players[1], Rank = playerRanks[1], Team = GameTeam.HorizonTeam, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[2] = new PlayerEntity { PlayerId = players[2], Rank = playerRanks[2], Team = GameTeam.VerticalTeam, Observers = new HashSet<string>() };
+            ThisPlayer.CurrentGameState.Players[3] = new PlayerEntity { PlayerId = players[3], Rank = playerRanks[3], Team = GameTeam.HorizonTeam, Observers = new HashSet<string>() };
             //set player position
             PlayerPosition.Clear();
             PositionPlayer.Clear();
@@ -2662,6 +2662,20 @@ namespace Duan.Xiugang.Tractor
 
             List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
             drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
+
+            if (!string.IsNullOrEmpty(trick.Winner))
+            {
+                if (
+                    !ThisPlayer.CurrentGameState.ArePlayersInSameTeam(ThisPlayer.CurrentHandState.Starter,
+                                                                trick.Winner))
+                {
+                    ThisPlayer.CurrentHandState.Score += trick.Points;
+                    //收集得分牌
+                    ThisPlayer.CurrentHandState.ScoreCards.AddRange(trick.ScoreCards);
+                }
+            }
+            drawingFormHelper.DrawScoreImageAndCards();
+
             Refresh();
 
         }
@@ -2762,6 +2776,23 @@ namespace Duan.Xiugang.Tractor
                         ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[entry.Key].AddCard(card);
                     }
                 }
+
+                if (!string.IsNullOrEmpty(trick.Winner))
+                {
+                    if (
+                        !ThisPlayer.CurrentGameState.ArePlayersInSameTeam(ThisPlayer.CurrentHandState.Starter,
+                                                                    trick.Winner))
+                    {
+                        ThisPlayer.CurrentHandState.Score -= trick.Points;
+                        //收集得分牌
+                        foreach (var sc in trick.ScoreCards)
+                        {
+                            ThisPlayer.CurrentHandState.ScoreCards.Remove(sc);
+                        }
+                    }
+                }
+                drawingFormHelper.DrawScoreImageAndCards();
+
             }
         }
 

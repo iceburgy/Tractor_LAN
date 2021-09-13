@@ -1211,12 +1211,11 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys"></param>
         internal void DrawFriendUserSendedCardsActionAllHandCards(ArrayList readys)
         {
-            int start = 90;
+            int width = 71 * scaleDividend / scaleDivisor * 2 / 3;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 130 + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
-                start += 12 * scaleDividend / scaleDivisor * 2 / 3;
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + (i + 25 - readys.Count) * 12 * scaleDividend / scaleDivisor * 2 / 3, 130 + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
             }
 
             g.Dispose();
