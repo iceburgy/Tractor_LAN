@@ -751,7 +751,7 @@ namespace TractorServer
                         PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
                         this.isGameOver = true;
                     }
-                    else if (TractorHost.gameConfig.IsFullDebug && AllOnline())
+                    else if (TractorHost.gameConfig.IsFullDebug && IsAllOnline())
                     {
                         Thread.Sleep(3000);
                         CleanupCaches();
@@ -875,21 +875,6 @@ namespace TractorServer
 
         public void PlayerQuitCallback(IAsyncResult ar)
         {
-        }
-
-        private bool AllOnline()
-        {
-            bool allOnline = true;
-            foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player == null) continue;
-                if (player.IsOffline)
-                {
-                    allOnline = false;
-                    break;
-                }
-            }
-            return allOnline;
         }
 
         private void CleanupCaches()
@@ -1280,6 +1265,10 @@ namespace TractorServer
             var oldTrump = CurrentRoomState.CurrentHandState.Trump;
             while (true)
             {
+                if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
+                {
+                    PublishMessage(new string[] { "如果无人亮主", "则重新发牌！" });
+                }
                 PublishStartTimer(5);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(5000 + 1000);
@@ -1290,12 +1279,11 @@ namespace TractorServer
                 oldTrump = CurrentRoomState.CurrentHandState.Trump;
             }
 
-            if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
+            if (IsAllOnline())
             {
-                if (DistributeLast8Cards()) return;
+                if (CurrentRoomState.CurrentHandState.Trump != Suit.None) DistributeLast8Cards();
+                else RestartGame(curRank);
             }
-            else if (IsAllOnline())
-                RestartGame(curRank);
         }
 
         public void RestartCurrentHand()
@@ -1330,7 +1318,7 @@ namespace TractorServer
             {
                 if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
                 {
-                    PublishMessage(new string[] { "无人亮主", "庄家将会自动下台！" });
+                    PublishMessage(new string[] { "如果无人亮主", "则打无主！" });
                 }
                 PublishStartTimer(5);
                 Thread.Sleep(5000 + 1000);
@@ -1340,46 +1328,18 @@ namespace TractorServer
                 }
                 oldTrump = CurrentRoomState.CurrentHandState.Trump;
             }
-            if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
-            {
-                if (DistributeLast8Cards()) return;
-            }
-            else if (IsAllOnline() && !string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
-            {
-                //如果庄家TEAM亮不起，则庄家的下家成为新的庄家
-                var nextStarter2 = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(false, CurrentRoomState.CurrentHandState.Starter);
-                CurrentRoomState.CurrentHandState.Starter = nextStarter2.PlayerId;
-                CurrentRoomState.CurrentHandState.Rank = nextStarter2.Rank;
-                log.Debug("starter team fail to make trump, next starter: " + CurrentRoomState.CurrentHandState.Starter + " Rank: " + CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank));
 
-                UpdatePlayersCurrentHandState();
-
-                //10 seconds to make trump
-                // reset timer everytime Trump is modified
-                var oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
-                while (true)
+            if (IsAllOnline())
+            {
+                //如果无人亮主，则打无主
+                if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
                 {
-                    if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
-                    {
-                        PublishMessage(new string[] { "再次无人亮主", "庄家将会自动下台！", "并且重新摸牌！" });
-                    }
-                    PublishStartTimer(5);
-                    Thread.Sleep(5000 + 1000);
-                    if (CurrentRoomState.CurrentHandState.Trump == oldTrump2)
-                    {
-                        break;
-                    }
-                    oldTrump2 = CurrentRoomState.CurrentHandState.Trump;
+                    log.Debug("no one made trump, default to no-trump");
+                    CurrentRoomState.CurrentHandState.TrumpExposingPoker = TrumpExposingPoker.PairRedJoker;
+                    CurrentRoomState.CurrentHandState.TrumpMaker = CurrentRoomState.CurrentHandState.Starter;
+                    CurrentRoomState.CurrentHandState.Trump = Suit.Joker;
                 }
-                if (CurrentRoomState.CurrentHandState.Trump != Suit.None)
-                {
-                    if (DistributeLast8Cards()) return;
-                }
-                else if (IsAllOnline())
-                {
-                    //如果下家也亮不起，重新发牌
-                    StartNextHand(nextStarter);
-                }
+                DistributeLast8Cards();
             }
         }
 

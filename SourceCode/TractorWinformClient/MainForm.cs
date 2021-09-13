@@ -896,14 +896,14 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_TrumpUpdated(CurrentHandState currentHandState)
         {
             if (HandStep.DistributingCards <= this.ThisPlayer.CurrentHandState.CurrentHandStep &&
-                this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.Playing)
+                this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
             {
                 soundPlayerTrumpUpdated.Play(this.enableSound);
             }
 
             ThisPlayer.CurrentHandState = currentHandState;
             drawingFormHelper.Trump();
-            drawingFormHelper.TrumpMadeCardsShow();
+            if (this.ThisPlayer.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards) drawingFormHelper.TrumpMadeCardsShow();
             drawingFormHelper.ReDrawToolbar();
             if (ThisPlayer.CurrentHandState.IsFirstHand)
             {
@@ -2570,6 +2570,8 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
+            ThisPlayer.CurrentHandState.Score = 0;
+            ThisPlayer.CurrentHandState.ScoreCards.Clear();
             ThisPlayer.CurrentPoker = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[players[0]];
 
             Graphics g = Graphics.FromImage(bmp);
@@ -2607,6 +2609,7 @@ namespace Duan.Xiugang.Tractor
             if (trick == null)
             {
                 drawingFormHelper.DrawFinishedSendedCards();
+                ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
                 return;
             }
             drawingFormHelper.DrawCenterImage();
