@@ -458,7 +458,7 @@
             this.Controls.Add(this.cbxMust_0);
             this.Controls.Add(this.lblAllowRiotByScore);
             this.Name = "FormRoomSetting";
-            this.Text = "FormRoomSetting";
+            this.Text = "房间设置";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -117,7 +117,7 @@
             this.Controls.Add(this.lblReplayDate);
             this.Controls.Add(this.lblSelectReplay);
             this.Name = "FormSelectReplay";
-            this.Text = "SelectReplay";
+            this.Text = "选择录像回放";
             this.ResumeLayout(false);
             this.PerformLayout();
 

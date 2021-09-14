@@ -195,7 +195,7 @@
             this.Controls.Add(this.tbxHostName);
             this.Controls.Add(this.lblHostName);
             this.Name = "FormSettings";
-            this.Text = "FormSettings";
+            this.Text = "游戏设置";
             ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
