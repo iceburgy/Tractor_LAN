@@ -2138,7 +2138,7 @@ namespace Duan.Xiugang.Tractor
 
         private void FeatureOverviewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/README.md");
+            Process.Start("https://github.com/iceburgy/Tractor_LAN/blob/master/README.md");
         }
 
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
