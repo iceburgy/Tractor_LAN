@@ -1239,21 +1239,10 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_ReplayStateReceived(ReplayEntity replayState)
         {
-            string[] paths = replayState.ReplayId.Split(new string[] { CommonMethods.replaySeparator }, StringSplitOptions.RemoveEmptyEntries);
-            if (paths.Length != 2)
+            if (!CommonMethods.SaveReplayToFile(replayState, rootReplayFolderPath))
             {
                 this.drawingFormHelper.DrawMessages(new string[] { "Â¼ÏñÎÄ¼þÃû´íÎó", replayState.ReplayId });
-                return;
-            }
-            string fullFolderPath = string.Format("{0}\\{1}", rootReplayFolderPath, paths[0]);
-            if (!Directory.Exists(fullFolderPath))
-            {
-                Directory.CreateDirectory(fullFolderPath);
-            }
-
-            string fullFilePath = string.Format("{0}\\{1}.json", fullFolderPath, paths[1]);
-            string jsonData = JsonConvert.SerializeObject(replayState);
-            File.WriteAllText(fullFilePath, jsonData);            
+            }           
         }
 
         private void DisplayRoomSetting(string prefix)

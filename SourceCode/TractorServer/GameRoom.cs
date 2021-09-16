@@ -1,4 +1,5 @@
 ﻿﻿using Duan.Xiugang.Tractor.Objects;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +16,10 @@ namespace TractorServer
     {
         private log4net.ILog log;
         public static string LogsFolder = "logs";
+        public static string ReplaysFolder = "replays";
         public string LogsByRoomFolder;
+        public string ReplaysByRoomFolder;
+        public string ReplaysByRoomFullFolder;
 
         TractorHost tractorHost;
         public RoomState CurrentRoomState;
@@ -32,6 +36,7 @@ namespace TractorServer
             this.tractorHost = host;
             CurrentRoomState = new RoomState(roomID);
             LogsByRoomFolder = string.Format("{0}\\{1}", LogsFolder, roomID);
+            ReplaysByRoomFolder = string.Format("{0}\\{1}", ReplaysFolder, roomID);
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
@@ -46,6 +51,8 @@ namespace TractorServer
             string fullFolder = Path.GetDirectoryName(fullPath);
             string fullLogFilePath = string.Format("{0}\\{1}\\myroom_{2}_logfile.txt", fullFolder, LogsByRoomFolder, roomID);
             log = LoggerUtil.Setup(string.Format("myroom_{0}_logfile", roomID), fullLogFilePath);
+
+            ReplaysByRoomFullFolder = string.Format("{0}\\{1}", fullFolder, ReplaysByRoomFolder);
         }
 
         #region implement interface ITractorHost
@@ -1704,6 +1711,11 @@ namespace TractorServer
         {
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
+
+            if (!CommonMethods.SaveReplayToFile(this.replayEntity, ReplaysByRoomFullFolder))
+            {
+                this.log.Debug(string.Format("录像文件名错误: {0}", this.replayEntity.ReplayId));
+            }
         }
 
         public void PublishMessage(string[] msg)
