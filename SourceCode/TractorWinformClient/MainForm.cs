@@ -2149,7 +2149,7 @@ namespace Duan.Xiugang.Tractor
 
         private void FeatureOverviewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("https://github.com/iceburgy/Tractor_LAN/blob/master/README.md");
+            Process.Start("https://raw.githubusercontent.com/iceburgy/Tractor_LAN/master/README.md");
         }
 
         private void TeamUpToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2365,7 +2365,7 @@ namespace Duan.Xiugang.Tractor
         {
             string userManual = "";
             userManual = "【基本规则】";
-            userManual += "\n- 无人亮主，庄家将会自动下台";
+            userManual += "\n- 如果无人亮主，则打无主";
             userManual += "\n- 甩牌失败，将会以每张10分进行罚分";
             userManual += "\n\n【隐藏技】";
             userManual += "\n- 右键选牌：自动向左选择所有合法张数的牌（适用于出牌、埋底）";

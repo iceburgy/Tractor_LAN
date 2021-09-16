@@ -36,11 +36,9 @@ SourceCode/ConsoleHost/bin/
 SourceCode/ModelResources/bin/
 SourceCode/OperaResources/bin/
 SourceCode/Player/bin/
-SourceCode/TractorBusinessObjects/ClientInfo.cs
 SourceCode/TractorBusinessObjects/bin/
 SourceCode/TractorFere/bin/
 SourceCode/TractorServer/bin/
-SourceCode/TractorWinformClient/Properties/app.manifest
 SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.dll
 SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.xml
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Objects.dll
