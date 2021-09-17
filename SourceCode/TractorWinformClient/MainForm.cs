@@ -2597,7 +2597,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.replayedTricks.Push(trick);
             if (trick == null)
             {
-                ThisPlayer.CurrentHandState = ThisPlayer.replayEntity.CurrentHandState;
+                ThisPlayer.CurrentHandState.Score = ThisPlayer.replayEntity.CurrentHandState.Score;
                 drawingFormHelper.DrawFinishedSendedCards();
                 return;
             }
@@ -2759,7 +2759,11 @@ namespace Duan.Xiugang.Tractor
         {
             CurrentTrickState trick = ThisPlayer.replayedTricks.Pop();
             ThisPlayer.replayEntity.CurrentTrickStates.Insert(0, trick);
-            if (trick != null)
+            if (trick == null)
+            {
+                ThisPlayer.CurrentHandState.Score -= ThisPlayer.CurrentHandState.ScorePunishment + ThisPlayer.CurrentHandState.ScoreLast8CardsBase * ThisPlayer.CurrentHandState.ScoreLast8CardsMultiplier;
+            }
+            else
             {
                 foreach (var entry in trick.ShowedCards)
                 {
