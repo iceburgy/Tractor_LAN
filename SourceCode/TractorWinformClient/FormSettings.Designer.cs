@@ -42,6 +42,7 @@
             this.tbxVideoCallUrl = new System.Windows.Forms.TextBox();
             this.lblVideoCallUrl = new System.Windows.Forms.Label();
             this.cbxEnableCutCards = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.tbrGameSoundVolume)).BeginInit();
             this.SuspendLayout();
             // 
@@ -173,6 +174,15 @@
             this.cbxEnableCutCards.Text = "开启切牌功能";
             this.cbxEnableCutCards.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(310, 89);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(67, 20);
+            this.label1.TabIndex = 11;
+            this.label1.Text = "* 需重启";
+            // 
             // FormSettings
             // 
             this.AcceptButton = this.btnOK;
@@ -180,6 +190,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(422, 454);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.cbxEnableCutCards);
             this.Controls.Add(this.tbxVideoCallUrl);
             this.Controls.Add(this.lblVideoCallUrl);
@@ -218,5 +229,6 @@
         private System.Windows.Forms.TextBox tbxVideoCallUrl;
         private System.Windows.Forms.Label lblVideoCallUrl;
         private System.Windows.Forms.CheckBox cbxEnableCutCards;
+        private System.Windows.Forms.Label label1;
     }
 }

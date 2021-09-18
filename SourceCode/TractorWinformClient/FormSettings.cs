@@ -49,14 +49,16 @@ namespace Duan.Xiugang.Tractor
         };
 
         string hostName = "";
+        string nickName = "";
 
         public FormSettings()
         {
             InitializeComponent();
             hostName = GetHostAndPortFromConfig();
+            nickName = GetSettingString(KeyNickName);
 
             this.tbxHostName.Text = hostName;
-            this.tbxNickName.Text = GetSettingString(KeyNickName);
+            this.tbxNickName.Text = nickName;
             this.tbxVideoCallUrl.Text = GetSettingString(KeyVideoCallUrl);
             this.cbxUpdateOnLoad.Checked = GetSettingBool(KeyUpdateOnLoad);
             this.cbxEnableSound.Checked = GetSettingBool(KeyEnableSound);
@@ -180,7 +182,9 @@ namespace Duan.Xiugang.Tractor
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            bool needRestart = (!string.IsNullOrEmpty(hostName) && !hostName.Equals(this.tbxHostName.Text, StringComparison.InvariantCultureIgnoreCase));
+            bool hostNameChanged = !string.IsNullOrEmpty(hostName) && !hostName.Equals(this.tbxHostName.Text, StringComparison.InvariantCultureIgnoreCase);
+            bool nicknameChanged = !string.IsNullOrEmpty(nickName) && !nickName.Equals(this.tbxNickName.Text, StringComparison.InvariantCultureIgnoreCase);
+            bool needRestart = hostNameChanged || nicknameChanged;
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
             SetSetting(KeyNickName, tbxNickName.Text);
             SetSetting(KeyVideoCallUrl, tbxVideoCallUrl.Text);

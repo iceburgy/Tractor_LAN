@@ -56,6 +56,7 @@ namespace Duan.Xiugang.Tractor.Player
         public string PlayerName { get; set; }
         public int Rank { get; set; }
         public bool isObserver { get; set; }
+        public bool isObserverChanged { get; set; }
         public bool isReplay { get; set; }
         public ReplayEntity replayEntity { get; set; }
         public Stack<CurrentTrickState> replayedTricks { get; set; }
@@ -453,8 +454,12 @@ namespace Duan.Xiugang.Tractor.Player
             {
                 if (p != null && p.Observers.Contains(this.MyOwnId))
                 {
-                    this.isObserver = true;
-                    this.PlayerId = p.PlayerId;
+                    if (this.PlayerId != p.PlayerId)
+                    {
+                        this.isObserver = true;
+                        this.isObserverChanged = true;
+                        this.PlayerId = p.PlayerId;
+                    }
                     break;
                 }
             }

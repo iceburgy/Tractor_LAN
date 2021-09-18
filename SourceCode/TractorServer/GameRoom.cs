@@ -809,7 +809,7 @@ namespace TractorServer
             foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || !player.IsOffline) continue;
-                if ((DateTime.Now - player.OfflineSince).Seconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
+                if ((DateTime.Now - player.OfflineSince).TotalSeconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
                 if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
                     CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                 {
@@ -1244,7 +1244,7 @@ namespace TractorServer
             }
             //即时更新旁观手牌
             UpdateGameState();
-            if (new HandStep[] { HandStep.DiscardingLast8Cards, HandStep.Playing }.Contains(this.CurrentRoomState.CurrentHandState.CurrentHandStep))
+            if (HandStep.DistributingCards <= this.CurrentRoomState.CurrentHandState.CurrentHandStep && this.CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing)
             {
                 UpdatePlayersCurrentHandState();
             }

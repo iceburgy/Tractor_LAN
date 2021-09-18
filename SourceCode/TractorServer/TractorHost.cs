@@ -154,7 +154,7 @@ namespace TractorServer
 
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
-            string clientIP = GetClientIP();
+            string clientIP = PlayerToIP[playerID];
             IPlayer player = PlayersProxy[playerID];
             if (player != null)
             {
@@ -229,8 +229,24 @@ namespace TractorServer
         //玩家退出游戏
         public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
-            string clientIP = GetClientIP();
-            if (!this.PlayerToIP.ContainsValue(clientIP)) return new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
+            IAsyncResult iAsyncResult=new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
+            
+            //如果玩家处于离线状态，则不要将其退出
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return iAsyncResult;
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            if (!gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID))return iAsyncResult;
+            PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p.PlayerId == playerID);
+            if (player.IsOffline) return iAsyncResult;
+
+            string clientIP = "";
+            if (PlayerToIP.ContainsKey(playerID))
+            {
+                clientIP = PlayerToIP[playerID];
+            }
+            else
+            {
+                return iAsyncResult;
+            }
 
             PlayerExitRoom(playerID);
 
@@ -511,11 +527,17 @@ namespace TractorServer
         public static string GetClientIP()
         {
             string ip = "";
-            OperationContext context = OperationContext.Current;
-            MessageProperties prop = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint =
-                   prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-            ip = endpoint.Address;
+            try
+            {
+                OperationContext context = OperationContext.Current;
+                MessageProperties prop = context.IncomingMessageProperties;
+                RemoteEndpointMessageProperty endpoint =
+                       prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+                ip = endpoint.Address;
+            }
+            catch (Exception)
+            {
+            }
             return ip;
         }
 
