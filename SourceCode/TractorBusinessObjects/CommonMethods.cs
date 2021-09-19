@@ -15,27 +15,53 @@ namespace Duan.Xiugang.Tractor.Objects
     public static class CommonMethods
     {
         public static string replaySeparator = "===";
+        public static string reenterRoomSignal = "断线重连中,请稍后...";
+        public static string resumeGameSignal = "牌局加载中,请稍后...";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
-        public static bool SaveReplayToFile(ReplayEntity replayEntity, string folder)
+        public static void WriteObjectToFile(object data, string fullFolderPath, string fileName)
+        {
+            try
+            {
+                if (!Directory.Exists(fullFolderPath))
+                {
+                    Directory.CreateDirectory(fullFolderPath);
+                }
+                string fullFilePath = string.Format("{0}\\{1}", fullFolderPath, fileName);
+                string jsonData = JsonConvert.SerializeObject(data);
+                File.WriteAllText(fullFilePath, jsonData);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public static T ReadObjectFromFile<T>(string fullFilePath)
+        {
+            try
+            {
+                if (File.Exists(fullFilePath))
+                {
+                    string jsonString = File.ReadAllText(fullFilePath);
+                    return JsonConvert.DeserializeObject<T>(jsonString);
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return default(T);
+        }
+
+        public static string[] GetReplayEntityFullFilePath(ReplayEntity replayEntity, string folder)
         {
             string[] paths = replayEntity.ReplayId.Split(new string[] { CommonMethods.replaySeparator }, StringSplitOptions.RemoveEmptyEntries);
             if (paths.Length != 2)
             {
-                return false;
+                return null;
             }
 
             string fullFolderPath = string.Format("{0}\\{1}", folder, paths[0]);
-            if (!Directory.Exists(fullFolderPath))
-            {
-                Directory.CreateDirectory(fullFolderPath);
-            }
-
-            string fullFilePath = string.Format("{0}\\{1}.json", fullFolderPath, paths[1]);
-            string jsonData = JsonConvert.SerializeObject(replayEntity);
-            File.WriteAllText(fullFilePath, jsonData);
-
-            return true;
+            return new string[] { fullFolderPath, string.Format("{0}.json", paths[1]) };
         }
 
         public static void RotateArray<T>(T[] array, int pivot)

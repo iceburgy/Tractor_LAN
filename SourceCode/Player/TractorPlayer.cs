@@ -63,6 +63,7 @@ namespace Duan.Xiugang.Tractor.Player
         public int replayAngle { get; set; }
         public string MyOwnId { get; set; }
         public bool IsTryingReenter { get; set; }
+        public bool IsTryingResumeGame { get; set; }
 
         public GameState CurrentGameState;
         public CurrentPoker CurrentPoker;
@@ -157,6 +158,11 @@ namespace Duan.Xiugang.Tractor.Player
         public void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe)
         {
             _tractorHost.RestoreGameStateFromFile(playerId, restoreCardsShoe);
+        }
+
+        public void ResumeGameFromFile(string playerId)
+        {
+            _tractorHost.ResumeGameFromFile(playerId);
         }
 
         public void SetBeginRank(string playerId, string beginRankString)
@@ -304,7 +310,7 @@ namespace Duan.Xiugang.Tractor.Player
             this.CurrentHandState = currentHandState;
 
             //断线重连后重画手牌
-            if (this.IsTryingReenter)
+            if (this.IsTryingReenter || this.IsTryingResumeGame)
             {
                 this.CurrentPoker = (CurrentPoker)this.CurrentHandState.PlayerHoldingCards[this.MyOwnId].Clone();
                 this.CurrentPoker.Rank = this.CurrentHandState.Rank;
@@ -419,7 +425,7 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyCurrentTrickState(CurrentTrickState currentTrickState)
         {
             this.CurrentTrickState = currentTrickState;
-            if (this.IsTryingReenter) return;
+            if (this.IsTryingReenter || this.IsTryingResumeGame) return;
 
             if (this.CurrentHandState.CurrentHandStep == HandStep.Ending || this.CurrentHandState.CurrentHandStep == HandStep.SpecialEnding)
             {
@@ -518,13 +524,14 @@ namespace Duan.Xiugang.Tractor.Player
                 NewPlayerJoined();
             }
 
-            if (this.IsTryingReenter)
+            if (this.IsTryingReenter || this.IsTryingResumeGame)
             {
                 if (ReenterFromOfflineEvent != null)
                 {
                     ReenterFromOfflineEvent();
                 }
                 this.IsTryingReenter = false;
+                this.IsTryingResumeGame = false;
             }
         }
 

@@ -7,6 +7,7 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class PlayerEntity
     {
+        [DataMember]
         public DateTime OfflineSince { get; set; }
 
         [DataMember]

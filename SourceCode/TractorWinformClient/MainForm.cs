@@ -920,8 +920,11 @@ namespace Duan.Xiugang.Tractor
         //断线重连，重画手牌和出的牌
         private void ThisPlayer_ReenterFromOfflineEventHandler()
         {
-            this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-            this.ThisPlayer_PlayerCurrentTrickShowedCards();
+            if (ThisPlayer.IsTryingReenter)
+            {
+                this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+                this.ThisPlayer_PlayerCurrentTrickShowedCards();
+            }
             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
         }
 
@@ -1177,7 +1180,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerJoined()
         {
-            if (this.ToolStripMenuItemEnterRoom0.Enabled || ThisPlayer.IsTryingReenter)
+            if (this.ToolStripMenuItemEnterRoom0.Enabled || ThisPlayer.IsTryingReenter || ThisPlayer.IsTryingResumeGame)
             {
                 this.ToolStripMenuItemEnterRoom0.Enabled = false;
                 HideRoomControls();
@@ -1239,10 +1242,15 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_ReplayStateReceived(ReplayEntity replayState)
         {
-            if (!CommonMethods.SaveReplayToFile(replayState, rootReplayFolderPath))
+            string[] fileInfo = CommonMethods.GetReplayEntityFullFilePath(replayState, rootReplayFolderPath);
+            if (fileInfo != null)
+            {
+                CommonMethods.WriteObjectToFile(replayState, fileInfo[0], string.Format("{0}.json", fileInfo[1]));
+            }
+            else
             {
                 this.drawingFormHelper.DrawMessages(new string[] { "录像文件名错误", replayState.ReplayId });
-            }           
+            }
         }
 
         private void DisplayRoomSetting(string prefix)
@@ -1368,6 +1376,7 @@ namespace Duan.Xiugang.Tractor
             {
                 //显示仅房主可见的菜单
                 this.BeginRankToolStripMenuItem.Visible = true;
+                this.ResumeGameToolStripMenuItem.Visible = true;
                 this.RestoreGameStateToolStripMenuItem.Visible = true;
                 this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = true;
                 this.TeamUpToolStripMenuItem.Visible = true;
@@ -1451,6 +1460,7 @@ namespace Duan.Xiugang.Tractor
 
             //隐藏仅房主可见的菜单
             this.BeginRankToolStripMenuItem.Visible = false;
+            this.ResumeGameToolStripMenuItem.Visible = false;
             this.RestoreGameStateToolStripMenuItem.Visible = false;
             this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Visible = false;
@@ -1862,11 +1872,15 @@ namespace Duan.Xiugang.Tractor
                 {
                     soundPlayerGameOver.Play(this.enableSound);
                 }
-                else if (m.Equals("断线重连中,请稍后..."))
+                else if (m.Equals(CommonMethods.reenterRoomSignal))
                 {
                     ThisPlayer.IsTryingReenter = true;
                     this.btnEnterHall.Hide();
                     this.btnReplay.Hide();
+                }
+                else if (m.Equals(CommonMethods.resumeGameSignal))
+                {
+                    ThisPlayer.IsTryingResumeGame = true;
                 }
                 else if (m.Contains("新游戏即将开始"))
                 {
@@ -2104,6 +2118,18 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, false);
+        }
+
+        private void ResumeGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver) return;
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许继续牌局", "请完成此盘游戏后重试" });
+                return;
+            }
+
+            ThisPlayer.ResumeGameFromFile(ThisPlayer.MyOwnId);
         }
 
         private void RestoreGameStateCardsShoeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2499,8 +2525,7 @@ namespace Duan.Xiugang.Tractor
         private void LoadReplay()
         {
             string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
-            string jsonString = File.ReadAllText(replayFile);
-            ReplayEntity replayEntity = JsonConvert.DeserializeObject<ReplayEntity>(jsonString);
+            ReplayEntity replayEntity = CommonMethods.ReadObjectFromFile<ReplayEntity>(replayFile);
 
             ThisPlayer.replayEntity = replayEntity;
             ThisPlayer.replayEntity.CurrentTrickStates.Add(null); // use null to indicate end of tricks, so that to show ending scores

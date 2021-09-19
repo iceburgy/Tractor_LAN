@@ -17,6 +17,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const int RESTART_GAME = 1;
         public const int RESTART_CURRENT_HAND = 2;
         public const int START_NEXT_HAND = 3;
+        [DataMember]
         public PlayerEntity startNextHandStarter = null;
 
         public GameState()

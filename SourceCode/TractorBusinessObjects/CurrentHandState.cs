@@ -10,6 +10,7 @@ namespace Duan.Xiugang.Tractor.Objects
     public class CurrentHandState
     {
         //庄
+        [DataMember]
         public string Id;
         [DataMember]
         public Dictionary<string, CurrentPoker> PlayerHoldingCards;
@@ -134,6 +135,7 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public int ScorePunishment { get; set; }
 
+        [DataMember]
         public int LeftCardsCount { get; set; }
     }
 }

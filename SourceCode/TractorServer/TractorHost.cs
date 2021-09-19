@@ -68,9 +68,9 @@ namespace TractorServer
                 GameRoom gameRoom = new GameRoom(i, RoomNames[i], this);
                 RoomStates.Add(gameRoom.CurrentRoomState);
                 GameRooms.Add(gameRoom);
-                if (!Directory.Exists(gameRoom.LogsByRoomFolder))
+                if (!Directory.Exists(gameRoom.LogsByRoomFullFolder))
                 {
-                    Directory.CreateDirectory(gameRoom.LogsByRoomFolder);
+                    Directory.CreateDirectory(gameRoom.LogsByRoomFullFolder);
                 }
             }
             SessionIDGameRoom = new Dictionary<string, GameRoom>();
@@ -120,7 +120,7 @@ namespace TractorServer
                 {
                     //断线重连
                     log.Debug(string.Format("player {0} re-entered hall from offline.", playerID));
-                    player.NotifyMessage(new string[] { "断线重连中,请稍后..." });
+                    player.NotifyMessage(new string[] { CommonMethods.reenterRoomSignal });
                     Thread.Sleep(2000);
 
                     GameRoom gameRoom = this.SessionIDGameRoom[playerID];
@@ -232,11 +232,13 @@ namespace TractorServer
             IAsyncResult iAsyncResult=new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
             
             //如果玩家处于离线状态，则不要将其退出
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return iAsyncResult;
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            if (!gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID))return iAsyncResult;
-            PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p.PlayerId == playerID);
-            if (player.IsOffline) return iAsyncResult;
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                if (!gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID)) return iAsyncResult;
+                PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p.PlayerId == playerID);
+                if (player.IsOffline && (DateTime.Now - player.OfflineSince).TotalSeconds <= gameRoom.CurrentRoomState.roomSetting.secondsToWaitForReenter) return iAsyncResult;
+            }
 
             string clientIP = "";
             if (PlayerToIP.ContainsKey(playerID))
@@ -416,6 +418,16 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.RestoreGameStateFromFile(restoreCardsShoe);
+            }
+        }
+
+        //继续牌局
+        public void ResumeGameFromFile(string playerId)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerId))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
+                gameRoom.ResumeGameFromFile();
             }
         }
 

@@ -17,8 +17,13 @@ namespace TractorServer
         private log4net.ILog log;
         public static string LogsFolder = "logs";
         public static string ReplaysFolder = "replays";
-        public string LogsByRoomFolder;
-        public string ReplaysByRoomFolder;
+        public static string ClientinfoFileName = "clientinfo.json";
+        public string BackupGamestateFileName = "backup_gamestate.json";
+        public string BackupHandStateFileName = "backup_HandState.json";
+        public string BackupTrickStateFileName = "backup_TrickState.json";
+        public string BackupCardsShoeFileName = "backup_CardsShoe.json";
+        public string BackupRoomSettingFileName = "backup_RoomSetting.json";
+        public string LogsByRoomFullFolder;
         public string ReplaysByRoomFullFolder;
 
         TractorHost tractorHost;
@@ -33,10 +38,12 @@ namespace TractorServer
 
         public GameRoom(int roomID, string roomName, TractorHost host)
         {
+            string rootFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            LogsByRoomFullFolder = string.Format("{0}\\{1}\\{2}", rootFolder, LogsFolder, roomID);
+            ReplaysByRoomFullFolder = string.Format("{0}\\{1}\\{2}", rootFolder, ReplaysFolder, roomID);
+
             this.tractorHost = host;
             CurrentRoomState = new RoomState(roomID);
-            LogsByRoomFolder = string.Format("{0}\\{1}", LogsFolder, roomID);
-            ReplaysByRoomFolder = string.Format("{0}\\{1}", ReplaysFolder, roomID);
             CardsShoe = new CardsShoe();
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
@@ -47,12 +54,9 @@ namespace TractorServer
             CurrentRoomState.roomSetting.secondsToWaitForReenter = 60;
             if (TractorHost.gameConfig != null) CurrentRoomState.roomSetting.IsFullDebug = TractorHost.gameConfig.IsFullDebug;
 
-            string fullPath = Assembly.GetExecutingAssembly().Location;
-            string fullFolder = Path.GetDirectoryName(fullPath);
-            string fullLogFilePath = string.Format("{0}\\{1}\\myroom_{2}_logfile.txt", fullFolder, LogsByRoomFolder, roomID);
+            string fullLogFilePath = string.Format("{0}\\myroom_{1}_logfile.txt", LogsByRoomFullFolder, roomID);
             log = LoggerUtil.Setup(string.Format("myroom_{0}_logfile", roomID), fullLogFilePath);
 
-            ReplaysByRoomFullFolder = string.Format("{0}\\{1}", fullFolder, ReplaysByRoomFolder);
         }
 
         #region implement interface ITractorHost
@@ -514,6 +518,7 @@ namespace TractorServer
             }
 
             SaveGameStateToFile();
+            CleanupCardsShoeFile();
 
             UpdatePlayersCurrentHandState();
 
@@ -676,7 +681,7 @@ namespace TractorServer
 
                 CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
 
-                this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
+                if (this.replayEntity != null) this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
 
                 //开始新的回合
                 if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
@@ -687,11 +692,14 @@ namespace TractorServer
                 {
                     //扣底
                     CalculatePointsFromDiscarded8Cards();
-                    this.replayEntity.CurrentHandState.ScoreLast8CardsBase = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase;
-                    this.replayEntity.CurrentHandState.ScoreLast8CardsMultiplier = CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
-                    this.replayEntity.CurrentHandState.Score = CurrentRoomState.CurrentHandState.Score;
-                    this.replayEntity.CurrentHandState.ScoreCards = CurrentRoomState.CurrentHandState.ScoreCards;
-                    this.replayEntity.CurrentHandState.ScorePunishment = CurrentRoomState.CurrentHandState.ScorePunishment;
+                    if (this.replayEntity != null)
+                    {
+                        this.replayEntity.CurrentHandState.ScoreLast8CardsBase = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase;
+                        this.replayEntity.CurrentHandState.ScoreLast8CardsMultiplier = CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
+                        this.replayEntity.CurrentHandState.Score = CurrentRoomState.CurrentHandState.Score;
+                        this.replayEntity.CurrentHandState.ScoreCards = CurrentRoomState.CurrentHandState.ScoreCards;
+                        this.replayEntity.CurrentHandState.ScorePunishment = CurrentRoomState.CurrentHandState.ScorePunishment;
+                    }
                     //log score details
                     int scoreLast8Cards = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase * CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
                     log.Debug("score from score cards: " + (CurrentRoomState.CurrentHandState.Score - scoreLast8Cards - CurrentRoomState.CurrentHandState.ScorePunishment));
@@ -745,7 +753,7 @@ namespace TractorServer
                         CurrentRoomState.CurrentGameState.startNextHandStarter = null;
                     }
 
-                    SaveGameStateToFile();
+                    CleanupCardsShoeFile();
 
                     UpdatePlayersCurrentHandState();
 
@@ -764,9 +772,13 @@ namespace TractorServer
                         CleanupCaches();
 
                         StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                        return;
                     }
                     CleanupOfflinePlayers();
                 }
+
+                //保存游戏当前状态，以备继续游戏
+                SaveGameStateToFile();
             }
             else
             {
@@ -1028,139 +1040,166 @@ namespace TractorServer
                 PublishMessage(new string[] { "读取牌局失败", "玩家人数不够" });
                 return;
             }
-
-            Stream stream = null;
-            Stream stream2 = null;
             List<string> restoredMsg = new List<string>();
-            try
+            string fileNameGamestate = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupGamestateFileName);
+            GameState gs = CommonMethods.ReadObjectFromFile<GameState>(fileNameGamestate);
+            if (gs == null)
             {
-                DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
-                string fileNameGamestate = string.Format("{0}\\backup_gamestate.xml", this.LogsByRoomFolder);
-                stream = new FileStream(fileNameGamestate, FileMode.Open, FileAccess.Read, FileShare.Read);
-                GameState gs = (GameState)ser.ReadObject(stream);
-
-                for (int i = 0; i < 4; i++)
-                {
-                    CurrentRoomState.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
-                }
-
-                string fileNameHandState = string.Format("{0}\\backup_HandState.xml", this.LogsByRoomFolder);
-                DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
-                stream2 = new FileStream(fileNameHandState, FileMode.Open, FileAccess.Read, FileShare.Read);
-                CurrentHandState hs = (CurrentHandState)ser2.ReadObject(stream2);
-
-                int lastStarterIndex = -1;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (gs.Players[i] != null && gs.Players[i].PlayerId == hs.Starter)
-                    {
-                        lastStarterIndex = i;
-                        break;
-                    }
-                }
-
-                if (lastStarterIndex < 0)
-                {
-                    PublishMessage(new string[] { "读取牌局失败", "上盘牌局无庄家" });
-                    return;
-                }
-
-                PlayerEntity thisStarter = CurrentRoomState.CurrentGameState.Players[lastStarterIndex];
-
-                CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-                CurrentRoomState.CurrentHandState.Starter = thisStarter.PlayerId;
-                CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
-                CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-
-                CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-                CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
-
-                for (int i = 0; i < 4; i++)
-                {
-                    CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
-                    CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
-                }
-
-                UpdateGameState();
-                UpdatePlayersCurrentHandState();
-
-                restoredMsg.Add("读取牌局【成功】");
-
-            }
-            catch (Exception ex)
-            {
-                log.Debug(string.Format("读取牌局 error: {0}", ex));
-                restoredMsg.Add("读取牌局【失败】");
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-                if (stream2 != null)
-                {
-                    stream2.Close();
-                }
-                if (restoreCardsShoe)
-                {
-                    Stream stream3 = null;
-                    try
-                    {
-                        string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                        DataContractSerializer ser3 = new DataContractSerializer(typeof(CardsShoe));
-                        stream3 = new FileStream(fileNameCardsShoe, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        CardsShoe cs = (CardsShoe)ser3.ReadObject(stream3);
-                        this.CardsShoe.IsCardsRestored = true;
-                        this.CardsShoe.Cards = cs.Cards;
-                        restoredMsg.Add("还原手牌【成功】");
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Debug(string.Format("还原手牌 error: {0}", ex));
-                        restoredMsg.Add("还原手牌【失败】");
-                    }
-                    finally
-                    {
-                        if (stream3 != null)
-                        {
-                            stream3.Close();
-                        }
-                    }
-                }
-                restoredMsg.Add("请点击就绪继续游戏");
+                restoredMsg.Add("读取牌局【失败】- GameState");
                 PublishMessage(restoredMsg.ToArray());
+                return;
             }
+            gs.Players.RemoveAll(p => p == null);
+
+            string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
+            CurrentHandState hs = CommonMethods.ReadObjectFromFile<CurrentHandState>(fileNameHandState);
+            if (hs == null)
+            {
+                restoredMsg.Add("读取牌局【失败】- HandState");
+                PublishMessage(restoredMsg.ToArray());
+                return;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                CurrentRoomState.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
+            }
+            int lastStarterIndex = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                if (gs.Players[i] != null && gs.Players[i].PlayerId == hs.Starter)
+                {
+                    lastStarterIndex = i;
+                    break;
+                }
+            }
+
+            if (lastStarterIndex < 0)
+            {
+                PublishMessage(new string[] { "读取牌局失败", "上盘牌局无庄家" });
+                return;
+            }
+
+            PlayerEntity thisStarter = CurrentRoomState.CurrentGameState.Players[lastStarterIndex];
+
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.Starter = thisStarter.PlayerId;
+            CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+
+            CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+            CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
+
+            for (int i = 0; i < 4; i++)
+            {
+                CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
+                CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+            }
+
+            UpdateGameState();
+            UpdatePlayersCurrentHandState();
+
+            restoredMsg.Add("读取牌局【成功】");
+
+            if (restoreCardsShoe)
+            {
+                string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
+                CardsShoe cs = CommonMethods.ReadObjectFromFile<CardsShoe>(fileNameCardsShoe);
+                if (cs == null)
+                {
+                    restoredMsg.Add("还原手牌【失败】");
+                }
+                else
+                {
+                    this.CardsShoe.IsCardsRestored = true;
+                    this.CardsShoe.Cards = cs.Cards;
+                    restoredMsg.Add("还原手牌【成功】");
+                }
+            }
+            restoredMsg.Add("请点击就绪继续游戏");
+            PublishMessage(restoredMsg.ToArray());
+        }
+
+        //继续牌局
+        public void ResumeGameFromFile()
+        {
+            bool isValid = true;
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            if (!isValid)
+            {
+                PublishMessage(new string[] { "继续牌局失败", "玩家人数不够" });
+                return;
+            }
+            List<string> restoredMsg = new List<string>();
+            string fileNameGamestate = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupGamestateFileName);
+
+            GameState gs = CommonMethods.ReadObjectFromFile<GameState>(fileNameGamestate);
+            if (gs == null)
+            {
+                restoredMsg.Add("继续牌局【失败】- GameState");
+                PublishMessage(restoredMsg.ToArray());
+                return;
+            }
+            gs.Players.RemoveAll(p => p == null);
+            CurrentRoomState.CurrentGameState = gs;
+
+            string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
+            CurrentHandState hs = CommonMethods.ReadObjectFromFile<CurrentHandState>(fileNameHandState);
+            if (hs == null)
+            {
+                restoredMsg.Add("继续牌局【失败】- HandState");
+                PublishMessage(restoredMsg.ToArray());
+                return;
+            }
+            CurrentRoomState.CurrentHandState = hs;
+
+            string fileNameTrickState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupTrickStateFileName);
+            CurrentTrickState ts = CommonMethods.ReadObjectFromFile<CurrentTrickState>(fileNameTrickState);
+            if (ts == null)
+            {
+                restoredMsg.Add("继续牌局【失败】- TrickState");
+                PublishMessage(restoredMsg.ToArray());
+                return;
+            }
+            CurrentRoomState.CurrentTrickState = ts;
+
+            for (int i = 0; i < 4; i++)
+            {
+                CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = true;
+                CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+            }
+
+            PublishMessage(new string[] { CommonMethods.resumeGameSignal });
+            Thread.Sleep(2000);
+
+            UpdatePlayerCurrentTrickState();
+            UpdatePlayersCurrentHandState();
+            Thread.Sleep(2000);
+            UpdateGameState();
+
+            restoredMsg.Add("继续牌局【成功】");
+            PublishMessage(restoredMsg.ToArray());
         }
 
         //读取房间游戏设置
         public RoomSetting ReadRoomSettingFromFile()
         {
-            Stream stream = null;
             RoomSetting roomSetting = new RoomSetting();
-            try
+            string fileNameRoomSetting = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupRoomSettingFileName);
+            RoomSetting rs = CommonMethods.ReadObjectFromFile<RoomSetting>(fileNameRoomSetting);
+            if (rs != null)
             {
-                string fileNameRoomSetting = string.Format("{0}\\backup_RoomSetting.xml", this.LogsByRoomFolder);
-                if (File.Exists(fileNameRoomSetting))
-                {
-                    DataContractSerializer ser = new DataContractSerializer(typeof(RoomSetting));
-                    stream = new FileStream(fileNameRoomSetting, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    roomSetting= (RoomSetting)ser.ReadObject(stream);
-                    roomSetting.SortManditoryRanks();
-                }
-                return roomSetting;
+            	roomSetting = rs;
             }
-            catch (Exception ex)
-            {
-                return roomSetting;
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-            }
+            return roomSetting;
         }
 
         //设置从几打起
@@ -1471,9 +1510,6 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCardsFinished;
             UpdatePlayersCurrentHandState();
 
-            SaveGameStateToFile();
-            SaveCardsShoeToFile();
-
             return false;
         }
 
@@ -1526,6 +1562,9 @@ namespace TractorServer
             Thread.Sleep(100);
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8Cards;
             UpdatePlayersCurrentHandState();
+
+            SaveGameStateToFile();
+            SaveCardsShoeToFile();
 
             return false;
         }
@@ -1601,90 +1640,30 @@ namespace TractorServer
         //保存牌局
         private void SaveGameStateToFile()
         {
-            if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter)) return;
-            Stream stream = null;
-            Stream stream2 = null;
-            try
-            {
-                string fileNameGamestate = string.Format("{0}\\backup_gamestate.xml", this.LogsByRoomFolder);
-                stream = new FileStream(fileNameGamestate, FileMode.Create, FileAccess.Write, FileShare.None);
-                DataContractSerializer ser = new DataContractSerializer(typeof(GameState));
-                ser.WriteObject(stream, CurrentRoomState.CurrentGameState);
+            CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentGameState, this.LogsByRoomFullFolder, this.BackupGamestateFileName);
+            CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentHandState, this.LogsByRoomFullFolder, this.BackupHandStateFileName);
+            CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentTrickState, this.LogsByRoomFullFolder, this.BackupTrickStateFileName);
+        }
 
-                string fileNameHandState = string.Format("{0}\\backup_HandState.xml", this.LogsByRoomFolder);
-                stream2 = new FileStream(fileNameHandState, FileMode.Create, FileAccess.Write, FileShare.None);
-                DataContractSerializer ser2 = new DataContractSerializer(typeof(CurrentHandState));
-                ser2.WriteObject(stream2, CurrentRoomState.CurrentHandState);
-
-                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                if (File.Exists(fileNameCardsShoe))
-                {
-                    File.Delete(fileNameCardsShoe);
-                }
-            }
-            catch (Exception ex)
+        private void CleanupCardsShoeFile()
+        {
+            string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
+            if (File.Exists(fileNameCardsShoe))
             {
-
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-                if (stream2 != null)
-                {
-                    stream2.Close();
-                }
+                File.Delete(fileNameCardsShoe);
             }
         }
 
         //保存手牌
         private void SaveCardsShoeToFile()
         {
-            Stream stream = null;
-            try
-            {
-                string fileNameCardsShoe = string.Format("{0}\\backup_CardsShoe.xml", this.LogsByRoomFolder);
-                stream = new FileStream(fileNameCardsShoe, FileMode.Create, FileAccess.Write, FileShare.None);
-                DataContractSerializer ser = new DataContractSerializer(typeof(CardsShoe));
-                ser.WriteObject(stream, this.CardsShoe);
-            }
-            catch (Exception ex)
-            {
-
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-            }
+            CommonMethods.WriteObjectToFile(this.CardsShoe, this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
         }
 
         //保存房间游戏设置
         private void SaveRoomSettingToFile()
         {
-            Stream stream = null;
-            try
-            {
-                string fileNameRoomSetting = string.Format("{0}\\backup_RoomSetting.xml", this.LogsByRoomFolder);
-                stream = new FileStream(fileNameRoomSetting, FileMode.Create, FileAccess.Write, FileShare.None);
-                DataContractSerializer ser = new DataContractSerializer(typeof(RoomSetting));
-                ser.WriteObject(stream, this.CurrentRoomState.roomSetting);
-            }
-            catch (Exception ex)
-            {
-
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-            }
+            CommonMethods.WriteObjectToFile(this.CurrentRoomState.roomSetting, this.LogsByRoomFullFolder, this.BackupRoomSettingFileName);
         }
         #endregion
 
@@ -1709,10 +1688,16 @@ namespace TractorServer
 
         public void UpdateReplayState()
         {
+            if (this.replayEntity == null) return;
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyReplayState", new List<object>() { this.replayEntity });
 
-            if (!CommonMethods.SaveReplayToFile(this.replayEntity, ReplaysByRoomFullFolder))
+            string[] fileInfo = CommonMethods.GetReplayEntityFullFilePath(this.replayEntity, ReplaysByRoomFullFolder);
+            if (fileInfo != null)
+            {
+                CommonMethods.WriteObjectToFile(this.replayEntity, fileInfo[0], string.Format("{0}.json", fileInfo[1]));
+            }
+            else
             {
                 this.log.Debug(string.Format("录像文件名错误: {0}", this.replayEntity.ReplayId));
             }
@@ -1811,41 +1796,18 @@ namespace TractorServer
 
         public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
         {
-            Stream streamRW = null;
-            try
+            Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
+            string fileName = string.Format("{0}\\{1}", LogsFolder, ClientinfoFileName);
+            if (File.Exists(fileName))
             {
-                Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
-                string fileName = string.Format("{0}\\clientinfo.xml", LogsFolder);
-                DataContractSerializer ser = new DataContractSerializer(typeof(Dictionary<string, ClientInfo>));
-                if (File.Exists(fileName))
-                {
-                    streamRW = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-                    clientInfoDict = (Dictionary<string, ClientInfo>)ser.ReadObject(streamRW);
-                }
-                else
-                {
-                    streamRW = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-                }
-
-
-                if (!clientInfoDict.ContainsKey(clientIP))
-                {
-                    clientInfoDict[clientIP] = new ClientInfo(clientIP, playerID);
-                }
-                clientInfoDict[clientIP].logLogin(playerID, isCheating);
-                streamRW.SetLength(0);
-                ser.WriteObject(streamRW, clientInfoDict);
+                clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
             }
-            catch (Exception ex)
+            if (!clientInfoDict.ContainsKey(clientIP))
             {
+                clientInfoDict[clientIP] = new ClientInfo(clientIP, playerID);
             }
-            finally
-            {
-                if (streamRW != null)
-                {
-                    streamRW.Close();
-                }
-            }
+            clientInfoDict[clientIP].logLogin(playerID, isCheating);
+            CommonMethods.WriteObjectToFile(clientInfoDict, LogsFolder, ClientinfoFileName);
         }
 
         public void ShuffleCurrentGameStatePlayers()

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Duan.Xiugang.Tractor.Objects
@@ -10,12 +11,16 @@ namespace Duan.Xiugang.Tractor.Objects
     public class CurrentPoker : ICloneable
     {
         //当前的Rank
+        [DataMember]
         public int Rank = 0;
-        private int[] _cards = new int[54];
+        [DataMember]
+        public int[] _cards = new int[54];
         //当前的trump
-        private Suit _trump;
+        [DataMember]
+        public Suit _trump;
 
-        private int _trumpInt;
+        [DataMember]
+        public int _trumpInt;
 
 
         public CurrentPoker()
@@ -249,7 +254,7 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             get
             {
-                if (Trump == Suit.Joker)
+                if (Trump == Suit.Joker || TrumpInt == 0)
                     return 0;
 
                 int index = (TrumpInt - 1)*13 + Rank;

@@ -61,6 +61,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe);
 
+        //继续牌局
+        [OperationContract(IsOneWay = true)]
+        void ResumeGameFromFile(string playerId);
+
         //设置从几打起
         [OperationContract(IsOneWay = true)]
         void SetBeginRank(string playerId, string beginRankString);
