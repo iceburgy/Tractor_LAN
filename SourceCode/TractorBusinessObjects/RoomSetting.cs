@@ -53,6 +53,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (RoomOwner != rs.RoomOwner) return false;
             if (AllowRiotWithTooFewScoreCards != rs.AllowRiotWithTooFewScoreCards) return false;
             if (AllowRiotWithTooFewTrumpCards != rs.AllowRiotWithTooFewTrumpCards) return false;
+            if (secondsToWaitForReenter != rs.secondsToWaitForReenter) return false;
             if (AllowJToBottom != rs.AllowJToBottom) return false;
             if (AllowSurrender != rs.AllowSurrender) return false;
             if (AllowRobotMakeTrump != rs.AllowRobotMakeTrump) return false;
@@ -85,6 +86,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public RoomSetting()
         {
             this.ManditoryRanks = new List<int>() { 3, 8, 11 };
+            this.secondsToWaitForReenter = 60;
         }
     }
 }

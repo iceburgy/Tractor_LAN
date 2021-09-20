@@ -51,7 +51,6 @@ namespace TractorServer
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
-            CurrentRoomState.roomSetting.secondsToWaitForReenter = 60;
             if (TractorHost.gameConfig != null) CurrentRoomState.roomSetting.IsFullDebug = TractorHost.gameConfig.IsFullDebug;
 
             string fullLogFilePath = string.Format("{0}\\myroom_{1}_logfile.txt", LogsByRoomFullFolder, roomID);
@@ -1812,11 +1811,10 @@ namespace TractorServer
 
         public void ShuffleCurrentGameStatePlayers()
         {
-            Random ran = new Random();
             for (int i = 3; i >= 1; i--)
             {
                 //randomly choose a player within 0 to i, and put it at position i
-                int r = ran.Next(i + 1);
+                int r = CommonMethods.random.Next(i + 1);
                 if (r != i) SwapPlayers(r, i);
             }
         }
@@ -1849,12 +1847,11 @@ namespace TractorServer
 
         public void ShuffleCards(CardsShoe cardShoe)
         {
-            Random rand = new Random();
             int N = cardShoe.Cards.Length;
             log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
             for (int i = 0; i < N; i++)
             {
-                int r = rand.Next(i, N);
+                int r = CommonMethods.random.Next(i, N);
                 Swap(cardShoe.Cards, i, r);
             }
             log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));

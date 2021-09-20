@@ -1720,7 +1720,7 @@ namespace Duan.Xiugang.Tractor
         {
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
-            int x = 300, y = 496, width = 300, height = (msgs.Length) * 21 + 8;
+            int x = 300, y = 496, width = 350, height = (msgs.Length) * 21 + 8;
             y = y - height;
             Rectangle rectsrc = new Rectangle(0, 0, width, height);
             Rectangle rect = new Rectangle(x, y, width, height);

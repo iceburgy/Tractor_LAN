@@ -18,6 +18,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string reenterRoomSignal = "断线重连中,请稍后...";
         public static string resumeGameSignal = "牌局加载中,请稍后...";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+        public static Random random = new Random();
 
         public static void WriteObjectToFile(object data, string fullFolderPath, string fileName)
         {

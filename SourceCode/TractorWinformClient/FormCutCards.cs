@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Duan.Xiugang.Tractor.Objects;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -37,8 +38,7 @@ namespace Duan.Xiugang.Tractor
                     break;
                 case "random":
                     cutType = "随机";
-                    Random rand = new Random();
-                    cutPoint = rand.Next(1, 108);
+                    cutPoint = CommonMethods.random.Next(1, 108);
                     break;
                 case "manual":
                     cutType = "手动";

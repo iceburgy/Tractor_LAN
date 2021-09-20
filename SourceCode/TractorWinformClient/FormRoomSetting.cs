@@ -16,6 +16,7 @@ namespace Duan.Xiugang.Tractor
     {
         public event RoomSettingChangedByClientEventHandler RoomSettingChangedByClientEvent;
         MainForm mainForm;
+        private readonly string doNotAllow = "不允许";
         internal FormRoomSetting(MainForm mainForm)
         {
             this.mainForm = mainForm;
@@ -31,8 +32,14 @@ namespace Duan.Xiugang.Tractor
             this.cbxAllowSurrender.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowSurrender;
             this.cbxAllowRobotMakeTrump.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump;
             this.cbxJToBottom.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowJToBottom;
-            this.cbbRiotByScore.SelectedIndex = this.cbbRiotByScore.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString());
-            this.cbbRiotByTrump.SelectedIndex = this.cbbRiotByTrump.FindString(this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString());
+
+            string riotMinScore = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString();
+            if (riotMinScore == "-1") riotMinScore = doNotAllow;
+            this.cbbRiotByScore.SelectedIndex = this.cbbRiotByScore.FindString(riotMinScore);
+            string riotMinTrump = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString();
+            if (riotMinTrump == "-1") riotMinTrump = doNotAllow;
+            this.cbbRiotByTrump.SelectedIndex = this.cbbRiotByTrump.FindString(riotMinTrump);
+            this.nudReenterWaitSeconds.Value = this.mainForm.ThisPlayer.CurrentRoomSetting.secondsToWaitForReenter;
 
             List<int> mandRanks = this.mainForm.ThisPlayer.CurrentRoomSetting.GetManditoryRanks();
             for (int i = 0; i < 13; i++)
@@ -70,8 +77,12 @@ namespace Duan.Xiugang.Tractor
             rs.AllowSurrender = this.cbxAllowSurrender.Checked;
             rs.AllowRobotMakeTrump = this.cbxAllowRobotMakeTrump.Checked;
             rs.AllowJToBottom = this.cbxJToBottom.Checked;
-            rs.AllowRiotWithTooFewScoreCards = Int32.Parse((string)this.cbbRiotByScore.SelectedItem);
-            rs.AllowRiotWithTooFewTrumpCards = Int32.Parse((string)this.cbbRiotByTrump.SelectedItem);
+
+            string riotMinScore=(string)this.cbbRiotByScore.SelectedItem;
+            rs.AllowRiotWithTooFewScoreCards = riotMinScore == doNotAllow ? -1 : Int32.Parse(riotMinScore);
+            string riotMinTrump = (string)this.cbbRiotByTrump.SelectedItem;
+            rs.AllowRiotWithTooFewTrumpCards = riotMinTrump == doNotAllow ? -1 : Int32.Parse(riotMinTrump);
+            rs.secondsToWaitForReenter = Decimal.ToInt32(this.nudReenterWaitSeconds.Value);
 
             List<int> mandRanks = new List<int>();
             for (int i = 0; i < 13; i++)

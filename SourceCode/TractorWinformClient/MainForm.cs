@@ -1264,8 +1264,9 @@ namespace Duan.Xiugang.Tractor
             msgs.Add(string.Format("允许投降：{0}", this.ThisPlayer.CurrentRoomSetting.AllowSurrender ? "是" : "否"));
             msgs.Add(string.Format("允许J到底：{0}", this.ThisPlayer.CurrentRoomSetting.AllowJToBottom ? "是" : "否"));
             msgs.Add(string.Format("允许托管自动亮牌：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump ? "是" : "否"));
-            msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards >= 0 ? string.Format("允许分数小于等于{0}时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards) : "不允许分数革命");
-            msgs.Add(this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards >= 0 ? string.Format("允许主牌小于等于{0}张时革命", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards) : "不允许主牌革命");
+            msgs.Add(string.Format("允许分数小于等于X时革命：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards >= 0 ? this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString() : "否"));
+            msgs.Add(string.Format("允许主牌小于等于X张时革命：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards >= 0 ? this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString() : "否"));
+            msgs.Add(string.Format("断线重连等待时长：{0}秒", this.ThisPlayer.CurrentRoomSetting.secondsToWaitForReenter));
 
             List<int> mandRanks = this.ThisPlayer.CurrentRoomSetting.GetManditoryRanks();
             string[] mandRanksStr = mandRanks.Select(x => CommonMethods.cardNumToValue[x].ToString()).ToArray();

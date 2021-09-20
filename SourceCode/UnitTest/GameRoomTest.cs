@@ -89,7 +89,6 @@ namespace TestProject1
         {
             int total = 24 * 10;
             int same = 0;
-            Random ran = new Random();
             for (int x = 0; x < total; x++)
             {
                 GameRoom gameRoom = new GameRoom(0, "test", null);
@@ -108,7 +107,7 @@ namespace TestProject1
                 for (int i = 3; i >= 1; i--)
                 {
                     //randomly choose a player within 0 to i, and put it at position i
-                    int r = ran.Next(i + 1);
+                    int r = CommonMethods.random.Next(i + 1);
                     if (r != i)
                     {
                         PlayerEntity temp = gameRoom.CurrentRoomState.CurrentGameState.Players[r];
@@ -148,13 +147,12 @@ namespace TestProject1
             }
 
             int testCount = 1000;
-            Random rand = new Random();
             for (int x = 0; x < testCount; x++)
             {
                 int N = cardShoe.Cards.Length;
                 for (int i = 0; i < N; i++)
                 {
-                    int r = rand.Next(i, N);
+                    int r = CommonMethods.random.Next(i, N);
                     gameRoom.Swap(cardShoe.Cards, i, r);
                 }
 

@@ -61,6 +61,9 @@
             this.cbbKickObserver = new System.Windows.Forms.ComboBox();
             this.lblKickObserver = new System.Windows.Forms.Label();
             this.cbxAllowRobotMakeTrump = new System.Windows.Forms.CheckBox();
+            this.lblReenterWaitSeconds = new System.Windows.Forms.Label();
+            this.nudReenterWaitSeconds = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.nudReenterWaitSeconds)).BeginInit();
             this.SuspendLayout();
             // 
             // lblAllowRiotByScore
@@ -79,7 +82,7 @@
             this.cbbRiotByScore.Enabled = false;
             this.cbbRiotByScore.FormattingEnabled = true;
             this.cbbRiotByScore.Items.AddRange(new object[] {
-            "-1",
+            "不允许",
             "0",
             "5",
             "10",
@@ -92,7 +95,7 @@
             // lblRiotByTrump
             // 
             this.lblRiotByTrump.AutoSize = true;
-            this.lblRiotByTrump.Location = new System.Drawing.Point(27, 299);
+            this.lblRiotByTrump.Location = new System.Drawing.Point(27, 291);
             this.lblRiotByTrump.Name = "lblRiotByTrump";
             this.lblRiotByTrump.Size = new System.Drawing.Size(324, 20);
             this.lblRiotByTrump.TabIndex = 2;
@@ -105,13 +108,13 @@
             this.cbbRiotByTrump.Enabled = false;
             this.cbbRiotByTrump.FormattingEnabled = true;
             this.cbbRiotByTrump.Items.AddRange(new object[] {
-            "-1",
+            "不允许",
             "0",
             "1",
             "2",
             "3",
             "4"});
-            this.cbbRiotByTrump.Location = new System.Drawing.Point(394, 296);
+            this.cbbRiotByTrump.Location = new System.Drawing.Point(394, 288);
             this.cbbRiotByTrump.Name = "cbbRiotByTrump";
             this.cbbRiotByTrump.Size = new System.Drawing.Size(121, 28);
             this.cbbRiotByTrump.TabIndex = 1;
@@ -142,7 +145,7 @@
             // 
             this.cbxMust_12.AutoSize = true;
             this.cbxMust_12.Enabled = false;
-            this.cbxMust_12.Location = new System.Drawing.Point(155, 531);
+            this.cbxMust_12.Location = new System.Drawing.Point(155, 560);
             this.cbxMust_12.Name = "cbxMust_12";
             this.cbxMust_12.Size = new System.Drawing.Size(46, 24);
             this.cbxMust_12.TabIndex = 0;
@@ -153,7 +156,7 @@
             // 
             this.cbxMust_7.AutoSize = true;
             this.cbxMust_7.Enabled = false;
-            this.cbxMust_7.Location = new System.Drawing.Point(92, 531);
+            this.cbxMust_7.Location = new System.Drawing.Point(92, 560);
             this.cbxMust_7.Name = "cbxMust_7";
             this.cbxMust_7.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_7.TabIndex = 0;
@@ -164,7 +167,7 @@
             // 
             this.cbxMust_11.AutoSize = true;
             this.cbxMust_11.Enabled = false;
-            this.cbxMust_11.Location = new System.Drawing.Point(155, 501);
+            this.cbxMust_11.Location = new System.Drawing.Point(155, 530);
             this.cbxMust_11.Name = "cbxMust_11";
             this.cbxMust_11.Size = new System.Drawing.Size(45, 24);
             this.cbxMust_11.TabIndex = 0;
@@ -175,7 +178,7 @@
             // 
             this.cbxMust_6.AutoSize = true;
             this.cbxMust_6.Enabled = false;
-            this.cbxMust_6.Location = new System.Drawing.Point(92, 501);
+            this.cbxMust_6.Location = new System.Drawing.Point(92, 530);
             this.cbxMust_6.Name = "cbxMust_6";
             this.cbxMust_6.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_6.TabIndex = 0;
@@ -186,7 +189,7 @@
             // 
             this.cbxMust_10.AutoSize = true;
             this.cbxMust_10.Enabled = false;
-            this.cbxMust_10.Location = new System.Drawing.Point(155, 471);
+            this.cbxMust_10.Location = new System.Drawing.Point(155, 500);
             this.cbxMust_10.Name = "cbxMust_10";
             this.cbxMust_10.Size = new System.Drawing.Size(47, 24);
             this.cbxMust_10.TabIndex = 0;
@@ -197,7 +200,7 @@
             // 
             this.cbxMust_5.AutoSize = true;
             this.cbxMust_5.Enabled = false;
-            this.cbxMust_5.Location = new System.Drawing.Point(92, 471);
+            this.cbxMust_5.Location = new System.Drawing.Point(92, 500);
             this.cbxMust_5.Name = "cbxMust_5";
             this.cbxMust_5.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_5.TabIndex = 0;
@@ -208,7 +211,7 @@
             // 
             this.cbxMust_2.AutoSize = true;
             this.cbxMust_2.Enabled = false;
-            this.cbxMust_2.Location = new System.Drawing.Point(31, 471);
+            this.cbxMust_2.Location = new System.Drawing.Point(31, 500);
             this.cbxMust_2.Name = "cbxMust_2";
             this.cbxMust_2.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_2.TabIndex = 0;
@@ -219,7 +222,7 @@
             // 
             this.cbxMust_9.AutoSize = true;
             this.cbxMust_9.Enabled = false;
-            this.cbxMust_9.Location = new System.Drawing.Point(155, 440);
+            this.cbxMust_9.Location = new System.Drawing.Point(155, 469);
             this.cbxMust_9.Name = "cbxMust_9";
             this.cbxMust_9.Size = new System.Drawing.Size(43, 24);
             this.cbxMust_9.TabIndex = 0;
@@ -230,7 +233,7 @@
             // 
             this.cbxMust_4.AutoSize = true;
             this.cbxMust_4.Enabled = false;
-            this.cbxMust_4.Location = new System.Drawing.Point(92, 440);
+            this.cbxMust_4.Location = new System.Drawing.Point(92, 469);
             this.cbxMust_4.Name = "cbxMust_4";
             this.cbxMust_4.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_4.TabIndex = 0;
@@ -241,7 +244,7 @@
             // 
             this.cbxMust_1.AutoSize = true;
             this.cbxMust_1.Enabled = false;
-            this.cbxMust_1.Location = new System.Drawing.Point(31, 440);
+            this.cbxMust_1.Location = new System.Drawing.Point(31, 469);
             this.cbxMust_1.Name = "cbxMust_1";
             this.cbxMust_1.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_1.TabIndex = 0;
@@ -252,7 +255,7 @@
             // 
             this.cbxMust_8.AutoSize = true;
             this.cbxMust_8.Enabled = false;
-            this.cbxMust_8.Location = new System.Drawing.Point(155, 410);
+            this.cbxMust_8.Location = new System.Drawing.Point(155, 439);
             this.cbxMust_8.Name = "cbxMust_8";
             this.cbxMust_8.Size = new System.Drawing.Size(53, 24);
             this.cbxMust_8.TabIndex = 0;
@@ -263,7 +266,7 @@
             // 
             this.cbxMust_3.AutoSize = true;
             this.cbxMust_3.Enabled = false;
-            this.cbxMust_3.Location = new System.Drawing.Point(92, 410);
+            this.cbxMust_3.Location = new System.Drawing.Point(92, 439);
             this.cbxMust_3.Name = "cbxMust_3";
             this.cbxMust_3.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_3.TabIndex = 0;
@@ -274,7 +277,7 @@
             // 
             this.cbxMust_0.AutoSize = true;
             this.cbxMust_0.Enabled = false;
-            this.cbxMust_0.Location = new System.Drawing.Point(31, 410);
+            this.cbxMust_0.Location = new System.Drawing.Point(31, 439);
             this.cbxMust_0.Name = "cbxMust_0";
             this.cbxMust_0.Size = new System.Drawing.Size(44, 24);
             this.cbxMust_0.TabIndex = 0;
@@ -284,7 +287,7 @@
             // btnOK
             // 
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(31, 701);
+            this.btnOK.Location = new System.Drawing.Point(31, 730);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(92, 32);
             this.btnOK.TabIndex = 5;
@@ -295,7 +298,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(200, 701);
+            this.btnCancel.Location = new System.Drawing.Point(200, 730);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(98, 32);
             this.btnCancel.TabIndex = 5;
@@ -340,7 +343,7 @@
             // lblMustDoRanksLabel
             // 
             this.lblMustDoRanksLabel.AutoSize = true;
-            this.lblMustDoRanksLabel.Location = new System.Drawing.Point(31, 364);
+            this.lblMustDoRanksLabel.Location = new System.Drawing.Point(31, 393);
             this.lblMustDoRanksLabel.Name = "lblMustDoRanksLabel";
             this.lblMustDoRanksLabel.Size = new System.Drawing.Size(41, 20);
             this.lblMustDoRanksLabel.TabIndex = 10;
@@ -349,7 +352,7 @@
             // lblKickPlayer
             // 
             this.lblKickPlayer.AutoSize = true;
-            this.lblKickPlayer.Location = new System.Drawing.Point(27, 593);
+            this.lblKickPlayer.Location = new System.Drawing.Point(27, 622);
             this.lblKickPlayer.Name = "lblKickPlayer";
             this.lblKickPlayer.Size = new System.Drawing.Size(137, 20);
             this.lblKickPlayer.TabIndex = 11;
@@ -360,7 +363,7 @@
             this.cbbKickPlayer.DisplayMember = "0";
             this.cbbKickPlayer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbKickPlayer.FormattingEnabled = true;
-            this.cbbKickPlayer.Location = new System.Drawing.Point(177, 590);
+            this.cbbKickPlayer.Location = new System.Drawing.Point(177, 619);
             this.cbbKickPlayer.Name = "cbbKickPlayer";
             this.cbbKickPlayer.Size = new System.Drawing.Size(121, 28);
             this.cbbKickPlayer.TabIndex = 12;
@@ -368,7 +371,7 @@
             // btnKickPlayer
             // 
             this.btnKickPlayer.Enabled = false;
-            this.btnKickPlayer.Location = new System.Drawing.Point(336, 587);
+            this.btnKickPlayer.Location = new System.Drawing.Point(336, 616);
             this.btnKickPlayer.Name = "btnKickPlayer";
             this.btnKickPlayer.Size = new System.Drawing.Size(106, 32);
             this.btnKickPlayer.TabIndex = 13;
@@ -379,7 +382,7 @@
             // btnKickObserver
             // 
             this.btnKickObserver.Enabled = false;
-            this.btnKickObserver.Location = new System.Drawing.Point(336, 635);
+            this.btnKickObserver.Location = new System.Drawing.Point(336, 664);
             this.btnKickObserver.Name = "btnKickObserver";
             this.btnKickObserver.Size = new System.Drawing.Size(106, 32);
             this.btnKickObserver.TabIndex = 16;
@@ -392,7 +395,7 @@
             this.cbbKickObserver.DisplayMember = "0";
             this.cbbKickObserver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbKickObserver.FormattingEnabled = true;
-            this.cbbKickObserver.Location = new System.Drawing.Point(177, 638);
+            this.cbbKickObserver.Location = new System.Drawing.Point(177, 667);
             this.cbbKickObserver.Name = "cbbKickObserver";
             this.cbbKickObserver.Size = new System.Drawing.Size(121, 28);
             this.cbbKickObserver.TabIndex = 15;
@@ -400,7 +403,7 @@
             // lblKickObserver
             // 
             this.lblKickObserver.AutoSize = true;
-            this.lblKickObserver.Location = new System.Drawing.Point(27, 641);
+            this.lblKickObserver.Location = new System.Drawing.Point(27, 670);
             this.lblKickObserver.Name = "lblKickObserver";
             this.lblKickObserver.Size = new System.Drawing.Size(137, 20);
             this.lblKickObserver.TabIndex = 14;
@@ -417,13 +420,45 @@
             this.cbxAllowRobotMakeTrump.Text = "允许托管自动亮牌";
             this.cbxAllowRobotMakeTrump.UseVisualStyleBackColor = true;
             // 
+            // lblReenterWaitSeconds
+            // 
+            this.lblReenterWaitSeconds.AutoSize = true;
+            this.lblReenterWaitSeconds.Location = new System.Drawing.Point(27, 343);
+            this.lblReenterWaitSeconds.Name = "lblReenterWaitSeconds";
+            this.lblReenterWaitSeconds.Size = new System.Drawing.Size(226, 20);
+            this.lblReenterWaitSeconds.TabIndex = 2;
+            this.lblReenterWaitSeconds.Text = "断线重连等待时长（5-300秒）";
+            // 
+            // nudReenterWaitSeconds
+            // 
+            this.nudReenterWaitSeconds.Location = new System.Drawing.Point(394, 343);
+            this.nudReenterWaitSeconds.Maximum = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.nudReenterWaitSeconds.Minimum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.nudReenterWaitSeconds.Name = "nudReenterWaitSeconds";
+            this.nudReenterWaitSeconds.Size = new System.Drawing.Size(121, 26);
+            this.nudReenterWaitSeconds.TabIndex = 19;
+            this.nudReenterWaitSeconds.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
             // FormRoomSetting
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(562, 774);
+            this.ClientSize = new System.Drawing.Size(562, 797);
+            this.Controls.Add(this.nudReenterWaitSeconds);
             this.Controls.Add(this.cbxAllowRobotMakeTrump);
             this.Controls.Add(this.btnKickObserver);
             this.Controls.Add(this.cbbKickObserver);
@@ -450,6 +485,7 @@
             this.Controls.Add(this.cbxMust_4);
             this.Controls.Add(this.cbxJToBottom);
             this.Controls.Add(this.cbxMust_1);
+            this.Controls.Add(this.lblReenterWaitSeconds);
             this.Controls.Add(this.lblRiotByTrump);
             this.Controls.Add(this.cbxMust_8);
             this.Controls.Add(this.cbbRiotByTrump);
@@ -459,6 +495,7 @@
             this.Controls.Add(this.lblAllowRiotByScore);
             this.Name = "FormRoomSetting";
             this.Text = "房间设置";
+            ((System.ComponentModel.ISupportInitialize)(this.nudReenterWaitSeconds)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -499,5 +536,7 @@
         private System.Windows.Forms.ComboBox cbbKickObserver;
         private System.Windows.Forms.Label lblKickObserver;
         private System.Windows.Forms.CheckBox cbxAllowRobotMakeTrump;
+        private System.Windows.Forms.Label lblReenterWaitSeconds;
+        private System.Windows.Forms.NumericUpDown nudReenterWaitSeconds;
     }
 }

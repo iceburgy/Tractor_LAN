@@ -45,11 +45,10 @@ namespace Duan.Xiugang.Tractor.Objects
         //Knuth shuffle
         public void KnuthShuffle()
         {
-            Random rand = new Random();
             int N = Cards.Length;
             for (int i = 0; i < N; i++)
             {
-                int r = rand.Next(i + 1);
+                int r = CommonMethods.random.Next(i + 1);
                 Swap(i, r);
             }
         }
@@ -57,11 +56,10 @@ namespace Duan.Xiugang.Tractor.Objects
         //Better
         public void Shuffle()
         {
-            Random rand = new Random();
             int N = Cards.Length;
             for (int i = 0; i < N; i++)
             {
-                int r = rand.Next(i, N);
+                int r = CommonMethods.random.Next(i, N);
                 Swap(i, r);
             }
         }
