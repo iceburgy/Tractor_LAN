@@ -235,17 +235,14 @@ namespace TractorServer
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                if (!gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID)) return iAsyncResult;
-                PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p.PlayerId == playerID);
-                if (player.IsOffline && (DateTime.Now - player.OfflineSince).TotalSeconds <= gameRoom.CurrentRoomState.roomSetting.secondsToWaitForReenter) return iAsyncResult;
+                if (gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID))
+                {
+                    PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerID);
+                    if (player.IsOffline && (DateTime.Now - player.OfflineSince).TotalSeconds <= gameRoom.CurrentRoomState.roomSetting.secondsToWaitForReenter) return iAsyncResult;
+                }
             }
 
-            string clientIP = "";
-            if (PlayerToIP.ContainsKey(playerID))
-            {
-                clientIP = PlayerToIP[playerID];
-            }
-            else
+            if (PlayerToIP.ContainsKey(playerID) && !this.PlayerToIP.ContainsValue(PlayerToIP[playerID]))
             {
                 return iAsyncResult;
             }
