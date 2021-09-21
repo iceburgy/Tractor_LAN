@@ -2487,6 +2487,18 @@ namespace Duan.Xiugang.Tractor
                         this.btnNextTrick.PerformClick();
                     }
                     return true;
+                case Keys.Up:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnFirstTrick.PerformClick();
+                    }
+                    return true;
+                case Keys.Down:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnLastTrick.PerformClick();
+                    }
+                    return true;
                 default:
                     return base.ProcessCmdKey(ref msg, keyData);
             }
