@@ -95,11 +95,16 @@ namespace Duan.Xiugang.Tractor
             this.imbOverridingFlag_3 = new System.Windows.Forms.PictureBox();
             this.imbOverridingFlag_4 = new System.Windows.Forms.PictureBox();
             this.btnReplay = new System.Windows.Forms.Button();
-            this.timerReplay = new System.Windows.Forms.Timer(this.components);
-            this.btnPauseReplay = new System.Windows.Forms.Button();
             this.btnPreviousTrick = new System.Windows.Forms.Button();
             this.btnNextTrick = new System.Windows.Forms.Button();
             this.btnReplayAngle = new System.Windows.Forms.Button();
+            this.btnFirstTrick = new System.Windows.Forms.Button();
+            this.btnLastTrick = new System.Windows.Forms.Button();
+            this.cbbReplayDate = new System.Windows.Forms.ComboBox();
+            this.lblReplayDate = new System.Windows.Forms.Label();
+            this.cbbReplayFile = new System.Windows.Forms.ComboBox();
+            this.lblReplayFile = new System.Windows.Forms.Label();
+            this.btnLoadReplay = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -204,7 +209,7 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankK,
             this.toolStripMenuItemBeginRankA});
             this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
-            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
+            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(331, 30);
             this.BeginRankToolStripMenuItem.Text = "从几打起";
             this.BeginRankToolStripMenuItem.Visible = false;
             // 
@@ -302,7 +307,7 @@ namespace Duan.Xiugang.Tractor
             // ResumeGameToolStripMenuItem
             // 
             this.ResumeGameToolStripMenuItem.Name = "ResumeGameToolStripMenuItem";
-            this.ResumeGameToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
+            this.ResumeGameToolStripMenuItem.Size = new System.Drawing.Size(331, 30);
             this.ResumeGameToolStripMenuItem.Text = "从断点继续上盘牌局";
             this.ResumeGameToolStripMenuItem.Click += new System.EventHandler(this.ResumeGameToolStripMenuItem_Click);
             // 
@@ -325,7 +330,7 @@ namespace Duan.Xiugang.Tractor
             // TeamUpToolStripMenuItem
             // 
             this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
-            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(293, 30);
+            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(331, 30);
             this.TeamUpToolStripMenuItem.Text = "随机组队";
             this.TeamUpToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
@@ -334,7 +339,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
             this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(293, 30);
+            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(331, 30);
             this.ToolStripMenuItemGetReady.Text = "就绪";
             this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
             // 
@@ -342,7 +347,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
             this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F4;
-            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(293, 30);
+            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(331, 30);
             this.ToolStripMenuItemRobot.Text = "托管代打";
             this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
             // 
@@ -733,29 +738,11 @@ namespace Duan.Xiugang.Tractor
             this.btnReplay.UseVisualStyleBackColor = false;
             this.btnReplay.Click += new System.EventHandler(this.btnReplay_Click);
             // 
-            // timerReplay
-            // 
-            this.timerReplay.Interval = 1000;
-            this.timerReplay.Tick += new System.EventHandler(this.timerReplay_Tick);
-            // 
-            // btnPauseReplay
-            // 
-            this.btnPauseReplay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnPauseReplay.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnPauseReplay.Location = new System.Drawing.Point(12, 776);
-            this.btnPauseReplay.Name = "btnPauseReplay";
-            this.btnPauseReplay.Size = new System.Drawing.Size(72, 45);
-            this.btnPauseReplay.TabIndex = 35;
-            this.btnPauseReplay.Text = "播放";
-            this.btnPauseReplay.UseVisualStyleBackColor = true;
-            this.btnPauseReplay.Visible = false;
-            this.btnPauseReplay.Click += new System.EventHandler(this.btnPauseReplay_Click);
-            // 
             // btnPreviousTrick
             // 
             this.btnPreviousTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnPreviousTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnPreviousTrick.Location = new System.Drawing.Point(91, 776);
+            this.btnPreviousTrick.Location = new System.Drawing.Point(80, 776);
             this.btnPreviousTrick.Name = "btnPreviousTrick";
             this.btnPreviousTrick.Size = new System.Drawing.Size(62, 45);
             this.btnPreviousTrick.TabIndex = 36;
@@ -768,7 +755,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.btnNextTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnNextTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnNextTrick.Location = new System.Drawing.Point(159, 776);
+            this.btnNextTrick.Location = new System.Drawing.Point(148, 776);
             this.btnNextTrick.Name = "btnNextTrick";
             this.btnNextTrick.Size = new System.Drawing.Size(62, 45);
             this.btnNextTrick.TabIndex = 37;
@@ -790,15 +777,102 @@ namespace Duan.Xiugang.Tractor
             this.btnReplayAngle.Visible = false;
             this.btnReplayAngle.Click += new System.EventHandler(this.btnReplayAngle_Click);
             // 
+            // btnFirstTrick
+            // 
+            this.btnFirstTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnFirstTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnFirstTrick.Location = new System.Drawing.Point(12, 776);
+            this.btnFirstTrick.Name = "btnFirstTrick";
+            this.btnFirstTrick.Size = new System.Drawing.Size(62, 45);
+            this.btnFirstTrick.TabIndex = 36;
+            this.btnFirstTrick.Text = "|←";
+            this.btnFirstTrick.UseVisualStyleBackColor = true;
+            this.btnFirstTrick.Visible = false;
+            this.btnFirstTrick.Click += new System.EventHandler(this.btnFirstTrick_Click);
+            // 
+            // btnLastTrick
+            // 
+            this.btnLastTrick.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnLastTrick.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnLastTrick.Location = new System.Drawing.Point(216, 776);
+            this.btnLastTrick.Name = "btnLastTrick";
+            this.btnLastTrick.Size = new System.Drawing.Size(62, 45);
+            this.btnLastTrick.TabIndex = 37;
+            this.btnLastTrick.Text = "→|";
+            this.btnLastTrick.UseVisualStyleBackColor = true;
+            this.btnLastTrick.Visible = false;
+            this.btnLastTrick.Click += new System.EventHandler(this.btnLastTrick_Click);
+            // 
+            // cbbReplayDate
+            // 
+            this.cbbReplayDate.FormattingEnabled = true;
+            this.cbbReplayDate.Location = new System.Drawing.Point(560, 38);
+            this.cbbReplayDate.Name = "cbbReplayDate";
+            this.cbbReplayDate.Size = new System.Drawing.Size(158, 28);
+            this.cbbReplayDate.TabIndex = 40;
+            this.cbbReplayDate.Visible = false;
+            this.cbbReplayDate.SelectedIndexChanged += new System.EventHandler(this.cbbReplayDate_SelectedIndexChanged);
+            // 
+            // lblReplayDate
+            // 
+            this.lblReplayDate.AutoSize = true;
+            this.lblReplayDate.BackColor = System.Drawing.Color.Transparent;
+            this.lblReplayDate.ForeColor = System.Drawing.Color.White;
+            this.lblReplayDate.Location = new System.Drawing.Point(496, 44);
+            this.lblReplayDate.Name = "lblReplayDate";
+            this.lblReplayDate.Size = new System.Drawing.Size(73, 20);
+            this.lblReplayDate.TabIndex = 39;
+            this.lblReplayDate.Text = "录像日期";
+            this.lblReplayDate.Visible = false;
+            // 
+            // cbbReplayFile
+            // 
+            this.cbbReplayFile.FormattingEnabled = true;
+            this.cbbReplayFile.Location = new System.Drawing.Point(560, 67);
+            this.cbbReplayFile.Name = "cbbReplayFile";
+            this.cbbReplayFile.Size = new System.Drawing.Size(158, 28);
+            this.cbbReplayFile.TabIndex = 42;
+            this.cbbReplayFile.Visible = false;
+            // 
+            // lblReplayFile
+            // 
+            this.lblReplayFile.AutoSize = true;
+            this.lblReplayFile.BackColor = System.Drawing.Color.Transparent;
+            this.lblReplayFile.ForeColor = System.Drawing.Color.White;
+            this.lblReplayFile.Location = new System.Drawing.Point(496, 70);
+            this.lblReplayFile.Name = "lblReplayFile";
+            this.lblReplayFile.Size = new System.Drawing.Size(73, 20);
+            this.lblReplayFile.TabIndex = 41;
+            this.lblReplayFile.Text = "录像文件";
+            this.lblReplayFile.Visible = false;
+            // 
+            // btnLoadReplay
+            // 
+            this.btnLoadReplay.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.btnLoadReplay.Location = new System.Drawing.Point(560, 93);
+            this.btnLoadReplay.Name = "btnLoadReplay";
+            this.btnLoadReplay.Size = new System.Drawing.Size(86, 28);
+            this.btnLoadReplay.TabIndex = 43;
+            this.btnLoadReplay.Text = "确定";
+            this.btnLoadReplay.UseVisualStyleBackColor = true;
+            this.btnLoadReplay.Visible = false;
+            this.btnLoadReplay.Click += new System.EventHandler(this.btnLoadReplay_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnLoadReplay);
+            this.Controls.Add(this.cbbReplayFile);
+            this.Controls.Add(this.lblReplayFile);
+            this.Controls.Add(this.cbbReplayDate);
+            this.Controls.Add(this.lblReplayDate);
             this.Controls.Add(this.btnReplayAngle);
+            this.Controls.Add(this.btnLastTrick);
             this.Controls.Add(this.btnNextTrick);
+            this.Controls.Add(this.btnFirstTrick);
             this.Controls.Add(this.btnPreviousTrick);
-            this.Controls.Add(this.btnPauseReplay);
             this.Controls.Add(this.btnReplay);
             this.Controls.Add(this.imbOverridingFlag_4);
             this.Controls.Add(this.imbOverridingFlag_3);
@@ -916,12 +990,17 @@ namespace Duan.Xiugang.Tractor
         public System.Windows.Forms.PictureBox imbOverridingFlag_3;
         public System.Windows.Forms.PictureBox imbOverridingFlag_4;
         private System.Windows.Forms.Button btnReplay;
-        private System.Windows.Forms.Timer timerReplay;
-        private System.Windows.Forms.Button btnPauseReplay;
         private System.Windows.Forms.Button btnPreviousTrick;
         private System.Windows.Forms.Button btnNextTrick;
         private System.Windows.Forms.Button btnReplayAngle;
         private System.Windows.Forms.ToolStripMenuItem ResumeGameToolStripMenuItem;
+        private System.Windows.Forms.Button btnFirstTrick;
+        private System.Windows.Forms.Button btnLastTrick;
+        internal System.Windows.Forms.ComboBox cbbReplayDate;
+        private System.Windows.Forms.Label lblReplayDate;
+        internal System.Windows.Forms.ComboBox cbbReplayFile;
+        private System.Windows.Forms.Label lblReplayFile;
+        private System.Windows.Forms.Button btnLoadReplay;
     }
 }
 

@@ -117,7 +117,6 @@ namespace Duan.Xiugang.Tractor
 
         string fullLogFilePath = string.Format("{0}\\logs\\logfile.txt", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         public string rootReplayFolderPath = string.Format("{0}\\replays", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-        public FormSelectReplay frmSR;
         string[] knownErrors = new string[] { 
             "Could not load file or assembly 'AutoUpdater.NET.XmlSerializers",
             "Application identity is not set",
@@ -2277,14 +2276,18 @@ namespace Duan.Xiugang.Tractor
                 this.ClearRoom();
                 this.btnEnterHall.Show();
                 this.btnReplay.Show();
-                this.btnPauseReplay.Text = "开始";
-                this.btnPauseReplay.Hide();
                 this.btnReplayAngle.Hide();
+                this.btnFirstTrick.Hide();
                 this.btnPreviousTrick.Hide();
                 this.btnNextTrick.Hide();
+                this.btnLastTrick.Hide();
+                this.lblReplayDate.Hide();
+                this.lblReplayFile.Hide();
+                this.cbbReplayDate.Hide();
+                this.cbbReplayFile.Hide();
+                this.btnLoadReplay.Hide();
                 ThisPlayer.isReplay = false;
                 ThisPlayer.replayEntity = null;
-                this.timerReplay.Stop();
                 return;
             }
             if (playerIsInHall())
@@ -2498,34 +2501,47 @@ namespace Duan.Xiugang.Tractor
 
         private void btnReplay_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(this.rootReplayFolderPath))
+            if (!Directory.Exists(this.rootReplayFolderPath) || !Directory.EnumerateFileSystemEntries(this.rootReplayFolderPath).Any())
             {
                 MessageBox.Show("未找到录像文件");
                 return;
             }
 
-            if (frmSR == null)
-            {
-                frmSR = new FormSelectReplay(this.rootReplayFolderPath);
-                frmSR.StartPosition = FormStartPosition.CenterParent;
-                frmSR.TopMost = true;
-            }
-            if (frmSR.ShowDialog(this) == DialogResult.OK)
-            {
-                btnEnterHall.Hide();
-                this.btnReplay.Hide();
-                this.btnPauseReplay.Show();
-                this.btnReplayAngle.Show();
-                this.btnPreviousTrick.Show();
-                this.btnNextTrick.Show();
+            btnEnterHall.Hide();
+            this.btnReplay.Hide();
+            this.btnReplayAngle.Show();
+            this.btnFirstTrick.Show();
+            this.btnPreviousTrick.Show();
+            this.btnNextTrick.Show();
+            this.btnLastTrick.Show();
+            this.lblReplayDate.Show();
+            this.lblReplayFile.Show();
+            this.cbbReplayDate.Show();
+            this.cbbReplayFile.Show();
+            this.btnLoadReplay.Show();
+            ThisPlayer.isReplay = true;
 
-                LoadReplay();
+            DirectoryInfo dirRoot = new DirectoryInfo(this.rootReplayFolderPath);
+            DirectoryInfo[] dirs = dirRoot.GetDirectories();
+            for (int i = 0; i < dirs.Length; i++)
+            {
+                cbbReplayDate.Items.Add(dirs[i].Name);
             }
+
+            if (cbbReplayDate.Items.Count > 0)
+            {
+                cbbReplayDate.SelectedIndex = 0;
+            }
+        }
+
+        private void btnLoadReplay_Click(object sender, EventArgs e)
+        {
+            LoadReplay();
         }
 
         private void LoadReplay()
         {
-            string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)frmSR.cbbReplayDate.SelectedItem, (string)frmSR.cbbReplayName.SelectedItem);
+            string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)cbbReplayDate.SelectedItem, (string)cbbReplayFile.SelectedItem);
             ReplayEntity replayEntity = CommonMethods.ReadObjectFromFile<ReplayEntity>(replayFile);
 
             ThisPlayer.replayEntity = replayEntity;
@@ -2543,7 +2559,6 @@ namespace Duan.Xiugang.Tractor
         private void StartReplay()
         {
             drawingFormHelper.DrawCenterImage();
-            ThisPlayer.isReplay = true;
             string[] players = ThisPlayer.replayEntity.Players;
             int[] playerRanks = new int[4];
             if (ThisPlayer.replayEntity.PlayerRanks != null)
@@ -2616,11 +2631,10 @@ namespace Duan.Xiugang.Tractor
             Refresh();
         }
 
-        private void timerReplay_Tick(object sender, EventArgs e)
+        private void replayNextTrick()
         {
             if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
             {
-                if (this.timerReplay.Enabled) this.btnPauseReplay.PerformClick();
                 return;
             }
             CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
@@ -2703,44 +2717,29 @@ namespace Duan.Xiugang.Tractor
 
         }
 
-        private void btnPauseReplay_Click(object sender, EventArgs e)
+        private void btnFirstTrick_Click(object sender, EventArgs e)
         {
-            if (this.timerReplay.Enabled)
+            if (ThisPlayer.replayedTricks.Count > 0) LoadReplay();
+            else if (cbbReplayFile.SelectedIndex > 0)
             {
-                this.timerReplay.Stop();
-                this.btnPreviousTrick.Enabled = true;
-                this.btnNextTrick.Enabled = true;
+                cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex - 1;
+                LoadReplay();
             }
-            else
+            else if (cbbReplayDate.SelectedIndex > 0)
             {
-                this.timerReplay.Start();
-                this.btnPreviousTrick.Enabled = false;
-                this.btnNextTrick.Enabled = false;
+                cbbReplayDate.SelectedIndex = cbbReplayDate.SelectedIndex - 1;
+                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0)
+                {
+                    cbbReplayFile.SelectedIndex = cbbReplayFile.Items.Count - 1;
+                    LoadReplay();
+                }
             }
-            this.btnPauseReplay.Text = this.timerReplay.Enabled ? "暂停" : "播放";
         }
 
         private void btnPreviousTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayedTricks.Count == 0)
-            {
-                if (this.frmSR.cbbReplayName.SelectedIndex == 0)
-                {
-                    if (this.frmSR.cbbReplayDate.SelectedIndex == 0) return;
-                    this.frmSR.cbbReplayDate.SelectedIndex = this.frmSR.cbbReplayDate.SelectedIndex - 1;
-                    if (this.frmSR.cbbReplayName.Items != null && this.frmSR.cbbReplayName.Items.Count > 0)
-                    {
-                        this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.Items.Count - 1;
-                        LoadReplay();
-                    }
-                }
-                else
-                {
-                    this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.SelectedIndex - 1;
-                    LoadReplay();
-                }
-                return;
-            }
+            if (ThisPlayer.replayedTricks.Count == 0) return;
+
             drawingFormHelper.DrawCenterImage();
             revertReplayTrick();
             if (ThisPlayer.replayedTricks.Count == 0)
@@ -2761,29 +2760,76 @@ namespace Duan.Xiugang.Tractor
             else
             {
                 revertReplayTrick();
-                timerReplay_Tick(sender, e);
+                replayNextTrick();
             }
         }
 
         private void btnNextTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
-            {
-                if (this.frmSR.cbbReplayName.SelectedIndex == this.frmSR.cbbReplayName.Items.Count - 1)
-                {
-                    if (this.frmSR.cbbReplayDate.SelectedIndex == this.frmSR.cbbReplayDate.Items.Count - 1) return;
-                    this.frmSR.cbbReplayDate.SelectedIndex = this.frmSR.cbbReplayDate.SelectedIndex + 1;
-                    if (this.frmSR.cbbReplayName.Items != null && this.frmSR.cbbReplayName.Items.Count > 0) LoadReplay();
-                }
-                else
-                {
-                    this.frmSR.cbbReplayName.SelectedIndex = this.frmSR.cbbReplayName.SelectedIndex + 1;
-                    LoadReplay();
-                }
-                return;
-            }
+            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0) return;
+            replayNextTrick();
+        }
 
-            timerReplay_Tick(sender, e);
+        private void btnLastTrick_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.replayEntity.CurrentTrickStates.Count > 0)
+            {
+                while (ThisPlayer.replayEntity.CurrentTrickStates.Count > 1)
+                {
+                    CurrentTrickState trick = ThisPlayer.replayEntity.CurrentTrickStates[0];
+                    ThisPlayer.replayedTricks.Push(trick);
+                    ThisPlayer.replayEntity.CurrentTrickStates.RemoveAt(0);
+
+                    string curPlayer = trick.Learder;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        ArrayList cardsList = new ArrayList(trick.ShowedCards[curPlayer]);
+                        int position = PlayerPosition[curPlayer];
+                        if (position == 1)
+                        {
+                            foreach (int card in trick.ShowedCards[curPlayer])
+                            {
+                                ThisPlayer.CurrentPoker.RemoveCard(card);
+                            }
+                        }
+                        else if (position == 2)
+                        {
+                            foreach (int card in trick.ShowedCards[curPlayer])
+                            {
+                                ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].RemoveCard(card);
+                            }
+                        }
+                        else if (position == 3)
+                        {
+                            foreach (int card in trick.ShowedCards[curPlayer])
+                            {
+                                ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].RemoveCard(card);
+                            }
+                        }
+                        else if (position == 4)
+                        {
+                            foreach (int card in trick.ShowedCards[curPlayer])
+                            {
+                                ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].RemoveCard(card);
+                            }
+                        }
+                        curPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(curPlayer).PlayerId;
+                    }
+                }
+                drawingFormHelper.DrawMyHandCards();
+                ThisPlayer.CurrentHandState.ScoreCards = new List<int>(ThisPlayer.replayEntity.CurrentHandState.ScoreCards);
+                replayNextTrick();
+            }
+            else if (cbbReplayFile.SelectedIndex < cbbReplayFile.Items.Count - 1)
+            {
+                cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex + 1;
+                LoadReplay();
+            }
+            else if (cbbReplayDate.SelectedIndex < cbbReplayDate.Items.Count - 1)
+            {
+                cbbReplayDate.SelectedIndex = cbbReplayDate.SelectedIndex + 1;
+                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0) LoadReplay();
+            }
         }
 
         private void revertReplayTrick()
@@ -2832,6 +2878,22 @@ namespace Duan.Xiugang.Tractor
                 CommonMethods.RotateArray(ThisPlayer.replayEntity.PlayerRanks, 1);
             }
             StartReplay();
+        }
+
+        private void cbbReplayDate_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cbbReplayFile.Items.Clear();
+            DirectoryInfo selectedDate = new DirectoryInfo(string.Format("{0}\\{1}", this.rootReplayFolderPath, cbbReplayDate.SelectedItem));
+            FileInfo[] files = selectedDate.GetFiles();
+            for (int j = 0; j < files.Length; j++)
+            {
+                cbbReplayFile.Items.Add(files[j].Name);
+            }
+
+            if (cbbReplayFile.Items.Count > 0)
+            {
+                cbbReplayFile.SelectedIndex = 0;
+            }
         }
     }
 }
