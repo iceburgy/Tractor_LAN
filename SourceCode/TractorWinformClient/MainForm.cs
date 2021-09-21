@@ -2720,7 +2720,12 @@ namespace Duan.Xiugang.Tractor
         private void btnFirstTrick_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.replayedTricks.Count > 0) LoadReplay();
-            else if (cbbReplayFile.SelectedIndex > 0)
+            else replayPreviousFile();
+        }
+
+        private void replayPreviousFile()
+        {
+            if (cbbReplayFile.SelectedIndex > 0)
             {
                 cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex - 1;
                 LoadReplay();
@@ -2738,7 +2743,11 @@ namespace Duan.Xiugang.Tractor
 
         private void btnPreviousTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayedTricks.Count == 0) return;
+            if (ThisPlayer.replayedTricks.Count == 0)
+            {
+                replayPreviousFile();
+                return;
+            }
 
             drawingFormHelper.DrawCenterImage();
             revertReplayTrick();
@@ -2766,7 +2775,11 @@ namespace Duan.Xiugang.Tractor
 
         private void btnNextTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0) return;
+            if (ThisPlayer.replayEntity.CurrentTrickStates.Count == 0)
+            {
+                replayNextFile();
+                return;
+            }
             replayNextTrick();
         }
 
@@ -2820,7 +2833,12 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentHandState.ScoreCards = new List<int>(ThisPlayer.replayEntity.CurrentHandState.ScoreCards);
                 replayNextTrick();
             }
-            else if (cbbReplayFile.SelectedIndex < cbbReplayFile.Items.Count - 1)
+            else replayNextFile();
+        }
+
+        private void replayNextFile()
+        {
+            if (cbbReplayFile.SelectedIndex < cbbReplayFile.Items.Count - 1)
             {
                 cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex + 1;
                 LoadReplay();
