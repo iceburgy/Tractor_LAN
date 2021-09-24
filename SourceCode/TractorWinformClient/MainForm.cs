@@ -1396,29 +1396,10 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawCenterImage();
             drawingFormHelper.DrawScoreImageAndCards();
 
-            foreach (var entry in this.ThisPlayer.CurrentHandState.PlayerHoldingCards)
+            for (int position = 2; position <= 4; position++)
             {
-                string player = entry.Key;
-                int position = PlayerPosition[player];
-                if (position == 1)
-                {
-                    continue;
-                }
-                else if (position == 2)
-                {
-                    drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
-                }
-                else if (position == 3)
-                {
-                    drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
-                }
-                else if (position == 4)
-                {
-                    drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(entry.Value.GetCardsInList()));
-                }
+                drawingFormHelper.DrawOtherSortedCards(this.ThisPlayer.CurrentHandState.PlayerHoldingCards[PositionPlayer[position]], position, true);
             }
-            Refresh();
-
         }
         
         private void ThisPlayer_GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names)
@@ -2548,10 +2529,10 @@ namespace Duan.Xiugang.Tractor
 
         private void btnLoadReplay_Click(object sender, EventArgs e)
         {
-            LoadReplay();
+            LoadReplay(true);
         }
 
-        private void LoadReplay()
+        private void LoadReplay(bool shouldDraw)
         {
             string replayFile = string.Format("{0}\\{1}\\{2}", this.rootReplayFolderPath, (string)cbbReplayDate.SelectedItem, (string)cbbReplayFile.SelectedItem);
             ReplayEntity replayEntity = CommonMethods.ReadObjectFromFile<ReplayEntity>(replayFile);
@@ -2565,10 +2546,10 @@ namespace Duan.Xiugang.Tractor
                 CommonMethods.RotateArray(ThisPlayer.replayEntity.PlayerRanks, ThisPlayer.replayAngle);
             }
 
-            StartReplay();
+            StartReplay(shouldDraw);
         }
 
-        private void StartReplay()
+        private void StartReplay(bool shouldDraw)
         {
             drawingFormHelper.DrawCenterImage();
             string[] players = ThisPlayer.replayEntity.Players;
@@ -2629,18 +2610,12 @@ namespace Duan.Xiugang.Tractor
 
             drawingFormHelper.DrawDiscardedCards();
 
-            drawingFormHelper.DrawMyHandCards();
-            drawingFormHelper.LastTrumpMadeCardsShow();
-
-            List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
-            drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
-
-            List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
-            drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
-
-            List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
-            drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
-            Refresh();
+            if (shouldDraw)
+            {
+                drawingFormHelper.DrawMyHandCards();
+                drawingFormHelper.LastTrumpMadeCardsShow();
+                drawAllOtherHandCards();
+            }
         }
 
         private void replayNextTrick()
@@ -2668,7 +2643,7 @@ namespace Duan.Xiugang.Tractor
                 int position = PlayerPosition[curPlayer];
                 if (position == 1)
                 {
-                    drawingFormHelper.DrawMySendedCardsActionReplay(cardsList);
+                    drawingFormHelper.DrawMySendedCardsAction(cardsList);
                     foreach (int card in trick.ShowedCards[curPlayer])
                     {
                         ThisPlayer.CurrentPoker.RemoveCard(card);
@@ -2677,7 +2652,7 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (position == 2)
                 {
-                    drawingFormHelper.DrawNextUserSendedCardsActionReplay(cardsList);
+                    drawingFormHelper.DrawNextUserSendedCardsAction(cardsList);
                     foreach (int card in trick.ShowedCards[curPlayer])
                     {
                         ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].RemoveCard(card);
@@ -2685,7 +2660,7 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (position == 3)
                 {
-                    drawingFormHelper.DrawFriendUserSendedCardsActionReplay(cardsList);
+                    drawingFormHelper.DrawFriendUserSendedCardsAction(cardsList);
                     foreach (int card in trick.ShowedCards[curPlayer])
                     {
                         ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].RemoveCard(card);
@@ -2693,7 +2668,7 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (position == 4)
                 {
-                    drawingFormHelper.DrawPreviousUserSendedCardsActionReplay(cardsList);
+                    drawingFormHelper.DrawPreviousUserSendedCardsAction(cardsList);
                     foreach (int card in trick.ShowedCards[curPlayer])
                     {
                         ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].RemoveCard(card);
@@ -2703,14 +2678,7 @@ namespace Duan.Xiugang.Tractor
                 curPlayer = ThisPlayer.CurrentGameState.GetNextPlayerAfterThePlayer(curPlayer).PlayerId;
             }
 
-            List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
-            drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
-
-            List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
-            drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
-
-            List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
-            drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
+            drawAllOtherHandCards();
 
             if (!string.IsNullOrEmpty(trick.Winner))
             {
@@ -2731,57 +2699,29 @@ namespace Duan.Xiugang.Tractor
 
         private void btnFirstTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayedTricks.Count > 0) LoadReplay();
-            else replayPreviousFile();
-        }
-
-        private void replayPreviousFile()
-        {
-            if (cbbReplayFile.SelectedIndex > 0)
+            if (ThisPlayer.replayedTricks.Count > 0) LoadReplay(true);
+            else
             {
-                cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex - 1;
-                LoadReplay();
-            }
-            else if (cbbReplayDate.SelectedIndex > 0)
-            {
-                cbbReplayDate.SelectedIndex = cbbReplayDate.SelectedIndex - 1;
-                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0)
-                {
-                    cbbReplayFile.SelectedIndex = cbbReplayFile.Items.Count - 1;
-                    LoadReplay();
-                }
+                if (replayPreviousFile()) btnLastTrick_Click(sender, e);
             }
         }
 
         private void btnPreviousTrick_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.replayedTricks.Count == 0)
+            if (ThisPlayer.replayedTricks.Count > 1)
             {
-                replayPreviousFile();
-                return;
+                drawingFormHelper.DrawCenterImage();
+                revertReplayTrick();
+                revertReplayTrick();
+                replayNextTrick();
             }
-
-            drawingFormHelper.DrawCenterImage();
-            revertReplayTrick();
-            if (ThisPlayer.replayedTricks.Count == 0)
+            else if (ThisPlayer.replayedTricks.Count == 1)
             {
-                drawingFormHelper.DrawMyHandCards();
-                drawingFormHelper.LastTrumpMadeCardsShow();
-
-                List<int> eastCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]].GetCardsInList();
-                drawingFormHelper.DrawNextUserSendedCardsActionAllHandCards(new ArrayList(eastCards));
-
-                List<int> northCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]].GetCardsInList();
-                drawingFormHelper.DrawFriendUserSendedCardsActionAllHandCards(new ArrayList(northCards));
-
-                List<int> westCards = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]].GetCardsInList();
-                drawingFormHelper.DrawPreviousUserSendedCardsActionAllHandCards(new ArrayList(westCards));
-                Refresh();
+                btnFirstTrick_Click(sender, e);
             }
             else
             {
-                revertReplayTrick();
-                replayNextTrick();
+                if (replayPreviousFile()) btnLastTrick_Click(sender, e);
             }
         }
 
@@ -2848,17 +2788,38 @@ namespace Duan.Xiugang.Tractor
             else replayNextFile();
         }
 
+        private bool replayPreviousFile()
+        {
+            if (cbbReplayFile.SelectedIndex > 0)
+            {
+                cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex - 1;
+                LoadReplay(false);
+                return true;
+            }
+            else if (cbbReplayDate.SelectedIndex > 0)
+            {
+                cbbReplayDate.SelectedIndex = cbbReplayDate.SelectedIndex - 1;
+                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0)
+                {
+                    cbbReplayFile.SelectedIndex = cbbReplayFile.Items.Count - 1;
+                    LoadReplay(false);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private void replayNextFile()
         {
             if (cbbReplayFile.SelectedIndex < cbbReplayFile.Items.Count - 1)
             {
                 cbbReplayFile.SelectedIndex = cbbReplayFile.SelectedIndex + 1;
-                LoadReplay();
+                LoadReplay(true);
             }
             else if (cbbReplayDate.SelectedIndex < cbbReplayDate.Items.Count - 1)
             {
                 cbbReplayDate.SelectedIndex = cbbReplayDate.SelectedIndex + 1;
-                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0) LoadReplay();
+                if (cbbReplayFile.Items != null && cbbReplayFile.Items.Count > 0) LoadReplay(true);
             }
         }
 
@@ -2907,7 +2868,7 @@ namespace Duan.Xiugang.Tractor
             {
                 CommonMethods.RotateArray(ThisPlayer.replayEntity.PlayerRanks, 1);
             }
-            StartReplay();
+            StartReplay(true);
         }
 
         private void cbbReplayDate_SelectedIndexChanged(object sender, EventArgs e)
@@ -2924,6 +2885,13 @@ namespace Duan.Xiugang.Tractor
             {
                 cbbReplayFile.SelectedIndex = 0;
             }
+        }
+
+        private void drawAllOtherHandCards()
+        {
+            drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]], 2, false);
+            drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]], 3, false);
+            drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]], 4, false);
         }
     }
 }

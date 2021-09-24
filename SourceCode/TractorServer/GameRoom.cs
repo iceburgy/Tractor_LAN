@@ -899,6 +899,7 @@ namespace TractorServer
         {
             //清空缓存
             this.serverLocalCache = new ServerLocalCache();
+            CurrentRoomState.CurrentTrickState.Learder = string.Empty;
             CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
             UpdatePlayerCurrentTrickState();
         }

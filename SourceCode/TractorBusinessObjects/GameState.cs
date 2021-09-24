@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 namespace Duan.Xiugang.Tractor.Objects
 {
     [DataContract]
+    [Serializable]
     public class GameState
     {
         [DataMember]

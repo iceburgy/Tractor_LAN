@@ -28,6 +28,15 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     Directory.CreateDirectory(fullFolderPath);
                 }
+                if (data.GetType() == typeof(GameState))
+                {
+                    GameState gs = DeepClone<GameState>((GameState)data);
+                    foreach (PlayerEntity player in gs.Players)
+                    {
+                        player.Observers.Clear();
+                    }
+                    data = gs;
+                }
                 string fullFilePath = string.Format("{0}\\{1}", fullFolderPath, fileName);
                 string jsonData = JsonConvert.SerializeObject(data);
                 File.WriteAllText(fullFilePath, jsonData);

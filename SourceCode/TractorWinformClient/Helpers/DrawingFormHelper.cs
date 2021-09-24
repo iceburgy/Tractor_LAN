@@ -36,6 +36,7 @@ namespace Duan.Xiugang.Tractor
 
         private int suitSequence = 0;
         private Font suitSequenceFont = new Font("Arial", 9, FontStyle.Bold);
+        private Font suitSequenceFontReplay = new Font("Arial", 6, FontStyle.Bold);
 
         internal DrawingFormHelper(MainForm mainForm)
         {
@@ -196,8 +197,8 @@ namespace Duan.Xiugang.Tractor
                         y = 200 + offsetCenterHalf;
                         break;
                     case 1:
-                        x = 280 - offsetCenterHalf;
-                        y = 250 + offsetY;
+                        x = 285 + offsetCenterHalf - 170;
+                        y = 244 + offsetCenter;
                         break;
                     default:
                         break;
@@ -274,8 +275,8 @@ namespace Duan.Xiugang.Tractor
         {
             this.HideOverridingLabels();
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            Rectangle rect = new Rectangle(20, 120, offsetSideBar + 70, 224 + offsetCenter + 75);
-            g.DrawImage(mainForm.image, 20, 120, rect.Width, rect.Height);
+            Rectangle rect = new Rectangle(0, 120, mainForm.Width, 224 + offsetCenter + 75);
+            g.DrawImage(mainForm.image, 0, 120, rect.Width, rect.Height);
             g.Dispose();
             mainForm.Refresh();
         }
@@ -1202,63 +1203,6 @@ namespace Duan.Xiugang.Tractor
 
         #endregion // 在各种情况下画自己的牌
 
-        #region // 因特殊情况需画出所有手牌
-
-
-        /// <summary>
-        /// 画对家的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawFriendUserSendedCardsActionAllHandCards(ArrayList readys)
-        {
-            int width = 71 * scaleDividend / scaleDivisor * 2 / 3;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + (i + 25 - readys.Count) * 12 * scaleDividend / scaleDivisor * 2 / 3, 130 + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
-            }
-
-            g.Dispose();
-        }
-
-
-
-        /// <summary>
-        /// 画上家应该出的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawPreviousUserSendedCardsActionAllHandCards(ArrayList readys)
-        {
-            int start = 90;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + i * 12 * scaleDividend / scaleDivisor * 2 / 3, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor * 1 / 3, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
-            }
-
-            g.Dispose();
-        }
-
-
-
-        /// <summary>
-        /// 画下家应该出的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawNextUserSendedCardsActionAllHandCards(ArrayList readys)
-        {
-            int width = 71 * scaleDividend / scaleDivisor * 2 / 3;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), 150 + offsetCenter + (i + 25 - readys.Count) * 12 * scaleDividend / scaleDivisor * 2 / 3, 496, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
-            }
-
-            g.Dispose();
-        }
-        #endregion
-
-
         #region 画自己的牌面(四种花色、四种花色Rank、大小王)
         private int DrawBigJack(Graphics g, CurrentPoker currentPoker, int j, int start)
         {
@@ -1320,7 +1264,6 @@ namespace Duan.Xiugang.Tractor
             for (int i = 0; i < 13; i++)
             {
                 j = DrawMyOneOrTwoCards(g, currentPoker.PeachsNoRank[i], i + 13, j, start, i == 0);
-
             }
             return j;
         }
@@ -1939,76 +1882,6 @@ namespace Duan.Xiugang.Tractor
         }
         #endregion // 绘制上一轮各家所出的牌，缩小至一半，放在左下角
 
-        #region // 录像回放时，绘制各家所出的牌
-        /// <summary>
-        /// 录像回放时画我的牌
-        /// </summary>
-        /// <param name="readys">我上轮的牌的列表</param>
-        internal void DrawMySendedCardsActionReplay(ArrayList readys)
-        {
-            int start = 285;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 244 + offsetCenter, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
-                start += 12 * scaleDividend / scaleDivisor;
-            }
-            g.Dispose();
-        }
-
-        /// <summary>
-        /// 录像回放时画对家的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawFriendUserSendedCardsActionReplay(ArrayList readys)
-        {
-            int start = 285;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
-                start += 12 * scaleDividend / scaleDivisor;
-            }
-            g.Dispose();
-        }
-
-
-
-        /// <summary>
-        /// 录像回放时画上家的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawPreviousUserSendedCardsActionReplay(ArrayList readys)
-        {
-            int start = 245;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
-                start += 12 * scaleDividend / scaleDivisor;
-            }
-            g.Dispose();
-        }
-
-
-
-        /// <summary>
-        /// 录像回放时画下家的牌
-        /// </summary>
-        /// <param name="readys"></param>
-        internal void DrawNextUserSendedCardsActionReplay(ArrayList readys)
-        {
-            int start = 326;
-            Graphics g = Graphics.FromImage(mainForm.bmp);
-            for (int i = 0; i < readys.Count; i++)
-            {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenter, 187 + offsetCenterHalf, 71 * scaleDividend / scaleDivisor, 96 * scaleDividend / scaleDivisor);
-                start += 12 * scaleDividend / scaleDivisor;
-            }
-            g.Dispose();
-        }
-        #endregion // 录像回放时，绘制各家所出的牌
-
         #region 画牌时的辅助方法
 
         //根据牌号得到相应的牌的图片
@@ -2209,5 +2082,251 @@ namespace Duan.Xiugang.Tractor
             mainForm.Refresh();
             g.Dispose();
         }
+
+        #region 旁观模式画别人的所有手牌
+        //画别人排序好的牌,一般在旁观模式，投降，革命的情况下调用
+        internal void DrawOtherSortedCards(CurrentPoker currentPoker, int position, bool isSurrender)
+        {
+            Graphics g = Graphics.FromImage(mainForm.bmp);
+
+            //计算初始位置
+            int numOfSuits = getNumOfSuits(currentPoker);
+            int interval = 12 * scaleDividend / scaleDivisor * 2 / 3;
+            int start;
+            int y;
+
+            switch (position)
+            {
+                case 2:
+                    if (isSurrender)
+                    {
+                        start = mainForm.Width - 90 - 71 - (currentPoker.Count - 1) * interval - (numOfSuits - 1) * interval;
+                        y = 496;
+                    }
+                    else
+                    {
+                        start = mainForm.Width - 10 - 71 - (currentPoker.Count - 1) * interval - (numOfSuits - 1) * interval;
+                        y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor * 1 / 3;
+                    }
+                    break;
+                case 3:
+                    start = 150 + offsetCenter + (25 - currentPoker.Count) * interval - (numOfSuits - 1) * interval;
+                    y = 130 + 96 * scaleDividend / scaleDivisor * 1 / 3;
+                    break;
+                case 4:
+                    if (isSurrender)
+                    {
+                        start = 90;
+                        y = 187 + offsetCenterHalf;
+                    }
+                    else
+                    {
+                        start = 10;
+                        y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor * 1 / 3;
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            //记录每张牌的X值
+            int j = 0;
+            //临时变量，用来辅助判断是否某花色缺失
+            int k = 0;
+            if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Heart)//红桃
+            {
+                j = DrawOtherPeachs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherDiamonds(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherClubs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherHearts(g, currentPoker, j, start, y);
+
+                j = DrawOtherPeachsRank(g, currentPoker, j, start, y);
+                j = DrawOtherDiamondsRank(g, currentPoker, j, start, y);
+                j = DrawOtherClubsRank(g, currentPoker, j, start, y);
+                j = DrawOtherHeartsRank(g, currentPoker, j, start, y);
+            }
+            else if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Spade) //黑桃
+            {
+
+                j = DrawOtherDiamonds(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherClubs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherHearts(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherPeachs(g, currentPoker, j, start, y);
+
+
+                j = DrawOtherDiamondsRank(g, currentPoker, j, start, y);
+                j = DrawOtherClubsRank(g, currentPoker, j, start, y);
+                j = DrawOtherHeartsRank(g, currentPoker, j, start, y);
+                j = DrawOtherPeachsRank(g, currentPoker, j, start, y);
+            }
+            else if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Diamond)  //方片
+            {
+
+                j = DrawOtherClubs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherHearts(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherPeachs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherDiamonds(g, currentPoker, j, start, y);
+
+
+                j = DrawOtherClubsRank(g, currentPoker, j, start, y);
+                j = DrawOtherHeartsRank(g, currentPoker, j, start, y);
+                j = DrawOtherPeachsRank(g, currentPoker, j, start, y);
+                j = DrawOtherDiamondsRank(g, currentPoker, j, start, y);//方块
+            }
+            else if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Club)
+            {
+
+                j = DrawOtherHearts(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherPeachs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherDiamonds(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherClubs(g, currentPoker, j, start, y);
+
+
+                j = DrawOtherHeartsRank(g, currentPoker, j, start, y);
+                j = DrawOtherPeachsRank(g, currentPoker, j, start, y);
+                j = DrawOtherDiamondsRank(g, currentPoker, j, start, y);
+                j = DrawOtherClubsRank(g, currentPoker, j, start, y);//梅花
+            }
+            else if (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker || mainForm.ThisPlayer.CurrentHandState.Trump == Suit.None)
+            {
+                j = DrawOtherHearts(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherPeachs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherDiamonds(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+                j = DrawOtherClubs(g, currentPoker, j, start, y) + 1;
+                IsSuitLost(ref j, ref k);
+
+                j = DrawOtherHeartsRank(g, currentPoker, j, start, y);
+                j = DrawOtherPeachsRank(g, currentPoker, j, start, y);
+                j = DrawOtherDiamondsRank(g, currentPoker, j, start, y);
+                j = DrawOtherClubsRank(g, currentPoker, j, start, y);
+            }
+
+
+            //小王
+            j = DrawOtherSmallJack(g, currentPoker, j, start, y);
+
+            //大王
+            j = DrawOtherBigJack(g, currentPoker, j, start, y);
+
+            mainForm.Refresh();
+            g.Dispose();
+        }
+
+        private int DrawOtherBigJack(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.RedJoker, 53, j, start, y, false);
+            return j;
+        }
+
+
+        private int DrawOtherSmallJack(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.BlackJoker, 52, j, start, y, false);
+            return j;
+        }
+
+        private int DrawOtherDiamondsRank(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.DiamondsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 26, j, start, y, false);
+            return j;
+        }
+
+        private int DrawOtherClubsRank(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.ClubsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank + 39, j, start, y, false);
+            return j;
+        }
+
+        private int DrawOtherPeachsRank(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.SpadesRankCount, mainForm.ThisPlayer.CurrentHandState.Rank + 13, j, start, y, false);
+            return j;
+        }
+
+        private int DrawOtherHeartsRank(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            j = DrawOtherOneOrTwoCards(g, currentPoker.HeartsRankTotal, mainForm.ThisPlayer.CurrentHandState.Rank, j, start, y, mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker || mainForm.ThisPlayer.CurrentHandState.Trump == Suit.None);
+            return j;
+        }
+
+        private int DrawOtherClubs(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            for (int i = 0; i < 13; i++)
+            {
+                j = DrawOtherOneOrTwoCards(g, currentPoker.ClubsNoRank[i], i + 39, j, start, y, i == 0);
+            }
+            return j;
+        }
+
+        private int DrawOtherDiamonds(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            for (int i = 0; i < 13; i++)
+            {
+                j = DrawOtherOneOrTwoCards(g, currentPoker.DiamondsNoRank[i], i + 26, j, start, y, i == 0);
+            }
+            return j;
+        }
+
+        private int DrawOtherPeachs(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            for (int i = 0; i < 13; i++)
+            {
+                j = DrawOtherOneOrTwoCards(g, currentPoker.PeachsNoRank[i], i + 13, j, start, y, i == 0);
+
+            }
+            return j;
+        }
+
+        private int DrawOtherHearts(Graphics g, CurrentPoker currentPoker, int j, int start, int y)
+        {
+            for (int i = 0; i < 13; i++)
+            {
+                j = DrawOtherOneOrTwoCards(g, currentPoker.HeartsNoRank[i], i, j, start, y, i == 0);
+            }
+            return j;
+        }
+
+        private int DrawOtherOneOrTwoCards(Graphics g, int count, int number, int j, int start, int y, bool resetSuitSequence)
+        {
+            if (resetSuitSequence) suitSequence = 1;
+            while (count > 0)
+            {
+                g.DrawImage(getPokerImageByNumber(number), start + j * 12 * scaleDividend / scaleDivisor * 2 / 3, y, 71 * scaleDividend / scaleDivisor * 2 / 3, 96 * scaleDividend / scaleDivisor * 2 / 3);
+                //画牌的张数
+                if (this.mainForm.showSuitSeq) g.DrawString(suitSequence.ToString(), suitSequenceFontReplay, Brushes.Gray, start + j * 12 * scaleDividend / scaleDivisor * 2 / 3 + 1, y + 50 * scaleDividend / scaleDivisor * 2 / 3);
+                suitSequence++;
+                j++;
+                count--;
+            }
+            return j;
+        }
+
+        private int getNumOfSuits(CurrentPoker currentPoker)
+        {
+            int num = 0;
+            if (currentPoker == null) return num;
+            for (int i = 1; i <= 4; i++)
+            {
+                if (currentPoker.HasSomeCards(i)) num++;
+            }
+            if (currentPoker.Trump == Suit.Joker && currentPoker.HasSomeCards(5)) num++;
+            return num;
+        }
+        #endregion
     }
 }
