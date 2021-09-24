@@ -1283,8 +1283,7 @@ namespace Duan.Xiugang.Tractor
             if (resetSuitSequence) suitSequence = 1;
 
             //如果是我亮的主，我需要将亮的主往上提一下
-            bool b = (number == 52) || (number == 53);
-            b = b & (mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker);
+            bool b = mainForm.ThisPlayer.CurrentHandState.Trump == Suit.Joker && (number == 52 && mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker == TrumpExposingPoker.PairBlackJoker) || (number == 53 && mainForm.ThisPlayer.CurrentHandState.TrumpExposingPoker == TrumpExposingPoker.PairRedJoker);
             if (mainForm.ThisPlayer.CurrentHandState.Trump != Suit.Joker)
             {
                 if (number ==((int) mainForm.ThisPlayer.CurrentHandState.Trump - 1)*13 +mainForm.ThisPlayer.CurrentHandState.Rank)
@@ -1293,7 +1292,7 @@ namespace Duan.Xiugang.Tractor
                 }
 
             }
-            b = b && (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DistributingCards);
+            b = b && (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep <= HandStep.DistributingCardsFinished);
 
             if (count == 1)
             {
