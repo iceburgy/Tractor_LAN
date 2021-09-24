@@ -2502,11 +2502,6 @@ namespace Duan.Xiugang.Tractor
 
             btnEnterHall.Hide();
             this.btnReplay.Hide();
-            this.btnReplayAngle.Show();
-            this.btnFirstTrick.Show();
-            this.btnPreviousTrick.Show();
-            this.btnNextTrick.Show();
-            this.btnLastTrick.Show();
             this.lblReplayDate.Show();
             this.lblReplayFile.Show();
             this.cbbReplayDate.Show();
@@ -2530,6 +2525,11 @@ namespace Duan.Xiugang.Tractor
         private void btnLoadReplay_Click(object sender, EventArgs e)
         {
             LoadReplay(true);
+            this.btnReplayAngle.Show();
+            this.btnFirstTrick.Show();
+            this.btnPreviousTrick.Show();
+            this.btnNextTrick.Show();
+            this.btnLastTrick.Show();
         }
 
         private void LoadReplay(bool shouldDraw)
