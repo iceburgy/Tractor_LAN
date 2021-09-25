@@ -1252,13 +1252,20 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void DisplayRoomSetting(string prefix)
+        private void DisplayRoomSetting(bool isRoomSettingModified)
         {
             List<string> msgs = new List<string>();
-            if (!string.IsNullOrEmpty(prefix))
+            if (this.ThisPlayer.CurrentRoomSetting.DisplaySignalCardInfo)
             {
-                msgs.Add(prefix);
-                msgs.Add(string.Empty);
+                msgs.AddRange(new string[] { "信号牌机制声明：", "8、9、J、Q代表本门有进手张", "级牌调主代表寻求对家帮忙清主", "" });
+            }
+            if (isRoomSettingModified)
+            {
+                msgs.Add("房间设置已更改！");
+            }
+            else
+            {
+                msgs.Add("房间设置：");
             }
             msgs.Add(string.Format("允许投降：{0}", this.ThisPlayer.CurrentRoomSetting.AllowSurrender ? "是" : "否"));
             msgs.Add(string.Format("允许J到底：{0}", this.ThisPlayer.CurrentRoomSetting.AllowJToBottom ? "是" : "否"));
@@ -1382,12 +1389,7 @@ namespace Duan.Xiugang.Tractor
                 this.TeamUpToolStripMenuItem.Visible = true;
             }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
-            string prefix = string.Empty;
-            if (isRoomSettingModified)
-            {
-                prefix = "房间设置已更改！";
-            }
-            this.DisplayRoomSetting(prefix);
+            this.DisplayRoomSetting(isRoomSettingModified);
         }
 
         private void ThisPlayer_ShowAllHandCardsEventHandler()

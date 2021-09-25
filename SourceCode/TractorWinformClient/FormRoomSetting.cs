@@ -32,6 +32,7 @@ namespace Duan.Xiugang.Tractor
             this.cbxAllowSurrender.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowSurrender;
             this.cbxAllowRobotMakeTrump.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRobotMakeTrump;
             this.cbxJToBottom.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowJToBottom;
+            this.cbxDisplaySignalCardInfo.Checked = this.mainForm.ThisPlayer.CurrentRoomSetting.DisplaySignalCardInfo;
 
             string riotMinScore = this.mainForm.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString();
             if (riotMinScore == "-1") riotMinScore = doNotAllow;
@@ -77,6 +78,7 @@ namespace Duan.Xiugang.Tractor
             rs.AllowSurrender = this.cbxAllowSurrender.Checked;
             rs.AllowRobotMakeTrump = this.cbxAllowRobotMakeTrump.Checked;
             rs.AllowJToBottom = this.cbxJToBottom.Checked;
+            rs.DisplaySignalCardInfo = this.cbxDisplaySignalCardInfo.Checked;
 
             string riotMinScore=(string)this.cbbRiotByScore.SelectedItem;
             rs.AllowRiotWithTooFewScoreCards = riotMinScore == doNotAllow ? -1 : Int32.Parse(riotMinScore);
