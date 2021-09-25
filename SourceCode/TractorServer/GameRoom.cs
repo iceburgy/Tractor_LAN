@@ -576,6 +576,8 @@ namespace TractorServer
                 UpdatePlayersCurrentHandState();
 
                 BuildReplayEntity();
+
+                SaveGameStateToFile();
             }
         }
 
@@ -1020,43 +1022,8 @@ namespace TractorServer
         }
 
         //读取牌局
-        public void RestoreGameStateFromFile(bool restoreCardsShoe)
+        public void RestoreGameStateFromFile(GameState gs, CurrentHandState hs, List<string> restoredMsg)
         {
-            bool isValid = true;
-            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player == null || player.Team == GameTeam.None)
-                {
-                    isValid = false;
-                    break;
-                }
-            }
-
-            if (!isValid)
-            {
-                PublishMessage(new string[] { "读取牌局失败", "玩家人数不够" });
-                return;
-            }
-            List<string> restoredMsg = new List<string>();
-            string fileNameGamestate = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupGamestateFileName);
-            GameState gs = CommonMethods.ReadObjectFromFile<GameState>(fileNameGamestate);
-            if (gs == null)
-            {
-                restoredMsg.Add("读取牌局【失败】- GameState");
-                PublishMessage(restoredMsg.ToArray());
-                return;
-            }
-            gs.Players.RemoveAll(p => p == null);
-
-            string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
-            CurrentHandState hs = CommonMethods.ReadObjectFromFile<CurrentHandState>(fileNameHandState);
-            if (hs == null)
-            {
-                restoredMsg.Add("读取牌局【失败】- HandState");
-                PublishMessage(restoredMsg.ToArray());
-                return;
-            }
-
             for (int i = 0; i < 4; i++)
             {
                 CurrentRoomState.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
@@ -1098,20 +1065,17 @@ namespace TractorServer
 
             restoredMsg.Add("读取牌局【成功】");
 
-            if (restoreCardsShoe)
+            string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
+            CardsShoe cs = CommonMethods.ReadObjectFromFile<CardsShoe>(fileNameCardsShoe);
+            if (cs == null)
             {
-                string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
-                CardsShoe cs = CommonMethods.ReadObjectFromFile<CardsShoe>(fileNameCardsShoe);
-                if (cs == null)
-                {
-                    restoredMsg.Add("还原手牌【失败】");
-                }
-                else
-                {
-                    this.CardsShoe.IsCardsRestored = true;
-                    this.CardsShoe.Cards = cs.Cards;
-                    restoredMsg.Add("还原手牌【成功】");
-                }
+                restoredMsg.Add("还原手牌【失败】");
+            }
+            else
+            {
+                this.CardsShoe.IsCardsRestored = true;
+                this.CardsShoe.Cards = cs.Cards;
+                restoredMsg.Add("还原手牌【成功】");
             }
             restoredMsg.Add("请点击就绪继续游戏");
             PublishMessage(restoredMsg.ToArray());
@@ -1152,6 +1116,7 @@ namespace TractorServer
                 PublishMessage(restoredMsg.ToArray());
                 return;
             }
+            bool isResumable = true;
             for (int i = 0; i < 4; i++)
             {
                 if (CurrentRoomState.CurrentGameState.Players[i].PlayerId != gs.Players[i].PlayerId)
@@ -1162,11 +1127,10 @@ namespace TractorServer
                     restoredMsg.Add(gs.Players[i].PlayerId);
                     restoredMsg.Add(string.Format("当前【{0}号位】玩家为：", i + 1));
                     restoredMsg.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
-                    PublishMessage(restoredMsg.ToArray());
-                    return;
+                    isResumable = false;
+                    break;
                 }
             }
-            CurrentRoomState.CurrentGameState = gs;
 
             string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
             CurrentHandState hs = CommonMethods.ReadObjectFromFile<CurrentHandState>(fileNameHandState);
@@ -1180,11 +1144,17 @@ namespace TractorServer
             {
                 if (cp.Value.Count == 0)
                 {
-                    restoredMsg.AddRange(new string[] { "继续牌局【失败】- HandState", "上盘牌局已出完所有牌", "请选择【从头开始上盘牌局】" }); ;
-                    PublishMessage(restoredMsg.ToArray());
-                    return;
+                    restoredMsg.AddRange(new string[] { "继续牌局【失败】- HandState", "上盘牌局已出完所有牌" }); ;
+                    isResumable = false;
+                    break;
                 }
             }
+            if (!isResumable)
+            {
+                RestoreGameStateFromFile(gs, hs, restoredMsg);
+                return;
+            }
+            CurrentRoomState.CurrentGameState = gs;
             CurrentRoomState.CurrentHandState = hs;
 
             string fileNameTrickState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupTrickStateFileName);

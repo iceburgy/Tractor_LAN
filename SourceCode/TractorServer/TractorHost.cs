@@ -415,16 +415,6 @@ namespace TractorServer
             }
         }
 
-        //读取牌局
-        public void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe)
-        {
-            if (this.SessionIDGameRoom.ContainsKey(playerId))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[playerId];
-                gameRoom.RestoreGameStateFromFile(restoreCardsShoe);
-            }
-        }
-
         //继续牌局
         public void ResumeGameFromFile(string playerId)
         {

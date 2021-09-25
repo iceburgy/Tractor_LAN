@@ -57,10 +57,6 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void RefreshPlayersCurrentHandState(string playerId);
 
-        //读取牌局
-        [OperationContract(IsOneWay = true)]
-        void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe);
-
         //继续牌局
         [OperationContract(IsOneWay = true)]
         void ResumeGameFromFile(string playerId);

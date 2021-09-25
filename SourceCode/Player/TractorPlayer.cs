@@ -155,11 +155,6 @@ namespace Duan.Xiugang.Tractor.Player
             this.CurrentPoker.Clear();
         }
 
-        public void RestoreGameStateFromFile(string playerId, bool restoreCardsShoe)
-        {
-            _tractorHost.RestoreGameStateFromFile(playerId, restoreCardsShoe);
-        }
-
         public void ResumeGameFromFile(string playerId)
         {
             _tractorHost.ResumeGameFromFile(playerId);

@@ -1384,8 +1384,6 @@ namespace Duan.Xiugang.Tractor
                 //显示仅房主可见的菜单
                 this.BeginRankToolStripMenuItem.Visible = true;
                 this.ResumeGameToolStripMenuItem.Visible = true;
-                this.RestoreGameStateToolStripMenuItem.Visible = true;
-                this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = true;
                 this.TeamUpToolStripMenuItem.Visible = true;
             }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
@@ -1444,8 +1442,6 @@ namespace Duan.Xiugang.Tractor
             //隐藏仅房主可见的菜单
             this.BeginRankToolStripMenuItem.Visible = false;
             this.ResumeGameToolStripMenuItem.Visible = false;
-            this.RestoreGameStateToolStripMenuItem.Visible = false;
-            this.RestoreGameStateCardsShoeToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Visible = false;
 
             //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
@@ -2093,18 +2089,6 @@ namespace Duan.Xiugang.Tractor
             Application.Restart();
         }
 
-        private void RestoreGameStateToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ThisPlayer.isObserver) return;
-            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
-            {
-                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许还原牌局", "请完成此盘游戏后重试" });
-                return;
-            }
-
-            ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, false);
-        }
-
         private void ResumeGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
@@ -2115,18 +2099,6 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.ResumeGameFromFile(ThisPlayer.MyOwnId);
-        }
-
-        private void RestoreGameStateCardsShoeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (ThisPlayer.isObserver) return;
-            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
-            {
-                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许还原牌局和手牌", "请完成此盘游戏后重试" });
-                return;
-            }
-
-            ThisPlayer.RestoreGameStateFromFile(ThisPlayer.MyOwnId, true);
         }
 
         private void theTimer_Tick(object sender, EventArgs e)
