@@ -269,12 +269,9 @@ namespace TractorServer
         {
             foreach (PlayerEntity p in this.CurrentRoomState.CurrentGameState.Players)
             {
-                if (p != null && p.PlayerId == playerID)
-                {
-                    return true;
-                }
+                if (p != null && p.Observers.Contains(playerID)) return false;
             }
-            return false;
+            return true;
         }
 
         // returns: needRestart
@@ -1149,6 +1146,26 @@ namespace TractorServer
                 return;
             }
             gs.Players.RemoveAll(p => p == null);
+            if (gs.Players.Count != 4)
+            {
+                restoredMsg.AddRange(new string[] { "继续牌局【失败】- GameState", "游戏文件中玩家人数不够：" + gs.Players.Count });
+                PublishMessage(restoredMsg.ToArray());
+                return;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (CurrentRoomState.CurrentGameState.Players[i].PlayerId != gs.Players[i].PlayerId)
+                {
+                    restoredMsg.Add("继续牌局【失败】- GameState");
+                    restoredMsg.Add("游戏文件中玩家与当前玩家不匹配");
+                    restoredMsg.Add(string.Format("游戏文件中【{0}号位】玩家为：", i + 1));
+                    restoredMsg.Add(gs.Players[i].PlayerId);
+                    restoredMsg.Add(string.Format("当前【{0}号位】玩家为：", i + 1));
+                    restoredMsg.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
+                    PublishMessage(restoredMsg.ToArray());
+                    return;
+                }
+            }
             CurrentRoomState.CurrentGameState = gs;
 
             string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
@@ -1158,6 +1175,15 @@ namespace TractorServer
                 restoredMsg.Add("继续牌局【失败】- HandState");
                 PublishMessage(restoredMsg.ToArray());
                 return;
+            }
+            foreach (var cp in hs.PlayerHoldingCards)
+            {
+                if (cp.Value.Count == 0)
+                {
+                    restoredMsg.AddRange(new string[] { "继续牌局【失败】- HandState", "上盘牌局已出完所有牌", "请选择【从头开始上盘牌局】" }); ;
+                    PublishMessage(restoredMsg.ToArray());
+                    return;
+                }
             }
             CurrentRoomState.CurrentHandState = hs;
 

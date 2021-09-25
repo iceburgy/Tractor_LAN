@@ -205,6 +205,13 @@ namespace TractorServer
                     }
                 }
             }
+            foreach (PlayerEntity p in gameRoom.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (p != null && !PlayersProxy.ContainsKey(p.PlayerId) && !obs.Contains(p.PlayerId) && !quitPlayers.Contains(p.PlayerId))
+                {
+                    obs.Add(p.PlayerId);
+                }
+            }
 
             //先将退出的玩家和离线玩家移出房间
             gameRoom.PlayerQuit(quitPlayers);
@@ -214,10 +221,10 @@ namespace TractorServer
             }
 
             //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
+            gameRoom.PlayerQuit(obs);
             foreach (string ob in obs)
             {
-                gameRoom.PlayerQuit(new List<string>() { ob });
-                SessionIDGameRoom.Remove(playerID);
+                SessionIDGameRoom.Remove(ob);
             }
 
             log.Debug(string.Format("player {0} exited room.", playerID));

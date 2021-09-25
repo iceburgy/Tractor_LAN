@@ -359,13 +359,6 @@ namespace Duan.Xiugang.Tractor.Player
                     if (DiscardingLast8 != null)
                         DiscardingLast8();
                 }
-
-                else if (currentHandState.CurrentHandStep == HandStep.DistributingCardsFinished)
-                {
-                    if (AllCardsGot != null)
-                        AllCardsGot();
-                }
-
                 else if (currentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                 {
                     if (Last8Discarded != null)

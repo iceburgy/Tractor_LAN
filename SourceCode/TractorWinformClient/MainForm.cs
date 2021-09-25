@@ -1952,6 +1952,8 @@ namespace Duan.Xiugang.Tractor
         {
             //先去掉反牌按钮，再放发底牌动画
             drawingFormHelper.ReDrawToolbar();
+            //重画手牌，从而把被提升的自己亮的牌放回去
+            ResortMyCards();
 
             int position = PlayerPosition[ThisPlayer.CurrentHandState.Last8Holder];
             //自己摸底不用画
