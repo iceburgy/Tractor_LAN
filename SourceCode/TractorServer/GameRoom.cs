@@ -1691,7 +1691,7 @@ namespace TractorServer
             string[] fileInfo = CommonMethods.GetReplayEntityFullFilePath(this.replayEntity, ReplaysByRoomFullFolder);
             if (fileInfo != null)
             {
-                CommonMethods.WriteObjectToFile(this.replayEntity, fileInfo[0], string.Format("{0}.json", fileInfo[1]));
+                CommonMethods.WriteObjectToFile(this.replayEntity, fileInfo[0], string.Format("{0}", fileInfo[1]));
             }
             else
             {
