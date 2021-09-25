@@ -2104,7 +2104,7 @@ namespace Duan.Xiugang.Tractor
                     }
                     else
                     {
-                        start = mainForm.Width - 10 - 71 - (currentPoker.Count - 1) * interval - (numOfSuits - 1) * interval;
+                        start = mainForm.Width - 7 - 71 - (currentPoker.Count - 1) * interval - (numOfSuits - 1) * interval;
                         y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor * 1 / 3;
                     }
                     break;
@@ -2120,7 +2120,7 @@ namespace Duan.Xiugang.Tractor
                     }
                     else
                     {
-                        start = 10;
+                        start = 2;
                         y = 244 + offsetCenter + 96 * scaleDividend / scaleDivisor * 1 / 3;
                     }
                     break;
