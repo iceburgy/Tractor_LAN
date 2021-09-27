@@ -88,7 +88,9 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public RoomSetting()
         {
-            this.ManditoryRanks = new List<int>() { 3, 8, 11 };
+            this.ManditoryRanks = new List<int>();
+            this.AllowRiotWithTooFewScoreCards = -1;
+            this.AllowRiotWithTooFewTrumpCards = -1;
             this.secondsToWaitForReenter = 60;
         }
     }
