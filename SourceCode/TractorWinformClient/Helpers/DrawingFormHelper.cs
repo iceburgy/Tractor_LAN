@@ -197,8 +197,8 @@ namespace Duan.Xiugang.Tractor
                         y = 200 + offsetCenterHalf;
                         break;
                     case 1:
-                        x = 285 + offsetCenterHalf - (this.mainForm.ThisPlayer.isReplay ? 0 : 170);
-                        y = 244 + offsetCenter;
+                        x = 285 + offsetCenterHalf - (this.mainForm.ThisPlayer.isReplay ? 0 : 100);
+                        y = 244 + offsetCenter + 72;
                         break;
                     default:
                         break;
