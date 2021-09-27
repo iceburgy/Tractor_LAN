@@ -56,10 +56,10 @@ namespace Duan.Xiugang.Tractor
 
             //half size
             this.overridingFlagLocations[0] = new int[4][];
-            this.overridingFlagLocations[0][0] = new int[] { 285 + offsetCenterHalf, 244 + offsetCenter + 96 * scaleDividend / scaleDivisor - height / 2 };
-            this.overridingFlagLocations[0][1] = new int[] { 326 + offsetCenter, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height / 2 };
-            this.overridingFlagLocations[0][2] = new int[] { 285 + offsetCenterHalf, 130 + 96 * scaleDividend / scaleDivisor - height / 2 };
-            this.overridingFlagLocations[0][3] = new int[] { 245, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height / 2 };
+            this.overridingFlagLocations[0][0] = new int[] { 285 + offsetCenterHalf, 244 + offsetCenter + 96 * scaleDividend / scaleDivisor / 4 - height / 2 };
+            this.overridingFlagLocations[0][1] = new int[] { 326 + offsetCenter, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor * 3 / 4 - height / 2 };
+            this.overridingFlagLocations[0][2] = new int[] { 285 + offsetCenterHalf, 130 + 96 * scaleDividend / scaleDivisor * 5 / 4 - height / 2 };
+            this.overridingFlagLocations[0][3] = new int[] { 245, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor * 3 / 4 - height / 2 };
 
             this.overridingFlagSizes[0] = new int[] { width / 2, height / 2 };
 
@@ -185,7 +185,7 @@ namespace Duan.Xiugang.Tractor
                 switch (mainForm.PlayerPosition[player])
                 {
                     case 3:
-                        x = 280 + offsetCenterHalf;
+                        x = 285 + offsetCenterHalf;
                         y = 130;
                         break;
                     case 4:
@@ -197,15 +197,15 @@ namespace Duan.Xiugang.Tractor
                         y = 200 + offsetCenterHalf;
                         break;
                     case 1:
-                        x = 285 + offsetCenterHalf - (this.mainForm.ThisPlayer.isReplay ? 0 : 100);
-                        y = 244 + offsetCenter + (this.mainForm.ThisPlayer.isReplay ? 0 : 72);
+                        x = 285 + offsetCenterHalf;
+                        y = 244 + offsetCenter + (this.mainForm.ThisPlayer.isReplay ? 0 : hei);
                         break;
                     default:
                         break;
                 }
-
+                
                 int offset = 0;
-                int offsetDelta = 12 * scaleDividend / scaleDivisor;
+                int offsetDelta = 12 * scaleDividend / scaleDivisor / 2;
                 int totalCount = 0;
                 if (mainForm.PlayerPosition[player] == 2)
                 {
@@ -216,8 +216,9 @@ namespace Duan.Xiugang.Tractor
                         if (trumpInfo.TrumpExposingPoker > TrumpExposingPoker.SingleRank) baseCount = 2;
                         totalCount += baseCount;
                     }
+                    totalCount += (suitToTrumInfo.Count - 1);
+                    x -= offsetDelta * (totalCount - 1);
                 }
-                x -= offsetDelta * (totalCount - 1);
                 foreach (var suitToTrumInfoEntry in suitToTrumInfo)
                 {
                     Suit trump = suitToTrumInfoEntry.Key;
@@ -240,6 +241,7 @@ namespace Duan.Xiugang.Tractor
                         g.DrawImage(getPokerImageByNumber(trumpMadeCard), x + offset, y, wid, hei);
                         offset += offsetDelta;
                     }
+                    offset += offsetDelta;
                 }
             }
             mainForm.Refresh();
@@ -1814,12 +1816,12 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys">我上轮的牌的列表</param>
         internal void DrawMyLastSendedCardsAction(ArrayList readys)
         {
-            int halfHeigh = 96 * scaleDividend / scaleDivisor / 2;
+            int oneFourthHeigh = 96 * scaleDividend / scaleDivisor / 4;
             int start = 285;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 244 + offsetCenter + halfHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 244 + offsetCenter - oneFourthHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
                 start += 12 * scaleDividend / scaleDivisor;
             }
             g.Dispose();
@@ -1831,12 +1833,12 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys"></param>
         internal void DrawFriendUserLastSendedCardsAction(ArrayList readys)
         {
-            int halfHeigh = 96 * scaleDividend / scaleDivisor / 2;
+            int offsetYByHeight = 96 * scaleDividend / scaleDivisor * 3 / 4;
             int start = 285;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130 + halfHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenterHalf, 130 + offsetYByHeight, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
                 start += 12 * scaleDividend / scaleDivisor;
             }
             g.Dispose();
@@ -1850,12 +1852,12 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys"></param>
         internal void DrawPreviousUserLastSendedCardsAction(ArrayList readys)
         {
-            int halfHeigh = 96 * scaleDividend / scaleDivisor / 2;
+            int oneFourthHeigh = 96 * scaleDividend / scaleDivisor / 4;
             int start = 245;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 187 + offsetCenterHalf + halfHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start, 187 + offsetCenterHalf + oneFourthHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
                 start += 12 * scaleDividend / scaleDivisor;
             }
             g.Dispose();
@@ -1869,12 +1871,12 @@ namespace Duan.Xiugang.Tractor
         /// <param name="readys"></param>
         internal void DrawNextUserLastSendedCardsAction(ArrayList readys)
         {
-            int halfHeigh = 96 * scaleDividend / scaleDivisor / 2;
+            int oneFourthHeigh = 96 * scaleDividend / scaleDivisor / 4;
             int start = 326;
             Graphics g = Graphics.FromImage(mainForm.bmp);
             for (int i = 0; i < readys.Count; i++)
             {
-                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenter, 187 + offsetCenterHalf + halfHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
+                DrawMyImage(g, getPokerImageByNumber((int)readys[i]), start + offsetCenter, 187 + offsetCenterHalf + oneFourthHeigh, 71 * scaleDividend / scaleDivisor / 2, 96 * scaleDividend / scaleDivisor / 2);
                 start += 12 * scaleDividend / scaleDivisor;
             }
             g.Dispose();

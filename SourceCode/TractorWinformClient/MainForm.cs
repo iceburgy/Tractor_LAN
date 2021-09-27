@@ -635,10 +635,7 @@ namespace Duan.Xiugang.Tractor
                         this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
                         if (this.ThisPlayer.ShowLastTrickCards)
                         {
-                            //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前轮各家所出的牌
-                            ThisPlayer_PlayerLastTrickShowedCards();
-                            //查看谁亮过什么牌
-                            drawingFormHelper.LastTrumpMadeCardsShow();
+                            ShowLastTrickAndTumpMade();
                         }
                         else
                         {
@@ -661,16 +658,26 @@ namespace Duan.Xiugang.Tractor
                 this.ThisPlayer.ShowLastTrickCards = !this.ThisPlayer.ShowLastTrickCards;
                 if (this.ThisPlayer.ShowLastTrickCards)
                 {
-                    //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前结束画面
-                    ThisPlayer_PlayerLastTrickShowedCards();
-                    //查看谁亮过什么牌
-                    drawingFormHelper.LastTrumpMadeCardsShow();
+                    ShowLastTrickAndTumpMade();
                 }
                 else
                 {
                     ThisPlayer_ShowEnding();
                 }
             }
+        }
+
+        private void ShowLastTrickAndTumpMade()
+        {
+            //擦掉上一把
+            drawingFormHelper.DrawCenterImage();
+            drawingFormHelper.DrawScoreImageAndCards();
+
+            this.drawingFormHelper.DrawMessages(new string[] { "回看上轮出牌、谁亮的牌" });
+            //查看谁亮过什么牌
+            drawingFormHelper.LastTrumpMadeCardsShow();
+            //绘制上一轮各家所出的牌，缩小至一半，放在左下角，或者重画当前轮各家所出的牌
+            ThisPlayer_PlayerLastTrickShowedCards();
         }
 
         private void ExposeTrump(MouseEventArgs e)
@@ -1044,12 +1051,6 @@ namespace Duan.Xiugang.Tractor
         //绘制上一轮各家所出的牌，缩小至一半，放在左下角
         private void ThisPlayer_PlayerLastTrickShowedCards()
         {
-            //擦掉上一把
-            drawingFormHelper.DrawCenterImage();
-            drawingFormHelper.DrawScoreImageAndCards();
-
-            this.drawingFormHelper.DrawMessages(new string[] { "回看上轮出牌..." });
-
             string lastLeader = ThisPlayer.CurrentTrickState.serverLocalCache.lastLeader;
             if (string.IsNullOrEmpty(lastLeader) ||
                 ThisPlayer.CurrentTrickState.serverLocalCache.lastShowedCards.Count == 0) return;
