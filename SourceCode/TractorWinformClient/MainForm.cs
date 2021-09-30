@@ -2606,6 +2606,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.replayedTricks.Push(trick);
             if (trick == null)
             {
+                ThisPlayer.CurrentHandState.ScoreCards = new List<int>(ThisPlayer.replayEntity.CurrentHandState.ScoreCards);
                 ThisPlayer.CurrentHandState.Score = ThisPlayer.replayEntity.CurrentHandState.Score;
                 drawingFormHelper.DrawFinishedSendedCards();
                 return;
@@ -2759,7 +2760,6 @@ namespace Duan.Xiugang.Tractor
                     }
                 }
                 drawingFormHelper.DrawMyHandCards();
-                ThisPlayer.CurrentHandState.ScoreCards = new List<int>(ThisPlayer.replayEntity.CurrentHandState.ScoreCards);
                 replayNextTrick();
             }
             else replayNextFile();
