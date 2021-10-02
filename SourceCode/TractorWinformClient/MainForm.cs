@@ -2086,7 +2086,7 @@ namespace Duan.Xiugang.Tractor
             FormSettings formSettings = new FormSettings();
             formSettings.SettingsUpdatedEvent += Mainform_SettingsUpdatedEventHandler;
             formSettings.SettingsSoundVolumeUpdatedEvent += Mainform_SettingsSoundVolumeUpdatedEventHandler;
-            formSettings.Show();
+            formSettings.ShowDialog();
         }
 
         private void RebootToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2470,7 +2470,7 @@ namespace Duan.Xiugang.Tractor
         {
             FormRoomSetting roomSetting = new FormRoomSetting(this);
             roomSetting.RoomSettingChangedByClientEvent += Mainform_RoomSettingChangedByClientEventHandler;
-            roomSetting.Show();
+            roomSetting.ShowDialog();
         }
 
         private void btnReplay_Click(object sender, EventArgs e)

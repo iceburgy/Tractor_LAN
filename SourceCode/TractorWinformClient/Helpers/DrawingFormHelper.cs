@@ -84,7 +84,14 @@ namespace Duan.Xiugang.Tractor
         {
             //得到缓冲区图像的Graphics
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            DrawMyCards(g, mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
+            if (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep > HandStep.DistributingCards)
+            {
+                DrawMySortedCards(mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
+            }
+            else
+            {
+                DrawMyCards(g, mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
+            }
 
             ReDrawToolbar();
 
@@ -1537,32 +1544,6 @@ namespace Duan.Xiugang.Tractor
         #endregion // 类似的画自己牌面的方法
 
         #region 绘制各家出的牌，并计算结果或者通知下一家
-        /// <summary>
-        /// 画自己出的牌
-        /// </summary>
-        internal void DrawMyFinishSendedCards()
-        {
-            //在中央画出点出的牌
-            DrawMySendedCardsAction(mainForm.currentSendCards[0]);
-
-
-
-            //重画自己手中的牌
-            if (mainForm.currentPokers[0].Count > 0)
-            {
-                DrawMySortedCards(mainForm.currentPokers[0], mainForm.currentPokers[0].Count);
-            }
-            else //重新下部空间
-            {
-                Rectangle rect = new Rectangle(30, 355 + offsetY, 560 * scaleDividend / scaleDivisor, 116 * scaleDividend / scaleDivisor);
-                Graphics g = Graphics.FromImage(mainForm.bmp);
-                g.DrawImage(mainForm.image, rect.X, rect.Y, rect.Width, rect.Height);
-                g.Dispose();
-            }
-
-            mainForm.Refresh();
-
-        }
 
         /// <summary>
         /// 下家出牌
