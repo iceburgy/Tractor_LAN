@@ -133,7 +133,7 @@ namespace Duan.Xiugang.Tractor.Player
         public void GetDistributedCard(int number)
         {
             this.CurrentPoker.AddCard(number);
-            if (PlayerOnGetCard != null)
+            if (CurrentHandState.CurrentHandStep != HandStep.DistributingLast8Cards && PlayerOnGetCard != null)
                 PlayerOnGetCard(number);
 
             if (this.CurrentPoker.Count == TractorRules.GetCardNumberofEachPlayer(this.CurrentGameState.Players.Count) && this.PlayerId != this.CurrentHandState.Last8Holder)
@@ -148,7 +148,6 @@ namespace Duan.Xiugang.Tractor.Player
             }
 
         }
-
 
         public void ClearAllCards()
         {

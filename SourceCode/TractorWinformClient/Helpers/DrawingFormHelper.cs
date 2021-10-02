@@ -84,14 +84,7 @@ namespace Duan.Xiugang.Tractor
         {
             //得到缓冲区图像的Graphics
             Graphics g = Graphics.FromImage(mainForm.bmp);
-            if (mainForm.ThisPlayer.CurrentHandState.CurrentHandStep > HandStep.DistributingCards)
-            {
-                DrawMySortedCards(mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
-            }
-            else
-            {
-                DrawMyCards(g, mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
-            }
+            DrawMyCards(g, mainForm.ThisPlayer.CurrentPoker, mainForm.ThisPlayer.CurrentPoker.Count);
 
             ReDrawToolbar();
 
@@ -714,29 +707,6 @@ namespace Duan.Xiugang.Tractor
             }
             g.Dispose();
         }
-
-
-        /// <summary>
-        /// 判断最后是否有人亮主.
-        /// 根据算法，如果无人亮主，则本局流局，重新发牌
-        /// </summary>
-        /// <returns></returns>
-        internal bool DoRankNot()
-        {
-
-            if (mainForm.currentState.Suit == 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-
-  
-
 
         #region 在各种情况下画自己的牌
 
