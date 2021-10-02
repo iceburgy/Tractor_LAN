@@ -1396,7 +1396,8 @@ namespace Duan.Xiugang.Tractor
             //擦掉出牌区
             drawingFormHelper.DrawCenterImage();
             drawingFormHelper.DrawScoreImageAndCards();
-
+            //重画手牌，从而把被选中的牌放回去
+            ResortMyCards();
             for (int position = 2; position <= 4; position++)
             {
                 drawingFormHelper.DrawOtherSortedCards(this.ThisPlayer.CurrentHandState.PlayerHoldingCards[PositionPlayer[position]], position, true);
@@ -1654,8 +1655,8 @@ namespace Duan.Xiugang.Tractor
 
         private void Mainform_SettingsUpdatedEventHandler(bool needRestart)
         {
-            LoadSettings();
             if (needRestart) Application.Restart();
+            else LoadSettings();
         }
 
         private void Mainform_SettingsSoundVolumeUpdatedEventHandler(int volume)
@@ -1774,6 +1775,7 @@ namespace Duan.Xiugang.Tractor
         {
             this.btnSurrender.Visible = false;
             this.btnRiot.Visible = false;
+            this.btnPig.Visible = false;
             drawingFormHelper.DrawFinishedBySpecialEnding();
         }
 
@@ -2074,6 +2076,8 @@ namespace Duan.Xiugang.Tractor
         private void btnReady_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
+            //为防止以外连续点两下就绪按钮，造成重复发牌，点完一下就立即disable就绪按钮
+            this.btnReady.Enabled = false;
             ThisPlayer.ReadyToStart();
         }
 
