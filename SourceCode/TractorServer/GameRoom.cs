@@ -1420,7 +1420,7 @@ namespace TractorServer
             }
             else
             {
-                ShuffleCards(this.CardsShoe);
+                ShuffleCardsWithRNGCsp(this.CardsShoe);
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
                 if (ObserversProxy.Count > 0)
@@ -1811,7 +1811,7 @@ namespace TractorServer
             for (int i = 3; i >= 1; i--)
             {
                 //randomly choose a player within 0 to i, and put it at position i
-                int r = CommonMethods.random.Next(i + 1);
+                int r = CommonMethods.RandomNext(i + 1);
                 if (r != i) SwapPlayers(r, i);
             }
         }
@@ -1842,15 +1842,10 @@ namespace TractorServer
             }
         }
 
-        public void ShuffleCards(CardsShoe cardShoe)
+        public void ShuffleCardsWithRNGCsp(CardsShoe cardShoe)
         {
-            int N = cardShoe.Cards.Length;
             log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
-            for (int i = 0; i < N; i++)
-            {
-                int r = CommonMethods.random.Next(i, N);
-                Swap(cardShoe.Cards, i, r);
-            }
+            cardShoe.KnuthShuffleWithRNGCsp();
             log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
         }
 

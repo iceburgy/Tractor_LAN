@@ -107,7 +107,7 @@ namespace TestProject1
                 for (int i = 3; i >= 1; i--)
                 {
                     //randomly choose a player within 0 to i, and put it at position i
-                    int r = CommonMethods.random.Next(i + 1);
+                    int r = CommonMethods.RandomNext(i + 1);
                     if (r != i)
                     {
                         PlayerEntity temp = gameRoom.CurrentRoomState.CurrentGameState.Players[r];
@@ -153,6 +153,40 @@ namespace TestProject1
                 for (int i = 0; i < N; i++)
                 {
                     int r = CommonMethods.random.Next(i, N);
+                    gameRoom.Swap(cardShoe.Cards, i, r);
+                }
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            }
+        }
+
+        [TestMethod()]
+        public void ShuffleCardsTestWithRNGCsp()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1000;
+            for (int x = 0; x < testCount; x++)
+            {
+                int N = cardShoe.Cards.Length;
+                for (int i = 0; i < N; i++)
+                {
+                    int r = CommonMethods.RandomNext(i + 1);
                     gameRoom.Swap(cardShoe.Cards, i, r);
                 }
 

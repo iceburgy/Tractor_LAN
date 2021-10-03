@@ -38,7 +38,7 @@ namespace Duan.Xiugang.Tractor
                     break;
                 case "random":
                     cutType = "随机";
-                    cutPoint = CommonMethods.random.Next(1, 108);
+                    cutPoint = CommonMethods.RandomNext(107) + 1;
                     break;
                 case "manual":
                     cutType = "手动";

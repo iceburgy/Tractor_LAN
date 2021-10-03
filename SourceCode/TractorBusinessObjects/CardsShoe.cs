@@ -53,6 +53,17 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
+        //Knuth shuffle
+        public void KnuthShuffleWithRNGCsp()
+        {
+            int N = Cards.Length;
+            for (int i = 0; i < N; i++)
+            {
+                int r = CommonMethods.RandomNext(i + 1);
+                Swap(i, r);
+            }
+        }
+
         //Better
         public void Shuffle()
         {

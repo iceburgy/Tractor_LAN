@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 
 namespace Duan.Xiugang.Tractor.Objects
 {
@@ -19,6 +20,33 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string resumeGameSignal = "牌局加载中,请稍后...";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
         public static Random random = new Random();
+        private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
+
+        /// <summary>
+        /// return a randome number between 0 and rangeExclusive
+        /// </summary>
+        /// <param name="rngCsp"></param>
+        /// <param name="rangeExclusive"></param>
+        /// <returns></returns>
+        public static byte RandomNext(int rangeExclusive)
+        {
+            if (rangeExclusive <= 0 || rangeExclusive > Byte.MaxValue+1)
+                throw new ArgumentOutOfRangeException("rangeExclusive out side of a byte value");
+
+            byte[] randomNumber = new byte[1];
+            do
+            {
+                rngCsp.GetBytes(randomNumber);
+            }
+            while (!IsFairRoll(randomNumber[0], (byte)rangeExclusive));
+            return (byte)((randomNumber[0] % rangeExclusive));
+        }
+
+        private static bool IsFairRoll(byte randomNumber, byte rangeExclusive)
+        {
+            int fullSetsOfValues = Byte.MaxValue / rangeExclusive;
+            return randomNumber <= rangeExclusive * fullSetsOfValues;
+        }
 
         public static void WriteObjectToFile(object data, string fullFolderPath, string fileName)
         {
