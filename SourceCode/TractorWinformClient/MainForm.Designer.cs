@@ -728,7 +728,7 @@ namespace Duan.Xiugang.Tractor
             this.btnPreviousTrick.Size = new System.Drawing.Size(62, 45);
             this.btnPreviousTrick.TabIndex = 36;
             this.btnPreviousTrick.Text = "←";
-            this.ttpReplayUI.SetToolTip(this.btnPreviousTrick, "（快捷键：左箭头←）播放上一轮的出牌，若已经是最开始，则播放上一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnPreviousTrick, "（快捷键：S）播放上一轮的出牌，若已经是最开始，则播放上一个录像");
             this.btnPreviousTrick.UseVisualStyleBackColor = true;
             this.btnPreviousTrick.Visible = false;
             this.btnPreviousTrick.Click += new System.EventHandler(this.btnPreviousTrick_Click);
@@ -742,7 +742,7 @@ namespace Duan.Xiugang.Tractor
             this.btnNextTrick.Size = new System.Drawing.Size(62, 45);
             this.btnNextTrick.TabIndex = 37;
             this.btnNextTrick.Text = "→";
-            this.ttpReplayUI.SetToolTip(this.btnNextTrick, "（快捷键：右箭头→）播放下一轮的出牌，若已经是结尾，则播放下一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnNextTrick, "（快捷键：F）播放下一轮的出牌，若已经是结尾，则播放下一个录像");
             this.btnNextTrick.UseVisualStyleBackColor = true;
             this.btnNextTrick.Visible = false;
             this.btnNextTrick.Click += new System.EventHandler(this.btnNextTrick_Click);
@@ -769,7 +769,7 @@ namespace Duan.Xiugang.Tractor
             this.btnFirstTrick.Size = new System.Drawing.Size(62, 45);
             this.btnFirstTrick.TabIndex = 36;
             this.btnFirstTrick.Text = "|←";
-            this.ttpReplayUI.SetToolTip(this.btnFirstTrick, "（快捷键：上箭头↑）回到录像开始，若已经是最开始，则播放上一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnFirstTrick, "（快捷键：E）回到录像开始，若已经是最开始，则播放上一个录像");
             this.btnFirstTrick.UseVisualStyleBackColor = true;
             this.btnFirstTrick.Visible = false;
             this.btnFirstTrick.Click += new System.EventHandler(this.btnFirstTrick_Click);
@@ -783,7 +783,7 @@ namespace Duan.Xiugang.Tractor
             this.btnLastTrick.Size = new System.Drawing.Size(62, 45);
             this.btnLastTrick.TabIndex = 37;
             this.btnLastTrick.Text = "→|";
-            this.ttpReplayUI.SetToolTip(this.btnLastTrick, "（快捷键：下箭头↓）跳至录像结尾，若已经是结尾，则播放下一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnLastTrick, "（快捷键：D）跳至录像结尾，若已经是结尾，则播放下一个录像");
             this.btnLastTrick.UseVisualStyleBackColor = true;
             this.btnLastTrick.Visible = false;
             this.btnLastTrick.Click += new System.EventHandler(this.btnLastTrick_Click);
@@ -791,7 +791,7 @@ namespace Duan.Xiugang.Tractor
             // cbbReplayDate
             // 
             this.cbbReplayDate.FormattingEnabled = true;
-            this.cbbReplayDate.Location = new System.Drawing.Point(560, 38);
+            this.cbbReplayDate.Location = new System.Drawing.Point(560, 36);
             this.cbbReplayDate.Name = "cbbReplayDate";
             this.cbbReplayDate.Size = new System.Drawing.Size(158, 28);
             this.cbbReplayDate.TabIndex = 40;
@@ -803,7 +803,7 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayDate.AutoSize = true;
             this.lblReplayDate.BackColor = System.Drawing.Color.Transparent;
             this.lblReplayDate.ForeColor = System.Drawing.Color.White;
-            this.lblReplayDate.Location = new System.Drawing.Point(496, 44);
+            this.lblReplayDate.Location = new System.Drawing.Point(496, 42);
             this.lblReplayDate.Name = "lblReplayDate";
             this.lblReplayDate.Size = new System.Drawing.Size(73, 20);
             this.lblReplayDate.TabIndex = 39;
@@ -813,7 +813,7 @@ namespace Duan.Xiugang.Tractor
             // cbbReplayFile
             // 
             this.cbbReplayFile.FormattingEnabled = true;
-            this.cbbReplayFile.Location = new System.Drawing.Point(560, 67);
+            this.cbbReplayFile.Location = new System.Drawing.Point(560, 62);
             this.cbbReplayFile.Name = "cbbReplayFile";
             this.cbbReplayFile.Size = new System.Drawing.Size(158, 28);
             this.cbbReplayFile.TabIndex = 42;
@@ -824,7 +824,7 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayFile.AutoSize = true;
             this.lblReplayFile.BackColor = System.Drawing.Color.Transparent;
             this.lblReplayFile.ForeColor = System.Drawing.Color.White;
-            this.lblReplayFile.Location = new System.Drawing.Point(496, 70);
+            this.lblReplayFile.Location = new System.Drawing.Point(496, 68);
             this.lblReplayFile.Name = "lblReplayFile";
             this.lblReplayFile.Size = new System.Drawing.Size(73, 20);
             this.lblReplayFile.TabIndex = 41;
@@ -834,7 +834,7 @@ namespace Duan.Xiugang.Tractor
             // btnLoadReplay
             // 
             this.btnLoadReplay.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnLoadReplay.Location = new System.Drawing.Point(560, 93);
+            this.btnLoadReplay.Location = new System.Drawing.Point(560, 88);
             this.btnLoadReplay.Name = "btnLoadReplay";
             this.btnLoadReplay.Size = new System.Drawing.Size(86, 28);
             this.btnLoadReplay.TabIndex = 43;
