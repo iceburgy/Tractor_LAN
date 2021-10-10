@@ -2432,11 +2432,7 @@ namespace Duan.Xiugang.Tractor
                     }
                     return true;
                 case Keys.S:
-                    if (ThisPlayer.isReplay)
-                    {
-                        this.btnPreviousTrick.PerformClick();
-                    }
-                    else if (this.btnPig.Visible)
+                    if (this.btnPig.Visible)
                     {
                         this.btnPig.PerformClick();
                     }
@@ -2447,19 +2443,25 @@ namespace Duan.Xiugang.Tractor
                         this.btnReady.PerformClick();
                     }
                     return true;
-                case Keys.F:
+                case Keys.Left:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnPreviousTrick.PerformClick();
+                    }
+                    return true;
+                case Keys.Right:
                     if (ThisPlayer.isReplay)
                     {
                         this.btnNextTrick.PerformClick();
                     }
                     return true;
-                case Keys.E:
+                case Keys.Up:
                     if (ThisPlayer.isReplay)
                     {
                         this.btnFirstTrick.PerformClick();
                     }
                     return true;
-                case Keys.D:
+                case Keys.Down:
                     if (ThisPlayer.isReplay)
                     {
                         this.btnLastTrick.PerformClick();

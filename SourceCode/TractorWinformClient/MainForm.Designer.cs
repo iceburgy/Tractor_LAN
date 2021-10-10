@@ -728,7 +728,7 @@ namespace Duan.Xiugang.Tractor
             this.btnPreviousTrick.Size = new System.Drawing.Size(62, 45);
             this.btnPreviousTrick.TabIndex = 36;
             this.btnPreviousTrick.Text = "←";
-            this.ttpReplayUI.SetToolTip(this.btnPreviousTrick, "（快捷键：S）播放上一轮的出牌，若已经是最开始，则播放上一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnPreviousTrick, "（快捷键：左箭头←）播放上一轮的出牌，若已经是最开始，则播放上一个录像");
             this.btnPreviousTrick.UseVisualStyleBackColor = true;
             this.btnPreviousTrick.Visible = false;
             this.btnPreviousTrick.Click += new System.EventHandler(this.btnPreviousTrick_Click);
@@ -742,7 +742,7 @@ namespace Duan.Xiugang.Tractor
             this.btnNextTrick.Size = new System.Drawing.Size(62, 45);
             this.btnNextTrick.TabIndex = 37;
             this.btnNextTrick.Text = "→";
-            this.ttpReplayUI.SetToolTip(this.btnNextTrick, "（快捷键：F）播放下一轮的出牌，若已经是结尾，则播放下一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnNextTrick, "（快捷键：右箭头→）播放下一轮的出牌，若已经是结尾，则播放下一个录像");
             this.btnNextTrick.UseVisualStyleBackColor = true;
             this.btnNextTrick.Visible = false;
             this.btnNextTrick.Click += new System.EventHandler(this.btnNextTrick_Click);
@@ -769,7 +769,7 @@ namespace Duan.Xiugang.Tractor
             this.btnFirstTrick.Size = new System.Drawing.Size(62, 45);
             this.btnFirstTrick.TabIndex = 36;
             this.btnFirstTrick.Text = "|←";
-            this.ttpReplayUI.SetToolTip(this.btnFirstTrick, "（快捷键：E）回到录像开始，若已经是最开始，则播放上一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnFirstTrick, "（快捷键：上箭头↑）回到录像开始，若已经是最开始，则播放上一个录像");
             this.btnFirstTrick.UseVisualStyleBackColor = true;
             this.btnFirstTrick.Visible = false;
             this.btnFirstTrick.Click += new System.EventHandler(this.btnFirstTrick_Click);
@@ -783,7 +783,7 @@ namespace Duan.Xiugang.Tractor
             this.btnLastTrick.Size = new System.Drawing.Size(62, 45);
             this.btnLastTrick.TabIndex = 37;
             this.btnLastTrick.Text = "→|";
-            this.ttpReplayUI.SetToolTip(this.btnLastTrick, "（快捷键：D）跳至录像结尾，若已经是结尾，则播放下一个录像");
+            this.ttpReplayUI.SetToolTip(this.btnLastTrick, "（快捷键：下箭头↓）跳至录像结尾，若已经是结尾，则播放下一个录像");
             this.btnLastTrick.UseVisualStyleBackColor = true;
             this.btnLastTrick.Visible = false;
             this.btnLastTrick.Click += new System.EventHandler(this.btnLastTrick_Click);
