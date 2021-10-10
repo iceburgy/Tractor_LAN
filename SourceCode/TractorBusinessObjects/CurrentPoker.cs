@@ -1844,6 +1844,13 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public List<int> GetTractor(Suit suit)
         {
+            List<int> result = GetTractorUnsorted(suit);
+            result.Sort();
+            return result;
+        }
+
+        private List<int> GetTractorUnsorted(Suit suit)
+        {
             if (suit == Trump || suit == Suit.Joker)
                 return GetTrumpTractor();
 

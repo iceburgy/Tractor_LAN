@@ -427,9 +427,12 @@ namespace Duan.Xiugang.Tractor
         {
             if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
-                this.ThisPlayer_NotifyMessageEventHandler(new string[]{"游戏中途不允许退出","请完成此盘游戏后再退"});
-                e.Cancel = true;
-                return; 
+                DialogResult dialogResult = MessageBox.Show("游戏正在进行中，是否确定退出？", "是否确定退出", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.No)
+                {
+                    e.Cancel = true;
+                    return;
+                }
             }
             try
             {
@@ -2269,8 +2272,11 @@ namespace Duan.Xiugang.Tractor
             }
             if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
-                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许退出", "请完成此盘游戏后再退" });
-                return;
+                DialogResult dialogResult = MessageBox.Show("游戏正在进行中，是否确定退出？", "是否确定退出", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.No)
+                {
+                    return;
+                }
             }
 
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);
