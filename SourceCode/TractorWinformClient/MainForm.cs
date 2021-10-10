@@ -2444,32 +2444,37 @@ namespace Duan.Xiugang.Tractor
                     }
                     return true;
                 case Keys.Left:
-                    if (ThisPlayer.isReplay)
+                    if (ThisPlayer.isReplay && !this.cbbReplayDate.Focused && !this.cbbReplayFile.Focused)
                     {
                         this.btnPreviousTrick.PerformClick();
+                        return true;
                     }
-                    return true;
+                    break;
                 case Keys.Right:
-                    if (ThisPlayer.isReplay)
+                    if (ThisPlayer.isReplay && !this.cbbReplayDate.Focused && !this.cbbReplayFile.Focused)
                     {
                         this.btnNextTrick.PerformClick();
+                        return true;
                     }
-                    return true;
+                    break;
                 case Keys.Up:
-                    if (ThisPlayer.isReplay)
+                    if (ThisPlayer.isReplay && !this.cbbReplayDate.Focused && !this.cbbReplayFile.Focused)
                     {
                         this.btnFirstTrick.PerformClick();
+                        return true;
                     }
-                    return true;
+                    break;
                 case Keys.Down:
-                    if (ThisPlayer.isReplay)
+                    if (ThisPlayer.isReplay && !this.cbbReplayDate.Focused && !this.cbbReplayFile.Focused)
                     {
                         this.btnLastTrick.PerformClick();
+                        return true;
                     }
-                    return true;
+                    break;
                 default:
-                    return base.ProcessCmdKey(ref msg, keyData);
+                    break;
             }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void btnRoomSetting_Click(object sender, EventArgs e)
