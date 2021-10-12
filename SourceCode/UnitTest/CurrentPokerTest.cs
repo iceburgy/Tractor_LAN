@@ -103,25 +103,24 @@ namespace TestProject1
         {
             var target = new CurrentPoker(new[] {53, 52, 0, 13, 26, 12, 12, 11, 11}, Suit.Spade, 0);
             List<int> actual = target.GetTractor(Suit.Heart);
-            Assert.AreEqual(12, actual[0]);
-            Assert.AreEqual(11, actual[1]);
+            Assert.AreEqual(11, actual[0]);
+            Assert.AreEqual(12, actual[1]);
 
             target = new CurrentPoker(new[] {53, 52, 0, 13, 26, 12, 12, 11, 11, 10, 10}, Suit.Spade, 0);
             actual = target.GetTractor(Suit.Heart);
-            Assert.AreEqual(12, actual[0]);
+            Assert.AreEqual(10, actual[0]);
             Assert.AreEqual(11, actual[1]);
-            Assert.AreEqual(10, actual[2]);
+            Assert.AreEqual(12, actual[2]);
 
             target = new CurrentPoker(new[] {53, 52, 0, 13, 26, 1, 1, 2, 2}, Suit.Spade, 0);
             actual = target.GetTractor(Suit.Heart);
-            Assert.AreEqual(2, actual[0]);
-            Assert.AreEqual(1, actual[1]);
-
+            Assert.AreEqual(1, actual[0]);
+            Assert.AreEqual(2, actual[1]);
 
             target = new CurrentPoker(new[] {53, 52, 0, 0, 13, 26, 1, 1, 2, 2}, Suit.Spade, 1);
             actual = target.GetTractor(Suit.Heart);
-            Assert.AreEqual(2, actual[0]);
-            Assert.AreEqual(0, actual[1]);
+            Assert.AreEqual(0, actual[0]);
+            Assert.AreEqual(2, actual[1]);
         }
 
         /// <summary>
