@@ -21,7 +21,6 @@ namespace TractorServer
         public string BackupGamestateFileName = "backup_gamestate.json";
         public string BackupHandStateFileName = "backup_HandState.json";
         public string BackupTrickStateFileName = "backup_TrickState.json";
-        public string BackupCardsShoeFileName = "backup_CardsShoe.json";
         public string BackupRoomSettingFileName = "backup_RoomSetting.json";
         public string LogsByRoomFullFolder;
         public string ReplaysByRoomFullFolder;
@@ -246,6 +245,8 @@ namespace TractorServer
                 }
             }
 
+            if (needsRestart && !this.isGameOver) ResetAndRestartGame();
+
             foreach (string playerID in playerIDs)
             {
                 PlayerQuitWorker(playerID);
@@ -259,8 +260,6 @@ namespace TractorServer
                 else CurrentRoomState.roomSetting.RoomOwner = string.Empty;
                 UpdatePlayerRoomSettings();
             }
-
-            if (needsRestart && !this.isGameOver) ResetAndRestartGame();
 
             return needsRestart;
         }
@@ -514,7 +513,6 @@ namespace TractorServer
             }
 
             SaveGameStateToFile();
-            CleanupCardsShoeFile();
 
             UpdatePlayersCurrentHandState();
 
@@ -751,13 +749,14 @@ namespace TractorServer
                         CurrentRoomState.CurrentGameState.startNextHandStarter = null;
                     }
 
-                    CleanupCardsShoeFile();
-
                     UpdatePlayersCurrentHandState();
 
                     UpdateGameState();
 
                     UpdateReplayState();
+
+                    //保存游戏当前状态，以备继续游戏
+                    SaveGameStateToFile();
 
                     if (sb != null)
                     {
@@ -766,23 +765,26 @@ namespace TractorServer
                     }
                     else if (TractorHost.gameConfig.IsFullDebug && IsAllOnline())
                     {
-                        Thread.Sleep(3000);
                         CleanupCaches();
-
-                        StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                        var threadStartNextHand = new Thread(() =>
+                        {
+                            Thread.Sleep(3000);
+                            StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
+                        });
+                        threadStartNextHand.Start();                        
                         return;
                     }
                     CleanupOfflinePlayers();
                 }
-
-                //保存游戏当前状态，以备继续游戏
-                SaveGameStateToFile();
             }
             else
             {
                 if (CurrentRoomState.CurrentTrickState.CountOfPlayerShowedCards() == 1)
                 {
                     CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
+
+                    //保存游戏当前状态，以备继续游戏
+                    SaveGameStateToFile();
                 }
                 UpdatePlayerCurrentTrickState();
             }
@@ -899,6 +901,7 @@ namespace TractorServer
             //清空缓存
             this.serverLocalCache = new ServerLocalCache();
             CurrentRoomState.CurrentTrickState.Learder = string.Empty;
+            CurrentRoomState.CurrentTrickState.ShowedCards.Clear();
             CurrentRoomState.CurrentTrickState.serverLocalCache = new ServerLocalCache();
             UpdatePlayerCurrentTrickState();
         }
@@ -1064,19 +1067,6 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
 
             restoredMsg.Add("读取牌局【成功】");
-
-            string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
-            CardsShoe cs = CommonMethods.ReadObjectFromFile<CardsShoe>(fileNameCardsShoe);
-            if (cs == null)
-            {
-                restoredMsg.Add("还原手牌【失败】");
-            }
-            else
-            {
-                this.CardsShoe.IsCardsRestored = true;
-                this.CardsShoe.Cards = cs.Cards;
-                restoredMsg.Add("还原手牌【成功】");
-            }
             restoredMsg.Add("请点击就绪继续游戏");
             PublishMessage(restoredMsg.ToArray());
         }
@@ -1560,7 +1550,6 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
 
             SaveGameStateToFile();
-            SaveCardsShoeToFile();
 
             return false;
         }
@@ -1639,21 +1628,6 @@ namespace TractorServer
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentGameState, this.LogsByRoomFullFolder, this.BackupGamestateFileName);
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentHandState, this.LogsByRoomFullFolder, this.BackupHandStateFileName);
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentTrickState, this.LogsByRoomFullFolder, this.BackupTrickStateFileName);
-        }
-
-        private void CleanupCardsShoeFile()
-        {
-            string fileNameCardsShoe = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
-            if (File.Exists(fileNameCardsShoe))
-            {
-                File.Delete(fileNameCardsShoe);
-            }
-        }
-
-        //保存手牌
-        private void SaveCardsShoeToFile()
-        {
-            CommonMethods.WriteObjectToFile(this.CardsShoe, this.LogsByRoomFullFolder, this.BackupCardsShoeFileName);
         }
 
         //保存房间游戏设置
@@ -1782,6 +1756,7 @@ namespace TractorServer
 
         private void ResetAndRestartGame()
         {
+            CleanupCaches();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             CurrentRoomState.CurrentHandState.IsFirstHand = true;

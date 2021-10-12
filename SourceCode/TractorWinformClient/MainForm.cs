@@ -186,7 +186,7 @@ namespace Duan.Xiugang.Tractor
             
             ThisPlayer.TrumpChanged += ThisPlayer_TrumpUpdated;
             ThisPlayer.AllCardsGot += ResortMyCards;
-            ThisPlayer.ReenterFromOfflineEvent += ThisPlayer_ReenterFromOfflineEventHandler;            
+            ThisPlayer.ReenterOrResumeEvent += ThisPlayer_ReenterOrResumeEventHandler;            
             ThisPlayer.PlayerShowedCards += ThisPlayer_PlayerShowedCards;
             ThisPlayer.ShowingCardBegan += ThisPlayer_ShowingCardBegan;
             ThisPlayer.GameHallUpdatedEvent += ThisPlayer_GameHallUpdatedEventHandler;
@@ -208,7 +208,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.NotifyCardsReadyEvent += ThisPlayer_NotifyCardsReadyEventHandler;
             ThisPlayer.CutCardShoeCardsEvent += ThisPlayer_CutCardShoeCardsEventHandler;
             ThisPlayer.SpecialEndGameShouldAgreeEvent += ThisPlayer_SpecialEndGameShouldAgreeEventHandler;            
-            ThisPlayer.ResortMyCardsEvent += ThisPlayer_ResortMyCardsEventHandler;
+            ThisPlayer.ObservePlayerByIDEvent += ThisPlayer_ObservePlayerByIDEventHandler;
             ThisPlayer.Last8Discarded += ThisPlayer_Last8Discarded;
             ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
@@ -467,19 +467,7 @@ namespace Duan.Xiugang.Tractor
             //得分清零
             Scores = 0;
 
-
-            //绘制Sidebar
-            drawingFormHelper.DrawSidebar(g);
-            //绘制东南西北
-
-            drawingFormHelper.Starter();
-
-            //绘制Rank
-            drawingFormHelper.Rank();
-
-
-            //绘制花色
-            drawingFormHelper.Trump();
+            DrawSidebarFull(g);
 
             send8Cards = new ArrayList();
             //调整花色
@@ -927,14 +915,24 @@ namespace Duan.Xiugang.Tractor
         }
 
         //断线重连，重画手牌和出的牌
-        private void ThisPlayer_ReenterFromOfflineEventHandler()
+        private void ThisPlayer_ReenterOrResumeEventHandler()
         {
-            if (ThisPlayer.IsTryingReenter)
-            {
-                this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
-                this.ThisPlayer_PlayerCurrentTrickShowedCards();
-            }
+            this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+            this.ThisPlayer_PlayerCurrentTrickShowedCards();
             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
+
+            DrawDiscardedCardsCaller();
+        }
+
+        private void DrawDiscardedCardsCaller()
+        {
+            if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
+                ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
+                ThisPlayer.CurrentHandState.DiscardedCards != null &&
+                ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
+            {
+                drawingFormHelper.DrawDiscardedCards();
+            }
         }
 
         //检查当前出牌者的牌是否为大牌：0 - 否；1 - 是；2 - 是且为吊主；3 - 是且为主毙牌
@@ -1786,6 +1784,18 @@ namespace Duan.Xiugang.Tractor
         {
             Graphics g = Graphics.FromImage(bmp);
 
+            DrawSidebarFull(g);
+
+            ResortMyCards();
+
+            drawingFormHelper.ReDrawToolbar();
+
+            Refresh();
+            g.Dispose();
+        }
+
+        private void DrawSidebarFull(Graphics g)
+        {
             //绘制Sidebar
             drawingFormHelper.DrawSidebar(g);
             //绘制东南西北
@@ -1797,13 +1807,6 @@ namespace Duan.Xiugang.Tractor
 
             //绘制花色
             drawingFormHelper.Trump();
-
-            ResortMyCards();
-
-            drawingFormHelper.ReDrawToolbar();
-
-            Refresh();
-            g.Dispose();
         }
 
         private void ThisPlayer_StarterChangedEventHandler()
@@ -1914,12 +1917,17 @@ namespace Duan.Xiugang.Tractor
             return string.Format("{0},{1}", frmCutCards.cutType, frmCutCards.cutPoint);
         }
 
-        private void ThisPlayer_ResortMyCardsEventHandler()
+        private void ThisPlayer_ObservePlayerByIDEventHandler()
         {
             ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
             if (ThisPlayer.isObserverChanged)
             {
                 ResortMyCards();
+                DrawDiscardedCardsCaller();
+
+                Graphics g = Graphics.FromImage(bmp);
+                DrawSidebarFull(g);
+
                 ThisPlayer.isObserverChanged = false;
             }
         }
@@ -1939,13 +1947,7 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentPoker = ThisPlayer.CurrentHandState.PlayerHoldingCards[ThisPlayer.PlayerId];
                 ResortMyCards();
             }
-            if (ThisPlayer.CurrentPoker != null && ThisPlayer.CurrentPoker.Count > 0 &&
-                ThisPlayer.CurrentHandState.Last8Holder == ThisPlayer.PlayerId &&
-                ThisPlayer.CurrentHandState.DiscardedCards != null &&
-                ThisPlayer.CurrentHandState.DiscardedCards.Length == 8)
-            {
-                drawingFormHelper.DrawDiscardedCards();
-            }
+            DrawDiscardedCardsCaller();
             Refresh();
             g.Dispose();
         }
@@ -2595,10 +2597,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.CurrentPoker = ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[players[0]];
 
             Graphics g = Graphics.FromImage(bmp);
-            drawingFormHelper.DrawSidebar(g);
-            drawingFormHelper.Starter();
-            drawingFormHelper.Rank();
-            drawingFormHelper.Trump();
+            DrawSidebarFull(g);
 
             drawingFormHelper.DrawDiscardedCards();
 

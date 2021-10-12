@@ -23,13 +23,13 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void GetCardEventHandler(int cardNumber);    
     public delegate void TrumpChangedEventHandler(CurrentHandState currentHandState);
     public delegate void DistributingCardsFinishedEventHandler();
-    public delegate void ReenterFromOfflineEventHandler();    
+    public delegate void ReenterOrResumeEventHandler();    
     public delegate void StarterFailedForTrumpEventHandler();
     public delegate void StarterChangedEventHandler();
     public delegate void NotifyMessageEventHandler(string[] msg);
     public delegate void NotifyStartTimerEventHandler(int timerLength);
     public delegate void NotifyCardsReadyEventHandler(ArrayList myCardIsReady);
-    public delegate void ResortMyCardsEventHandler();
+    public delegate void ObservePlayerByIDEventHandler();
     public delegate string CutCardShoeCardsEventHandler();
     public delegate void SpecialEndGameShouldAgreeEventHandler();
     
@@ -87,13 +87,13 @@ namespace Duan.Xiugang.Tractor.Player
         public event GetCardEventHandler PlayerOnGetCard;        
         public event TrumpChangedEventHandler TrumpChanged;
         public event DistributingCardsFinishedEventHandler AllCardsGot;
-        public event ReenterFromOfflineEventHandler ReenterFromOfflineEvent;        
+        public event ReenterOrResumeEventHandler ReenterOrResumeEvent;        
         public event StarterFailedForTrumpEventHandler StarterFailedForTrump; //亮不起
         public event StarterChangedEventHandler StarterChangedEvent; //庄家确定
         public event NotifyMessageEventHandler NotifyMessageEvent; //广播消息
         public event NotifyStartTimerEventHandler NotifyStartTimerEvent; //广播倒计时
         public event NotifyCardsReadyEventHandler NotifyCardsReadyEvent; //旁观：选牌
-        public event ResortMyCardsEventHandler ResortMyCardsEvent; //旁观：重新画手牌
+        public event ObservePlayerByIDEventHandler ObservePlayerByIDEvent; //旁观：重新画手牌
         public event CutCardShoeCardsEventHandler CutCardShoeCardsEvent; //旁观：选牌
         public event SpecialEndGameShouldAgreeEventHandler SpecialEndGameShouldAgreeEvent; //旁观：选牌
         
@@ -405,7 +405,7 @@ namespace Duan.Xiugang.Tractor.Player
             {
                 //即时更新旁观手牌
                 this.CurrentPoker = this.CurrentHandState.PlayerHoldingCards[this.PlayerId];
-                ResortMyCardsEvent();
+                ObservePlayerByIDEvent();
             }
         }
 
@@ -513,10 +513,7 @@ namespace Duan.Xiugang.Tractor.Player
 
             if (this.IsTryingReenter || this.IsTryingResumeGame)
             {
-                if (ReenterFromOfflineEvent != null)
-                {
-                    ReenterFromOfflineEvent();
-                }
+                ReenterOrResumeEvent();
                 this.IsTryingReenter = false;
                 this.IsTryingResumeGame = false;
             }
