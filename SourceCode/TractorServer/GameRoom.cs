@@ -251,6 +251,7 @@ namespace TractorServer
             {
                 PlayerQuitWorker(playerID);
             }
+            UpdateGameState();
 
             //如果房主退出，则选择位置最靠前的玩家为房主
             if (playerIDs.Contains(CurrentRoomState.roomSetting.RoomOwner))
@@ -340,21 +341,25 @@ namespace TractorServer
                 this.tractorHost.PlayerToIP.Remove(playerID);
                 this.tractorHost.PlayersProxy.Remove(playerID);
 
-
-                for (int i = 0; i < 4; i++)
+                if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
+                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished ||
+                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
                 {
-                    if (CurrentRoomState.CurrentGameState.Players[i] != null && CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
+                    for (int i = 0; i < 4; i++)
                     {
-                        CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
-                        CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
-                        CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
-
-                        if (string.IsNullOrEmpty(offlinePlayerID))
+                        if (CurrentRoomState.CurrentGameState.Players[i] != null && CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                         {
-                            offlinePlayerID = playerID;
-                        }
+                            CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
+                            CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
+                            CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
 
-                        break;
+                            if (string.IsNullOrEmpty(offlinePlayerID))
+                            {
+                                offlinePlayerID = playerID;
+                            }
+
+                            break;
+                        }
                     }
                 }
             }
@@ -618,13 +623,8 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.LastTrumpStates.Add(tempLastTrumState);
 
                     if (CurrentRoomState.CurrentHandState.IsFirstHand && CurrentRoomState.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
-                        CurrentRoomState.CurrentHandState.Starter = trumpMaker;
-                    //反底
-                    if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                     {
-                        CurrentRoomState.CurrentHandState.Last8Holder = trumpMaker;
-                        CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Last8CardsRobbed;
-                        if (DistributeLast8Cards()) return;
+                        CurrentRoomState.CurrentHandState.Starter = trumpMaker;
                     }
                     UpdatePlayersCurrentHandState();
                 }

@@ -2503,6 +2503,7 @@ namespace Duan.Xiugang.Tractor
             this.btnLoadReplay.Show();
             ThisPlayer.isReplay = true;
 
+            cbbReplayDate.Items.Clear();
             DirectoryInfo dirRoot = new DirectoryInfo(this.rootReplayFolderPath);
             DirectoryInfo[] dirs = dirRoot.GetDirectories();
             for (int i = 0; i < dirs.Length; i++)
