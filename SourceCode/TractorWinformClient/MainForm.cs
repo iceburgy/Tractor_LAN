@@ -2122,10 +2122,6 @@ namespace Duan.Xiugang.Tractor
             Thread.Sleep(200);
             this.drawingFormHelper.DrawCountDown(false);
             this.theTimer.Stop();
-            if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.BeforeDistributingCards)
-            {
-                this.drawingFormHelper.DrawCenterImage();
-            }
         }
 
         private void AutoUpdaterToolStripMenuItem_Click(object sender, EventArgs e)

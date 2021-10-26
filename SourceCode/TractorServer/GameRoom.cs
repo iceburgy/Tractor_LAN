@@ -164,71 +164,62 @@ namespace TractorServer
 
         private bool IsRoomFull()
         {
-            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null).Count() >= 4;
+            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null).Count() == 4;
         }
 
         private bool IsAllOnline()
         {
-            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null && p.IsOffline == false).Count() >= 4;
-        }
-
-        private bool IsPlayerOffline(string playerID)
-        {
-            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null && p.IsOffline == true).Count() == 1;
+            return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null && p.IsOffline == false).Count() == 4;
         }
 
         public bool PlayerReenterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP)
         {
-            if (IsPlayerOffline(playerID) && !PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
+            if (PlayersProxy.Keys.Contains(playerID) || ObserversProxy.Keys.Contains(playerID))
             {
-                if (PlayersProxy.Count >= 4)
-                {
-                    player.NotifyMessage(new string[] { "房间已满", "加入失败", "", "" });
-                    return false;
-                }
-
-                int posID = -1;
-                for (int i = 0; i < 4; i++)
-                {
-                	if (CurrentRoomState.CurrentGameState.Players[i] ==  null) continue;
-                    if (CurrentRoomState.CurrentGameState.Players[i].PlayerId==playerID)
-                    {
-                        posID = i;
-                        break;
-                    }
-                }
-
-                if (posID < 0) {
-                    player.NotifyMessage(new string[] { "未能找回断线玩家信息", "加入失败" });
-                    return false;
-                }
-
-                if (!CurrentRoomState.CurrentGameState.Players[posID].IsOffline)
-                {
-                    player.NotifyMessage(new string[] { "玩家并未断线", "重连失败" });
-                    return false;
-                }
-
-                CurrentRoomState.CurrentGameState.Players[posID].IsOffline = false;
-                LogClientInfo(clientIP, playerID, false);
-                CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
-                PlayersProxy.Add(playerID, player);
-                log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
-
-                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
-                UpdatePlayerCurrentTrickState();
-                UpdatePlayersCurrentHandState();
-                Thread.Sleep(2000);
-                UpdateGameState();
-
-                PublishMessage(new string[] { string.Format("玩家【{0}】断线重连成功", playerID) });
-                PublishStartTimer(0);
-                //加一秒缓冲时间，让客户端倒计时完成
-                Thread.Sleep(0 + 1000);
-
-                return true;
+                player.NotifyMessage(new string[] { "玩家重新加入失败", "玩家重名" });
+                return false;
             }
-            return false;
+            int posID = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                PlayerEntity p = CurrentRoomState.CurrentGameState.Players[i];
+                if (p != null && p.PlayerId == playerID && CurrentRoomState.CurrentGameState.Players[i].IsOffline)
+                {
+                    posID = i;
+                    break;
+                }
+            }
+
+            if (posID < 0)
+            {
+                player.NotifyMessage(new string[] { "未能找回断线玩家信息", "加入失败" });
+                return false;
+            }
+
+            if (!CurrentRoomState.CurrentGameState.Players[posID].IsOffline)
+            {
+                player.NotifyMessage(new string[] { "玩家并未断线", "重连失败" });
+                return false;
+            }
+
+            CurrentRoomState.CurrentGameState.Players[posID].IsOffline = false;
+            LogClientInfo(clientIP, playerID, false);
+            CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
+            PlayersProxy.Add(playerID, player);
+            log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
+
+            player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
+            UpdatePlayerCurrentTrickState();
+            UpdatePlayersCurrentHandState();
+            Thread.Sleep(2000);
+            UpdateGameState();
+
+            PublishMessage(new string[] { string.Format("玩家【{0}】断线重连成功", playerID) });
+            PublishStartTimer(0);
+            //加一秒缓冲时间，让客户端倒计时完成
+            Thread.Sleep(0 + 1000);
+
+            return true;
         }
 
         //玩家退出
@@ -259,8 +250,8 @@ namespace TractorServer
                 PlayerEntity next = this.CurrentRoomState.CurrentGameState.Players.FirstOrDefault(p => p != null);
                 if (next != null) CurrentRoomState.roomSetting.RoomOwner = next.PlayerId;
                 else CurrentRoomState.roomSetting.RoomOwner = string.Empty;
-                UpdatePlayerRoomSettings();
             }
+            UpdatePlayerRoomSettings(false);
 
             return needsRestart;
         }
@@ -1436,6 +1427,7 @@ namespace TractorServer
                 PublishStartTimer(2);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(2000 + 1000);
+                if (!IsAllOnline()) return true;
             }
 
             if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
@@ -1445,6 +1437,7 @@ namespace TractorServer
                 PublishStartTimer(5);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(5000 + 1000);
+                if (!IsAllOnline()) return true;
             }
 
             int cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
@@ -1691,10 +1684,10 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyShowAllHandCards", new List<object>() { });
         }
 
-        public void UpdatePlayerRoomSettings()
+        public void UpdatePlayerRoomSettings(bool isRoomSettingModified)
         {
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, true });
-            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, true });
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, isRoomSettingModified });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, isRoomSettingModified });
         }
 
         #endregion
@@ -1849,7 +1842,7 @@ namespace TractorServer
 
             newSetting.SortManditoryRanks();
             this.CurrentRoomState.roomSetting = newSetting;
-            UpdatePlayerRoomSettings();
+            UpdatePlayerRoomSettings(true);
 
             //save setting to file
             SaveRoomSettingToFile();
