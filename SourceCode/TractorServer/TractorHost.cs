@@ -111,6 +111,7 @@ namespace TractorServer
         public void PlayerEnterHall(string playerID)
         {
             string clientIP = GetClientIP();
+            GameRoom.LogClientInfo(clientIP, playerID, false);
             IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
             if (!PlayersProxy.Keys.Contains(playerID))
             {
@@ -138,7 +139,6 @@ namespace TractorServer
                 else
                 {
                     log.Debug(string.Format("player {0} entered hall.", playerID));
-                    GameRoom.LogClientInfo(clientIP, playerID, false);
                     UpdateGameHall();
                 }
             }
