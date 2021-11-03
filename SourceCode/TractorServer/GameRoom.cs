@@ -939,6 +939,15 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.ScorePunishment += punishScore;
                 }
                 log.Debug("tried to dump cards and failed, punish score: " + punishScore);
+                // 录像回放
+                if (this.replayEntity != null)
+                {
+                    CurrentTrickState dumpTrick = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
+                    dumpTrick.ShowedCards.Clear();
+                    dumpTrick.ShowedCards.Add(playerId, selectedCards);
+                    this.replayEntity.CurrentTrickStates.Add(dumpTrick);
+                }
+
                 List<string> playersIDToCall = new List<string>();
                 foreach (var player in PlayersProxy)
                 {
