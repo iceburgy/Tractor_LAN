@@ -10,7 +10,7 @@ using System.Threading;
 namespace Duan.Xiugang.Tractor.Player
 {
     public delegate void GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names);
-    public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified);
+    public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool showMessage);
     public delegate void ShowAllHandCardsEventHandler();
     public delegate void NewPlayerJoinedEventHandler();
     public delegate void ReplayStateReceivedEventHandler(ReplayEntity replayState);
@@ -207,6 +207,11 @@ namespace Duan.Xiugang.Tractor.Player
         public void ExitRoom(string playerID)
         {
             _tractorHost.PlayerExitRoom(playerID);
+        }
+
+        public void MarkPlayerOffline(string playerID)
+        {
+            _tractorHost.MarkPlayerOffline(playerID);
         }
 
         public void SpecialEndGameRequest(string playerID)
@@ -536,11 +541,11 @@ namespace Duan.Xiugang.Tractor.Player
             }
         }
 
-        public void NotifyRoomSetting(RoomSetting roomSetting, bool isRoomSettingModified)
+        public void NotifyRoomSetting(RoomSetting roomSetting, bool showMessage)
         {
             if (RoomSettingUpdatedEvent != null)
             {
-                RoomSettingUpdatedEvent(roomSetting, isRoomSettingModified);
+                RoomSettingUpdatedEvent(roomSetting, showMessage);
             }
         }
 

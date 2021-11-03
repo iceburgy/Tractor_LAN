@@ -431,8 +431,18 @@ namespace Duan.Xiugang.Tractor
                 if (dialogResult == DialogResult.No)
                 {
                     e.Cancel = true;
-                    return;
                 }
+                else
+                {
+                    try
+                    {
+                        ThisPlayer.MarkPlayerOffline(ThisPlayer.MyOwnId);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                return;
             }
             try
             {
@@ -1378,8 +1388,9 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void ThisPlayer_RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool isRoomSettingModified)
+        private void ThisPlayer_RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool showMessage)
         {
+            bool isRoomSettingModified = this.ThisPlayer.CurrentRoomSetting == null || !this.ThisPlayer.CurrentRoomSetting.Equals(roomSetting);
             this.ThisPlayer.CurrentRoomSetting = roomSetting;
             if (this.ThisPlayer.CurrentRoomSetting.RoomOwner == this.ThisPlayer.MyOwnId)
             {
@@ -1389,7 +1400,10 @@ namespace Duan.Xiugang.Tractor
                 this.TeamUpToolStripMenuItem.Visible = true;
             }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
-            this.DisplayRoomSetting(isRoomSettingModified);
+            if (showMessage)
+            {
+                this.DisplayRoomSetting(isRoomSettingModified);
+            }
         }
 
         private void ThisPlayer_ShowAllHandCardsEventHandler()
@@ -1862,13 +1876,19 @@ namespace Duan.Xiugang.Tractor
                 }
                 else if (m.Equals(CommonMethods.reenterRoomSignal))
                 {
-                    ThisPlayer.IsTryingReenter = true;
-                    this.btnEnterHall.Hide();
-                    this.btnReplay.Hide();
+                    if (!ThisPlayer.isObserver)
+                    {
+                        ThisPlayer.IsTryingReenter = true;
+                        this.btnEnterHall.Hide();
+                        this.btnReplay.Hide();
+                    }
                 }
                 else if (m.Equals(CommonMethods.resumeGameSignal))
                 {
-                    ThisPlayer.IsTryingResumeGame = true;
+                    if (!ThisPlayer.isObserver)
+                    {
+                        ThisPlayer.IsTryingResumeGame = true;
+                    }
                 }
                 else if (m.Contains("新游戏即将开始"))
                 {
@@ -2270,11 +2290,8 @@ namespace Duan.Xiugang.Tractor
             }
             if (AllOnline() && !ThisPlayer.isObserver && !ThisPlayer.isReplay && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
-                DialogResult dialogResult = MessageBox.Show("游戏正在进行中，是否确定退出？", "是否确定退出", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.No)
-                {
-                    return;
-                }
+                Application.Restart();
+                return;
             }
 
             ThisPlayer.ExitRoom(ThisPlayer.MyOwnId);

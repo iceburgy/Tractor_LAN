@@ -94,10 +94,15 @@ namespace TractorServer
                     ObserversProxy.Add(playerID, player);
                     ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
 
-                    player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
-
-                    IPlayerInvoke(playerID, player, "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState }, true);
-                    IPlayerInvoke(playerID, player, "NotifyCurrentHandState", new List<object>() { CurrentRoomState.CurrentHandState }, true);
+                    if (IsGameOnGoing())
+                    {
+                        IPlayerInvoke(playerID, player, "NotifyCurrentTrickState", new List<object>() { CurrentRoomState.CurrentTrickState }, true);
+                        IPlayerInvoke(playerID, player, "NotifyCurrentHandState", new List<object>() { CurrentRoomState.CurrentHandState }, true);
+                    }
+                    else
+                    {
+                        player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
+                    }
 
                     Thread.Sleep(2000);
                     IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
@@ -145,7 +150,7 @@ namespace TractorServer
                 }
                 UpdateGameState();
 
-                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
+                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
                 return true;
             }
             else
@@ -160,6 +165,12 @@ namespace TractorServer
                 }
                 return false;
             }
+        }
+
+        private bool IsGameOnGoing()
+        {
+            return HandStep.DiscardingLast8Cards <= CurrentRoomState.CurrentHandState.CurrentHandStep &&
+                CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing;
         }
 
         private bool IsRoomFull()
@@ -250,8 +261,8 @@ namespace TractorServer
                 PlayerEntity next = this.CurrentRoomState.CurrentGameState.Players.FirstOrDefault(p => p != null);
                 if (next != null) CurrentRoomState.roomSetting.RoomOwner = next.PlayerId;
                 else CurrentRoomState.roomSetting.RoomOwner = string.Empty;
+                UpdatePlayerRoomSettings(false);
             }
-            UpdatePlayerRoomSettings(false);
 
             return needsRestart;
         }
@@ -306,7 +317,6 @@ namespace TractorServer
         public bool PlayerQuitFromCleanup(List<string> playerIDs)
         {
             bool needsRestart = false;
-            string offlinePlayerID = "";
             foreach (string playerID in playerIDs)
             {
                 if (!IsActualPlayer(playerID))
@@ -331,10 +341,21 @@ namespace TractorServer
                 PlayersProxy.Remove(playerID);
                 this.tractorHost.PlayerToIP.Remove(playerID);
                 this.tractorHost.PlayersProxy.Remove(playerID);
+            }
 
-                if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
-                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished ||
-                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
+            if (IsGameOnGoing())
+            {
+                MarkPlayersOffline(playerIDs);
+            }
+
+            return needsRestart && !IsGameOnGoing();
+        }
+
+        public void MarkPlayersOffline(List<string> playerIDs)
+        {
+            HashSet<string> offlinePlayerIDs = new HashSet<string>();
+            {
+                foreach (string playerID in playerIDs)
                 {
                     for (int i = 0; i < 4; i++)
                     {
@@ -343,33 +364,31 @@ namespace TractorServer
                             CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
                             CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
                             CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
-
-                            if (string.IsNullOrEmpty(offlinePlayerID))
-                            {
-                                offlinePlayerID = playerID;
-                            }
+                            offlinePlayerIDs.Add(playerID);
 
                             break;
                         }
                     }
                 }
             }
-
-            var threadUpdateGameState = new Thread(() => {
-                this.UpdateGameState();
-                if (!string.IsNullOrEmpty(offlinePlayerID))
+            if (offlinePlayerIDs.Count > 0)
+            {
+                var threadUpdateGameState = new Thread(() =>
                 {
+                    this.UpdateGameState();
                     Thread.Sleep(1000);
-                    PublishMessage(new string[] { string.Format("玩家【{0}】已离线", offlinePlayerID) });
+                    string[] msgs = new string[offlinePlayerIDs.Count];
+                    int i = 0;
+                    foreach (string playerID in offlinePlayerIDs)
+                    {
+                        msgs[i] = string.Format("玩家【{0}】已离线", playerID);
+                        i++;
+                    }
+                    PublishMessage(msgs);
                     PublishStartTimer(CurrentRoomState.roomSetting.secondsToWaitForReenter);
-                }
-            });
-            threadUpdateGameState.Start();
-
-            return needsRestart &&
-                !(CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
-                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished ||
-                CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards);
+                });
+                threadUpdateGameState.Start();
+            }
         }
 
         public void PlayerIsReadyToStart(string playerID)
@@ -1121,6 +1140,20 @@ namespace TractorServer
                 PublishMessage(restoredMsg.ToArray());
                 return;
             }
+
+            // 到了这里，至少可以还原牌局了，但不一定能还原手牌
+            // 因为游戏状态备份文件不包含旁观玩家信息
+            // 还原之前必须先把旁观玩家清除，否则会造成游戏状态紊乱
+            List<string> obs = new List<string>();
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+            {
+                obs.AddRange(p.Observers);
+            }
+            foreach (string ob in obs)
+            {
+                this.tractorHost.PlayerExitRoom(ob);
+            }
+
             foreach (var cp in hs.PlayerHoldingCards)
             {
                 if (cp.Value.Count == 0)
@@ -1684,10 +1717,10 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyShowAllHandCards", new List<object>() { });
         }
 
-        public void UpdatePlayerRoomSettings(bool isRoomSettingModified)
+        public void UpdatePlayerRoomSettings(bool showMessage)
         {
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, isRoomSettingModified });
-            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, isRoomSettingModified });
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, showMessage });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyRoomSetting", new List<object>() { this.CurrentRoomState.roomSetting, showMessage });
         }
 
         #endregion

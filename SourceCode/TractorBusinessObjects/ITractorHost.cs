@@ -27,6 +27,9 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerExitRoom(string playerId);
 
         [OperationContract(IsOneWay = true)]
+        void MarkPlayerOffline(string playerId);
+
+        [OperationContract(IsOneWay = true)]
         void SpecialEndGameRequest(string playerID);
 
         [OperationContract(IsOneWay = true)]

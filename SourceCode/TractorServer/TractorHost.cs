@@ -184,6 +184,17 @@ namespace TractorServer
             }
         }
 
+        //玩家强退
+        public void MarkPlayerOffline(string playerID)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            List<string> quitPlayers = new List<string>() { playerID };
+
+            gameRoom.PlayerQuitFromCleanup(quitPlayers);
+        }
+
         //玩家退出房间
         public void PlayerExitRoom(string playerID)
         {
