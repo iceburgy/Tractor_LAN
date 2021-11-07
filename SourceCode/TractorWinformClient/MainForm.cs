@@ -2316,17 +2316,11 @@ namespace Duan.Xiugang.Tractor
 
         private bool AllOnline()
         {
-            bool allOnline = true;
             foreach (PlayerEntity player in ThisPlayer.CurrentGameState.Players)
             {
-            	if (player ==  null) continue;
-                if (player.IsOffline)
-                {
-                    allOnline = false;
-                    break;
-                }
+                if (player == null || player.IsOffline) return false;
             }
-            return allOnline;
+            return true;
         }
 
         private void btnSurrender_Click(object sender, EventArgs e)

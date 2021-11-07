@@ -215,12 +215,12 @@ namespace TractorServer
                         quitPlayers.Add(player.PlayerId);
                     }
                 }
-            }
-            foreach (PlayerEntity p in gameRoom.CurrentRoomState.CurrentGameState.Players)
-            {
-                if (p != null && !PlayersProxy.ContainsKey(p.PlayerId) && !obs.Contains(p.PlayerId) && !quitPlayers.Contains(p.PlayerId))
+                foreach (PlayerEntity p in gameRoom.CurrentRoomState.CurrentGameState.Players)
                 {
-                    obs.Add(p.PlayerId);
+                    if (p != null && !PlayersProxy.ContainsKey(p.PlayerId) && !obs.Contains(p.PlayerId) && !quitPlayers.Contains(p.PlayerId))
+                    {
+                        obs.Add(p.PlayerId);
+                    }
                 }
             }
 

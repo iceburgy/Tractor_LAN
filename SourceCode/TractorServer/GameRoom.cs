@@ -335,7 +335,7 @@ namespace TractorServer
                     continue;
                 }
 
-                log.Debug(playerID + " went offline.");
+                log.Debug(playerID + " is not responding.");
                 needsRestart = true;
                 CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
                 PlayersProxy.Remove(playerID);
@@ -365,6 +365,7 @@ namespace TractorServer
                             CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
                             CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
                             offlinePlayerIDs.Add(playerID);
+                            log.Debug(playerID + " went offline.");
 
                             break;
                         }

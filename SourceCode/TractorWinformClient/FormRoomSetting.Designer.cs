@@ -432,6 +432,7 @@
             // 
             // nudReenterWaitSeconds
             // 
+            this.nudReenterWaitSeconds.Enabled = false;
             this.nudReenterWaitSeconds.Location = new System.Drawing.Point(394, 398);
             this.nudReenterWaitSeconds.Maximum = new decimal(new int[] {
             300,
