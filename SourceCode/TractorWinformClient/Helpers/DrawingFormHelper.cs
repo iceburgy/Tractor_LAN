@@ -1954,7 +1954,6 @@ namespace Duan.Xiugang.Tractor
                         break;
                 }
                 mainForm.Refresh();
-                Thread.Sleep(100);
             }
             g.Dispose();
         }
