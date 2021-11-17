@@ -111,7 +111,7 @@ namespace TractorServer
         public void PlayerEnterHall(string playerID)
         {
             string clientIP = GetClientIP();
-            GameRoom.LogClientInfo(clientIP, playerID, false);
+            LogClientInfo(clientIP, playerID, false);
             IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
             if (!PlayersProxy.Keys.Contains(playerID))
             {
@@ -561,6 +561,25 @@ namespace TractorServer
         private string GetSessionID()
         {
             return OperationContext.Current.SessionId;
+        }
+
+        public void LogClientInfo(string clientIP, string playerID, bool isCheating)
+        {
+            lock (this)
+            {
+                Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
+                string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                if (File.Exists(fileName))
+                {
+                    clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
+                }
+                if (!clientInfoDict.ContainsKey(clientIP))
+                {
+                    clientInfoDict[clientIP] = new ClientInfo(clientIP, playerID);
+                }
+                clientInfoDict[clientIP].logLogin(playerID, isCheating);
+                CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+            }
         }
     }
 

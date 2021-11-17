@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
+using System.Timers;
 
 namespace TractorServer
 {
@@ -24,6 +25,7 @@ namespace TractorServer
         public string BackupRoomSettingFileName = "backup_RoomSetting.json";
         public string LogsByRoomFullFolder;
         public string ReplaysByRoomFullFolder;
+        public System.Timers.Timer timerPingClients;
 
         TractorHost tractorHost;
         public RoomState CurrentRoomState;
@@ -55,7 +57,36 @@ namespace TractorServer
             string fullLogFilePath = string.Format("{0}\\myroom_{1}_logfile.txt", LogsByRoomFullFolder, roomID);
             log = LoggerUtil.Setup(string.Format("myroom_{0}_logfile", roomID), fullLogFilePath);
 
+            SetTimer();
         }
+
+
+        #region timer to ping clients
+        private void SetTimer()
+        {
+            timerPingClients = new System.Timers.Timer(5000);
+            timerPingClients.Elapsed += OnTimedEvent;
+            timerPingClients.AutoReset = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            if (TractorHost.gameConfig.IsFullDebug || !IsGameOnGoing())
+            {
+                timerPingClients.Enabled = false;
+                return;
+            }
+            List<string> playersToPing = new List<string>();
+            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player != null && !player.IsOffline)
+                {
+                    playersToPing.Add(player.PlayerId);
+                }
+            }
+            IPlayerInvokeForAll(PlayersProxy, playersToPing, "NotifyMessage", new List<object>() { new string[] { } });
+        }
+        #endregion timer to ping clients
 
         #region implement interface ITractorHost
         public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
@@ -68,7 +99,7 @@ namespace TractorServer
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
                     if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
                     {
-                        LogClientInfo(clientIP, playerID, true);
+                        tractorHost.LogClientInfo(clientIP, playerID, true);
                         log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {
@@ -85,7 +116,7 @@ namespace TractorServer
                     }
                     else
                     {
-                        LogClientInfo(clientIP, playerID, false);
+                        tractorHost.LogClientInfo(clientIP, playerID, false);
                     }
 
                     log.Debug(string.Format("observer {0} joined.", playerID));
@@ -125,7 +156,7 @@ namespace TractorServer
                         }
                     }
                 }
-                LogClientInfo(clientIP, playerID, false);
+                tractorHost.LogClientInfo(clientIP, playerID, false);
                 CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
@@ -214,7 +245,7 @@ namespace TractorServer
             }
 
             CurrentRoomState.CurrentGameState.Players[posID].IsOffline = false;
-            LogClientInfo(clientIP, playerID, false);
+            tractorHost.LogClientInfo(clientIP, playerID, false);
             CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
             PlayersProxy.Add(playerID, player);
             log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
@@ -417,6 +448,7 @@ namespace TractorServer
 
                 if (isReadyToStart == 4)
                 {
+                    timerPingClients.Enabled = true;
                     switch (CurrentRoomState.CurrentGameState.nextRestartID)
                     {
                         case GameState.RESTART_GAME:
@@ -895,9 +927,6 @@ namespace TractorServer
 
                 //将离线玩家移出游戏
                 this.tractorHost.BeginPlayerQuit(playerId, PlayerQuitCallback, this.tractorHost);
-
-                //重开游戏
-                ResetAndRestartGame();
                 return false;
             }
             return true;
@@ -1016,13 +1045,6 @@ namespace TractorServer
             CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
             CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
             CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
-            log.Debug("restart game");
-            foreach (var p in CurrentRoomState.CurrentGameState.Players)
-            {
-                p.Rank = 0;
-                p.IsReadyToStart = false;
-                p.IsRobot = false;
-            }
             ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
 
@@ -1094,6 +1116,7 @@ namespace TractorServer
         //继续牌局
         public void ResumeGameFromFile()
         {
+            PublishStartTimer(0);
             bool isValid = true;
             foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
@@ -1207,6 +1230,8 @@ namespace TractorServer
 
             restoredMsg.Add("继续牌局【成功】");
             PublishMessage(restoredMsg.ToArray());
+
+            timerPingClients.Enabled = true;
         }
 
         //读取房间游戏设置
@@ -1446,10 +1471,10 @@ namespace TractorServer
             {
                 ShuffleCardsWithRNGCsp(this.CardsShoe);
                 //切牌
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "玩家切牌：", preStarterID } });
                 if (ObserversProxy.Count > 0)
                 {
-                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("等待玩家【{0}】切牌", preStarterID) } });
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "玩家切牌：", preStarterID } });
                 }
 
                 string cutInfoString = PlayersProxy[preStarterID].CutCardShoeCards();
@@ -1462,10 +1487,10 @@ namespace TractorServer
                     cutMsg = string.Format("{0}{1}张", cutInfos[0], cutInfos[1]);
                 }
 
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：", preStarterID), cutMsg } });
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家切牌：{0}", cutMsg), preStarterID } });
                 if (ObserversProxy.Count > 0)
                 {
-                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】切牌：", preStarterID, cutMsg), cutMsg } });
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家切牌：{0}", cutMsg), preStarterID } });
                 }
                 PublishStartTimer(2);
                 //加一秒缓冲时间，让客户端倒计时完成
@@ -1792,29 +1817,21 @@ namespace TractorServer
 
         private void ResetAndRestartGame()
         {
+            log.Debug("restart game");
             CleanupCaches();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             CurrentRoomState.CurrentHandState.IsFirstHand = true;
             UpdatePlayersCurrentHandState();
+            foreach (var p in CurrentRoomState.CurrentGameState.Players)
+            {
+                if (p == null) continue;
+                p.Rank = 0;
+                p.IsReadyToStart = false;
+                p.IsRobot = false;
+            }
             UpdateGameState();
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
-        }
-
-        public static void LogClientInfo(string clientIP, string playerID, bool isCheating)
-        {
-            Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
-            string fileName = string.Format("{0}\\{1}", LogsFolder, ClientinfoFileName);
-            if (File.Exists(fileName))
-            {
-                clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
-            }
-            if (!clientInfoDict.ContainsKey(clientIP))
-            {
-                clientInfoDict[clientIP] = new ClientInfo(clientIP, playerID);
-            }
-            clientInfoDict[clientIP].logLogin(playerID, isCheating);
-            CommonMethods.WriteObjectToFile(clientInfoDict, LogsFolder, ClientinfoFileName);
         }
 
         public void ShuffleCurrentGameStatePlayers()

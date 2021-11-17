@@ -281,7 +281,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void NotifyMessage(string[] msg)
         {
-            if (NotifyMessageEvent != null)
+            if (msg != null && msg.Length > 0 && NotifyMessageEvent != null)
                 NotifyMessageEvent(msg);
         }
 

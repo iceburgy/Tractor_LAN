@@ -1907,8 +1907,11 @@ namespace Duan.Xiugang.Tractor
         private void ThisPlayer_NotifyStartTimerEventHandler(int timerLength)
         {
             this.timerCountDown = timerLength;
-            this.drawingFormHelper.DrawCountDown(true);
-            this.theTimer.Start();
+            if (timerLength > 0)
+            {
+                this.drawingFormHelper.DrawCountDown(true);
+                this.theTimer.Start();
+            }
         }
 
         private void ThisPlayer_NotifyCardsReadyEventHandler(ArrayList mcir)
