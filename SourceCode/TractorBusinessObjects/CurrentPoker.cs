@@ -1954,16 +1954,11 @@ namespace Duan.Xiugang.Tractor.Objects
 
 
             //顺序比较
-            for (int i = 12; i > -1; i--)
+            for (int i = 12; i >= 0; i--)
             {
                 if (i == Rank)
                 {
                     continue;
-                }
-
-                if (i < 0)
-                {
-                    break;
                 }
 
                 if (Trump == Suit.Heart)
@@ -2006,7 +2001,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
             }
 
-            if (result.Count < 1)
+            if (result.Count <= 1)
                 result.Clear();
             return result;
         }
