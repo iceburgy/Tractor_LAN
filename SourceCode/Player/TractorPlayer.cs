@@ -574,6 +574,11 @@ namespace Duan.Xiugang.Tractor.Player
             return "取消,0";
         }
 
+        public void PingClient()
+        {
+            // no op
+        }
+
         public void SpecialEndGameShouldAgree()
         {
             if (SpecialEndGameShouldAgreeEvent != null)

@@ -545,7 +545,7 @@ namespace Duan.Xiugang.Tractor
             // btnEnterHall
             // 
             this.btnEnterHall.BackColor = System.Drawing.Color.Plum;
-            this.btnEnterHall.Location = new System.Drawing.Point(372, 386);
+            this.btnEnterHall.Location = new System.Drawing.Point(288, 366);
             this.btnEnterHall.Name = "btnEnterHall";
             this.btnEnterHall.Size = new System.Drawing.Size(109, 55);
             this.btnEnterHall.TabIndex = 21;
@@ -711,7 +711,7 @@ namespace Duan.Xiugang.Tractor
             // btnReplay
             // 
             this.btnReplay.BackColor = System.Drawing.Color.Plum;
-            this.btnReplay.Location = new System.Drawing.Point(372, 456);
+            this.btnReplay.Location = new System.Drawing.Point(460, 366);
             this.btnReplay.Name = "btnReplay";
             this.btnReplay.Size = new System.Drawing.Size(109, 55);
             this.btnReplay.TabIndex = 34;

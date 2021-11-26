@@ -97,5 +97,9 @@ namespace Duan.Xiugang.Tractor.Objects
         /// </summary>
         [OperationContract()]
         string CutCardShoeCards();
+
+        //检测断线
+        [OperationContract()]
+        void PingClient();
     }
 }
