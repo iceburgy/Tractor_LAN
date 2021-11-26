@@ -716,12 +716,6 @@ namespace TractorServer
                 serverLocalCache.lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
                 serverLocalCache.lastLeader = CurrentRoomState.CurrentTrickState.Learder;
 
-                if (CurrentRoomState.CurrentHandState.LeftCardsCount == 0)
-                {
-                    //本局结束画面，更新最后一轮出的牌
-                    CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
-                    CurrentRoomState.CurrentTrickState.serverLocalCache.muteSound = true;
-                }
                 UpdatePlayerCurrentTrickState();
 
                 CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
@@ -794,6 +788,11 @@ namespace TractorServer
                     }
 
                     UpdatePlayersCurrentHandState();
+
+                    //本局结束画面，更新最后一轮出的牌
+                    CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
+                    CurrentRoomState.CurrentTrickState.serverLocalCache.muteSound = true;
+                    UpdatePlayerCurrentTrickState();
 
                     UpdateGameState();
 
