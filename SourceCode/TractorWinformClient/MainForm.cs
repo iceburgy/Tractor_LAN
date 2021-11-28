@@ -2483,6 +2483,13 @@ namespace Duan.Xiugang.Tractor
                         return true;
                     }
                     break;
+                case Keys.F5:
+                    if (ThisPlayer.isReplay)
+                    {
+                        this.btnReplayAngle.PerformClick();
+                        return true;
+                    }
+                    break;
                 default:
                     break;
             }
