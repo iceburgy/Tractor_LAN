@@ -453,7 +453,6 @@ namespace TractorServer
 
                 if (isReadyToStart == 4)
                 {
-                    timerPingClients.Enabled = true;
                     switch (CurrentRoomState.CurrentGameState.nextRestartID)
                     {
                         case GameState.RESTART_GAME:
@@ -1616,6 +1615,7 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
 
             SaveGameStateToFile();
+            timerPingClients.Enabled = true;
 
             return false;
         }
