@@ -114,10 +114,10 @@ namespace TractorServer
         {
             for (int i = 0; i < 4; i++)
             {
+                timersPerClient[i].Enabled = false;
                 PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
                 if (timersPerClient[i].Equals(source) && player != null && !player.IsOffline)
                 {
-                    timersPerClient[i].Enabled = false;
                     PerformProxyCleanupRestart(new List<string> { player.PlayerId });
                     break;
                 }
