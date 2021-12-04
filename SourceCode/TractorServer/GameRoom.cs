@@ -26,11 +26,13 @@ namespace TractorServer
         public string LogsByRoomFullFolder;
         public string ReplaysByRoomFullFolder;
         public System.Timers.Timer timerPingClients;
+        public System.Timers.Timer[] timersPerClient;
         
         // in milliseconds, allow for 1 second to perform clean up before ping again next time
         // timeout configuration NetTcpBinding_ITractorHost sendTimeout only works for non-oneway methods
         // for oneway methods, timeout is defaulted to 20 seconds
         public int PingInterval = 6000;
+        public int PingTimeout = 5000;
 
         TractorHost tractorHost;
         public RoomState CurrentRoomState;
@@ -72,6 +74,14 @@ namespace TractorServer
             timerPingClients = new System.Timers.Timer(PingInterval);
             timerPingClients.Elapsed += OnTimedEvent;
             timerPingClients.AutoReset = true;
+
+            timersPerClient = new System.Timers.Timer[4];
+            for (int i = 0; i < 4; i++)
+            {
+                timersPerClient[i] = new System.Timers.Timer(PingTimeout);
+                timersPerClient[i].Elapsed += OnPingTimeoutEvent;
+                timersPerClient[i].AutoReset = true;
+            }
         }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
@@ -82,14 +92,36 @@ namespace TractorServer
                 return;
             }
             List<string> playersToPing = new List<string>();
-            foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
+            for (int i = 0; i < 4; i++)
             {
+                PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
                 if (player != null && !player.IsOffline)
                 {
-                    playersToPing.Add(player.PlayerId);
+                    timersPerClient[i].Enabled = true;
+                    try
+                    {
+                        PlayersProxy[player.PlayerId].PingClient();
+                        timersPerClient[i].Enabled = false;
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
-            IPlayerInvokeForAll(PlayersProxy, playersToPing, "PingClient", new List<object>() { });
+        }
+
+        private void OnPingTimeoutEvent(Object source, ElapsedEventArgs e)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
+                if (timersPerClient[i].Equals(source) && player != null && !player.IsOffline)
+                {
+                    timersPerClient[i].Enabled = false;
+                    PerformProxyCleanupRestart(new List<string> { player.PlayerId });
+                    break;
+                }
+            }
         }
         #endregion timer to ping clients
 
@@ -564,14 +596,21 @@ namespace TractorServer
                     return;
             }
 
-            SaveGameStateToFile();
-
             UpdatePlayersCurrentHandState();
 
             UpdateGameState();
 
             //所有人展示手牌
             ShowAllHandCards();
+
+            //清除手牌信息
+            foreach (var entry in CurrentRoomState.CurrentHandState.PlayerHoldingCards)
+            {
+                entry.Value.Clear();
+            }
+            CurrentRoomState.CurrentHandState.LeftCardsCount = 0;
+            SaveGameStateToFile();
+
 
             if (sb != null)
             {
@@ -628,6 +667,7 @@ namespace TractorServer
                 BuildReplayEntity();
 
                 SaveGameStateToFile();
+                timerPingClients.Enabled = true;
             }
         }
 
@@ -1615,7 +1655,6 @@ namespace TractorServer
             UpdatePlayersCurrentHandState();
 
             SaveGameStateToFile();
-            timerPingClients.Enabled = true;
 
             return false;
         }
@@ -1794,7 +1833,7 @@ namespace TractorServer
             {
                 playerProxy.GetType().GetMethod(methodName).Invoke(playerProxy, args.ToArray());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 badPlayerID = playerID;
             }

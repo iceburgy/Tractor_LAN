@@ -63,7 +63,10 @@ namespace Duan.Xiugang.Tractor.Objects
             get
             {
                 if (IsStarted())
-                    return PokerHelper.GetSuit(LeadingCards[0]);
+                {
+                    if (PokerHelper.IsTrump(LeadingCards[0], Trump, Rank)) return Trump;
+                    else return PokerHelper.GetSuit(LeadingCards[0]);
+                }
                 return Suit.None;
             }
         }
