@@ -832,7 +832,10 @@ namespace TractorServer
 
                     UpdatePlayersCurrentHandState();
                     //推迟下盘庄家的更新，以保证结束画面仍显示当前盘的庄家，而不是下盘的庄家
-                    CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
+                    if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
+                    {
+                        CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
+                    }
 
                     //本局结束画面，更新最后一轮出的牌
                     CurrentRoomState.CurrentTrickState.serverLocalCache = serverLocalCache;
