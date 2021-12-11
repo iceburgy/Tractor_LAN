@@ -798,6 +798,7 @@ namespace TractorServer
                     Thread.Sleep(2000 + 1000);
 
                     CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Ending;
+                    UpdatePlayersCurrentHandState();
 
                     if (!TractorHost.gameConfig.IsFullDebug)
                     {
@@ -813,7 +814,8 @@ namespace TractorServer
 
                     //检查是否本轮游戏结束
                     StringBuilder sb = null;
-                    if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
+                    bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
+                    if (isGameOver)
                     {
                         sb = new StringBuilder();
                         foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
@@ -829,11 +831,9 @@ namespace TractorServer
                         CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                         CurrentRoomState.CurrentGameState.startNextHandStarter = null;
                     }
-
-                    UpdatePlayersCurrentHandState();
-                    //推迟下盘庄家的更新，以保证结束画面仍显示当前盘的庄家，而不是下盘的庄家
-                    if (CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13)
+                    else
                     {
+                        //推迟下盘庄家的更新，以保证结束画面仍显示当前盘的庄家，而不是下盘的庄家
                         CurrentRoomState.CurrentHandState.Starter = CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId;
                     }
 
@@ -847,9 +847,16 @@ namespace TractorServer
                     UpdateReplayState();
 
                     //保存游戏当前状态，以备继续游戏
-                    SaveGameStateToFile();
+                    if (isGameOver)
+                    {
+                        CleanUpGameStateFile();
+                    }
+                    else
+                    {
+                        SaveGameStateToFile();
+                    }
 
-                    if (sb != null)
+                    if (isGameOver)
                     {
                         PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
                         this.isGameOver = true;
@@ -1202,9 +1209,8 @@ namespace TractorServer
             {
                 if (CurrentRoomState.CurrentGameState.Players[i].PlayerId != gs.Players[i].PlayerId)
                 {
-                    restoredMsg.Add("继续牌局【失败】- GameState");
-                    restoredMsg.Add("游戏文件中玩家与当前玩家不匹配");
-                    restoredMsg.Add(string.Format("游戏文件中【{0}号位】玩家为：", i + 1));
+                    restoredMsg.Add("上盘牌局玩家与当前玩家不匹配");
+                    restoredMsg.Add(string.Format("上盘【{0}号位】玩家为：", i + 1));
                     restoredMsg.Add(gs.Players[i].PlayerId);
                     restoredMsg.Add(string.Format("当前【{0}号位】玩家为：", i + 1));
                     restoredMsg.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
@@ -1239,7 +1245,8 @@ namespace TractorServer
             {
                 if (cp.Value.Count == 0)
                 {
-                    restoredMsg.AddRange(new string[] { "继续牌局【失败】- HandState", "上盘牌局已出完所有牌" }); ;
+                    restoredMsg.Add("上盘牌局已出完所有牌");
+                    restoredMsg.Add("游戏将顺延至下盘牌局并继续");
                     isResumable = false;
                     break;
                 }
@@ -1737,6 +1744,22 @@ namespace TractorServer
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentGameState, this.LogsByRoomFullFolder, this.BackupGamestateFileName);
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentHandState, this.LogsByRoomFullFolder, this.BackupHandStateFileName);
             CommonMethods.WriteObjectToFile(CurrentRoomState.CurrentTrickState, this.LogsByRoomFullFolder, this.BackupTrickStateFileName);
+        }
+
+        //本轮游戏结束，清理牌局
+        private void CleanUpGameStateFile()
+        {
+            List<string> filesToDelete = new List<string>();
+            filesToDelete.Add(string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupGamestateFileName));
+            filesToDelete.Add(string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName));
+            filesToDelete.Add(string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupTrickStateFileName));
+            foreach (string fileName in filesToDelete)
+            {
+                if (File.Exists(fileName))
+                {
+                    File.Delete(fileName);
+                }
+            }
         }
 
         //保存房间游戏设置
