@@ -1295,8 +1295,10 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NewPlayerReadyToStart(bool readyToStart)
         {
-            this.btnReady.Enabled = !readyToStart;
-            
+            this.btnReady.Enabled = ThisPlayer.CurrentGameState.Players.Where(p => p != null && p.IsReadyToStart).Count() < 4;
+            this.btnReady.Text = readyToStart ? "取消" : "就绪";
+            this.ToolStripMenuItemGetReady.Checked = readyToStart;
+
             //看看谁不点就绪
             System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
             int curIndex = -1;

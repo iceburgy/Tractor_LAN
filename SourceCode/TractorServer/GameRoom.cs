@@ -469,7 +469,7 @@ namespace TractorServer
                 {
                     if (p != null && p.PlayerId == playerID)
                     {
-                        p.IsReadyToStart = true;
+                        p.IsReadyToStart = !p.IsReadyToStart;
                         break;
                     }
                 }
