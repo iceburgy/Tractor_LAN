@@ -12,7 +12,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void GameHallUpdatedEventHandler(List<RoomState> roomStates, List<string> names);
     public delegate void RoomSettingUpdatedEventHandler(RoomSetting roomSetting, bool showMessage);
     public delegate void ShowAllHandCardsEventHandler();
-    public delegate void NewPlayerJoinedEventHandler();
+    public delegate void NewPlayerJoinedEventHandler(bool meJoined);
     public delegate void ReplayStateReceivedEventHandler(ReplayEntity replayState);
     public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
@@ -483,6 +483,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
             observerAdded = observerAdded && totalPlayers == 4;
+            bool meJoined = !this.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId) && gameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId);
 
             this.CurrentGameState = gameState;
 
@@ -513,7 +514,7 @@ namespace Duan.Xiugang.Tractor.Player
 
             if (NewPlayerJoined != null)
             {
-                NewPlayerJoined();
+                NewPlayerJoined(meJoined);
             }
 
             if (this.IsTryingReenter || this.IsTryingResumeGame)

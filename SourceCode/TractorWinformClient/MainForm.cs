@@ -1189,7 +1189,7 @@ namespace Duan.Xiugang.Tractor
             }
         }
 
-        private void ThisPlayer_NewPlayerJoined()
+        private void ThisPlayer_NewPlayerJoined(bool meJoined)
         {
             if (this.ToolStripMenuItemEnterRoom0.Enabled || ThisPlayer.IsTryingReenter || ThisPlayer.IsTryingResumeGame)
             {
@@ -1245,7 +1245,7 @@ namespace Duan.Xiugang.Tractor
             }
 
             bool isHelpSeen = FormSettings.GetSettingBool(FormSettings.KeyIsHelpSeen);
-            if (!isHelpSeen)
+            if (!isHelpSeen && meJoined)
             {
                 this.ToolStripMenuItemUserManual.PerformClick();
             }
