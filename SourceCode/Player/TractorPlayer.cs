@@ -446,6 +446,14 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void NotifyGameState(GameState gameState)
         {
+            //bug修复：如果所有人都就绪了，然后来自服务器的新消息就绪人数既不是0又不是4（由于网络延迟导致有一人未就绪的来自服务器的消息滞后到达），那么不处理这条消息
+            bool isCurrentAllReady = this.CurrentGameState.Players.Where(p => p != null && p.IsReadyToStart).Count() >= 4;
+            int newReadyCount = gameState.Players.Where(p => p != null && p.IsReadyToStart).Count();
+            if (isCurrentAllReady && 0 < newReadyCount && newReadyCount < 4)
+            {
+                return;
+            }
+
             bool teamMade = false;
             bool observerAdded = false;
             foreach (PlayerEntity p in gameState.Players)
