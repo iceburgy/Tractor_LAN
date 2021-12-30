@@ -91,20 +91,23 @@ namespace TractorServer
                 timerPingClients.Enabled = false;
                 return;
             }
-            List<string> playersToPing = new List<string>();
-            for (int i = 0; i < 4; i++)
+            lock (CurrentRoomState.CurrentGameState)
             {
-                PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
-                if (player != null && !player.IsOffline)
+                List<string> playersToPing = new List<string>();
+                for (int i = 0; i < 4; i++)
                 {
-                    timersPerClient[i].Enabled = true;
-                    try
+                    PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
+                    if (player != null && !player.IsOffline)
                     {
-                        PlayersProxy[player.PlayerId].NotifyMessage(new string[] { });
-                        timersPerClient[i].Enabled = false;
-                    }
-                    catch (Exception)
-                    {
+                        timersPerClient[i].Enabled = true;
+                        try
+                        {
+                            PlayersProxy[player.PlayerId].NotifyMessage(new string[] { });
+                            timersPerClient[i].Enabled = false;
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
                 }
             }
@@ -1003,62 +1006,65 @@ namespace TractorServer
 
         public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
-            var result = TractorRules.IsLeadingCardsValid(CurrentRoomState.CurrentHandState.PlayerHoldingCards, selectedCards,
-                                                          playerId);
-            result.PlayerId = playerId;
-
-            if (result.ResultType == ShowingCardsValidationResultType.DumpingFail)
+            lock (CurrentRoomState.CurrentGameState)
             {
-                //甩牌失败，扣分：牌的张数x10
-                int punishScore = selectedCards.Count * 10;
-                if (
-                    !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
-                                                                playerId))
-                {
-                    CurrentRoomState.CurrentHandState.Score -= punishScore;
-                    CurrentRoomState.CurrentHandState.ScorePunishment -= punishScore;
-                }
-                else
-                {
-                    CurrentRoomState.CurrentHandState.Score += punishScore;
-                    CurrentRoomState.CurrentHandState.ScorePunishment += punishScore;
-                }
-                log.Debug("tried to dump cards and failed, punish score: " + punishScore);
-                // 录像回放
-                if (this.replayEntity != null)
-                {
-                    CurrentTrickState dumpTrick = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
-                    dumpTrick.ShowedCards.Clear();
-                    dumpTrick.ShowedCards.Add(playerId, selectedCards);
-                    this.replayEntity.CurrentTrickStates.Add(dumpTrick);
-                }
+                var result = TractorRules.IsLeadingCardsValid(CurrentRoomState.CurrentHandState.PlayerHoldingCards, selectedCards,
+                                                              playerId);
+                result.PlayerId = playerId;
 
-                List<string> playersIDToCall = new List<string>();
-                foreach (var player in PlayersProxy)
+                if (result.ResultType == ShowingCardsValidationResultType.DumpingFail)
                 {
-                    if (player.Key != playerId)
+                    //甩牌失败，扣分：牌的张数x10
+                    int punishScore = selectedCards.Count * 10;
+                    if (
+                        !CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(CurrentRoomState.CurrentHandState.Starter,
+                                                                    playerId))
                     {
-                        playersIDToCall.Add(player.Key);
+                        CurrentRoomState.CurrentHandState.Score -= punishScore;
+                        CurrentRoomState.CurrentHandState.ScorePunishment -= punishScore;
+                    }
+                    else
+                    {
+                        CurrentRoomState.CurrentHandState.Score += punishScore;
+                        CurrentRoomState.CurrentHandState.ScorePunishment += punishScore;
+                    }
+                    log.Debug("tried to dump cards and failed, punish score: " + punishScore);
+                    // 录像回放
+                    if (this.replayEntity != null)
+                    {
+                        CurrentTrickState dumpTrick = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
+                        dumpTrick.ShowedCards.Clear();
+                        dumpTrick.ShowedCards.Add(playerId, selectedCards);
+                        this.replayEntity.CurrentTrickStates.Add(dumpTrick);
+                    }
+
+                    List<string> playersIDToCall = new List<string>();
+                    foreach (var player in PlayersProxy)
+                    {
+                        if (player.Key != playerId)
+                        {
+                            playersIDToCall.Add(player.Key);
+                        }
+                    }
+                    if (playersIDToCall.Count > 0)
+                    {
+                        IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyDumpingValidationResult", new List<object>() { result });
+                        IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
+                        if (ObserversProxy.Count > 0)
+                        {
+                            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyDumpingValidationResult", new List<object>() { result });
+                            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
+                        }
                     }
                 }
-                if (playersIDToCall.Count > 0)
+                var cardString = "";
+                foreach (var card in selectedCards)
                 {
-                    IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyDumpingValidationResult", new List<object>() { result });
-                    IPlayerInvokeForAll(PlayersProxy, playersIDToCall, "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
-                    if (ObserversProxy.Count > 0)
-                    {
-                        IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyDumpingValidationResult", new List<object>() { result });
-                        IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { string.Format("玩家【{0}】", playerId), string.Format("甩牌{0}张失败", selectedCards.Count), string.Format("罚分：{0}", punishScore) } });
-                    }
+                    cardString += card.ToString() + " ";
                 }
+                log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
+                return result;
             }
-            var cardString = "";
-            foreach (var card in selectedCards)
-            {
-                cardString += card.ToString() + " ";
-            }
-            log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
-            return result;
         }
 
         public void RefreshPlayersCurrentHandState()
