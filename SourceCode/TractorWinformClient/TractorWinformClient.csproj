@@ -310,12 +310,12 @@
     <None Include="Resources\happy2.gif" />
     <None Include="Resources\happy3.gif" />
     <None Include="Resources\happy4.gif" />
-    <None Include="Resources\sad.gif" />
     <None Include="Resources\sad2.gif" />
     <None Include="Resources\badjob4.gif" />
     <None Include="Resources\sad3.gif" />
     <None Include="Resources\sad4.gif" />
     <None Include="Resources\goodjob3.gif" />
+    <None Include="Resources\sad.gif" />
     <Content Include="Tractor.ico" />
   </ItemGroup>
   <ItemGroup>

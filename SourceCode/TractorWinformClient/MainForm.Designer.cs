@@ -859,7 +859,7 @@ namespace Duan.Xiugang.Tractor
             this.emojiPic1.BackColor = System.Drawing.Color.Transparent;
             this.emojiPic1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.emojiPic1.InitialImage = null;
-            this.emojiPic1.Location = new System.Drawing.Point(229, 748);
+            this.emojiPic1.Location = new System.Drawing.Point(187, 748);
             this.emojiPic1.Name = "emojiPic1";
             this.emojiPic1.Size = new System.Drawing.Size(91, 73);
             this.emojiPic1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
