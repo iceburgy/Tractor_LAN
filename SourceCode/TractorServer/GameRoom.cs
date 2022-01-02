@@ -1817,10 +1817,10 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });
         }
 
-        public void PublishEmoji(string playerID, int emojiType)
+        public void PublishEmoji(string playerID, int emojiType, int emojiIndex)
         {
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType });
-            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType });
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex });
         }
 
         public void PublishStartTimer(int timerLength)

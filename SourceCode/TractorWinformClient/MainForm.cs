@@ -1921,24 +1921,23 @@ namespace Duan.Xiugang.Tractor
             this.drawingFormHelper.DrawMessages(msgs);
         }
 
-        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType)
+        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex)
         {
             var threadDrawEmoji = new Thread(() =>
             {
                 int position = PlayerPosition[playerID];
                 EmojiType emojiEnumType = (EmojiType)emojiType;
                 Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
-                int emojiListSize = emojiList.Length;
-                int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
 
                 Invoke(new Action(() =>
                 {
                     this.drawingFormHelper.emojiPictureBoxes[position - 1].Show();
                     this.drawingFormHelper.emojiPictureBoxes[position - 1].BringToFront();
-                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Image = emojiList[emojiRandomIndex];
+                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Image = emojiList[emojiIndex];
                 }));
 
                 Thread.Sleep(3000);
+                if (this.IsDisposed) return;
                 Invoke(new Action(() =>
                 {
                     this.drawingFormHelper.emojiPictureBoxes[position - 1].Hide();
@@ -2286,7 +2285,13 @@ namespace Duan.Xiugang.Tractor
         private void btnSendEmoji_Click(object sender, EventArgs e)
         {
             this.btnSendEmoji.Enabled = false;
-            ThisPlayer.SendEmoji(this.cbbEmoji.SelectedIndex);
+
+            EmojiType emojiEnumType = (EmojiType)this.cbbEmoji.SelectedIndex;
+            Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
+            int emojiListSize = emojiList.Length;
+            int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
+
+            ThisPlayer.SendEmoji(this.cbbEmoji.SelectedIndex, emojiRandomIndex);
         }
 
         private void ToolStripMenuItemObserverNextPlayer_Click(object sender, EventArgs e)
