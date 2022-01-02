@@ -213,6 +213,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.DistributingLast8Cards += ThisPlayer_DistributingLast8Cards;
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
             ThisPlayer.DumpingFail += ThisPlayer_DumpingFail;
+            ThisPlayer.NotifyEmojiEvent += ThisPlayer_NotifyEmojiEventHandler;
             SelectedCards = new List<int>();
             PlayerPosition = new Dictionary<string, int>();
             PositionPlayer = new Dictionary<int, string>();
@@ -223,6 +224,12 @@ namespace Duan.Xiugang.Tractor
             {
                 cardsImages[i] = null; //³õÊ¼»¯
             }
+
+            foreach (string name in Enum.GetNames(typeof(EmojiType)))
+            {
+                this.cbbEmoji.Items.Add(name);
+            }
+            this.cbbEmoji.SelectedIndex = 0;
         }
 
         private void LoadSettings()
@@ -1201,6 +1208,8 @@ namespace Duan.Xiugang.Tractor
             {
                 this.btnReady.Show();
                 this.btnRobot.Show();
+                this.btnSendEmoji.Show();
+                this.cbbEmoji.Show();
                 this.ToolStripMenuItemInRoom.Visible = true;
             }
             else
@@ -1230,6 +1239,10 @@ namespace Duan.Xiugang.Tractor
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
                 if (curPlayer != null)
                 {
+                    //set player position
+                    PlayerPosition[curPlayer.PlayerId] = i + 1;
+                    PositionPlayer[i + 1] = curPlayer.PlayerId;
+                    
                     nickNameLabels[i].Text = curPlayer.PlayerId;
                     foreach (string ob in curPlayer.Observers)
                     {
@@ -1439,6 +1452,8 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.isObserver = false;
             this.btnReady.Hide();
             this.btnRobot.Hide();
+            this.btnSendEmoji.Hide();
+            this.cbbEmoji.Hide();
             this.btnSurrender.Hide();
             this.btnRiot.Hide();
             this.btnRoomSetting.Hide();
@@ -1906,6 +1921,36 @@ namespace Duan.Xiugang.Tractor
             this.drawingFormHelper.DrawMessages(msgs);
         }
 
+        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType)
+        {
+            var threadDrawEmoji = new Thread(() =>
+            {
+                int position = PlayerPosition[playerID];
+                EmojiType emojiEnumType = (EmojiType)emojiType;
+                Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
+                int emojiListSize = emojiList.Length;
+                int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
+
+                Invoke(new Action(() =>
+                {
+                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Show();
+                    this.drawingFormHelper.emojiPictureBoxes[position - 1].BringToFront();
+                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Image = emojiList[emojiRandomIndex];
+                }));
+
+                Thread.Sleep(3000);
+                Invoke(new Action(() =>
+                {
+                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Hide();
+                    if (!ThisPlayer.isObserver && playerID == ThisPlayer.MyOwnId)
+                    {
+                        this.btnSendEmoji.Enabled = true;
+                    }
+                }));
+            });
+            threadDrawEmoji.Start();
+        }
+
         private void ThisPlayer_NotifyStartTimerEventHandler(int timerLength)
         {
             this.timerCountDown = timerLength;
@@ -2235,8 +2280,13 @@ namespace Duan.Xiugang.Tractor
 
         private void btnRobot_Click(object sender, EventArgs e)
         {
-            if (ThisPlayer.isObserver) return;
             ThisPlayer.ToggleIsRobot();
+        }
+
+        private void btnSendEmoji_Click(object sender, EventArgs e)
+        {
+            this.btnSendEmoji.Enabled = false;
+            ThisPlayer.SendEmoji(this.cbbEmoji.SelectedIndex);
         }
 
         private void ToolStripMenuItemObserverNextPlayer_Click(object sender, EventArgs e)

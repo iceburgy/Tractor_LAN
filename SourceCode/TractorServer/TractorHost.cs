@@ -355,6 +355,15 @@ namespace TractorServer
             }
         }
 
+        public void PlayerSendEmoji(string playerID, int emojiType)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.PublishEmoji(playerID, emojiType);
+            }
+        }
+
         //player discard last 8 cards
         public void StoreDiscardedCards(string playerId, int[] cards)
         {

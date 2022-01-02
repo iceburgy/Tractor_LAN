@@ -32,7 +32,8 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void ObservePlayerByIDEventHandler();
     public delegate string CutCardShoeCardsEventHandler();
     public delegate void SpecialEndGameShouldAgreeEventHandler();
-    
+    public delegate void NotifyEmojiEventHandler(string playerID, int emojiType);
+
     public delegate void DistributingLast8CardsEventHandler();
     public delegate void DiscardingLast8EventHandler();
     public delegate void Last8DiscardedEventHandler();    
@@ -96,7 +97,8 @@ namespace Duan.Xiugang.Tractor.Player
         public event ObservePlayerByIDEventHandler ObservePlayerByIDEvent; //旁观：重新画手牌
         public event CutCardShoeCardsEventHandler CutCardShoeCardsEvent; //旁观：选牌
         public event SpecialEndGameShouldAgreeEventHandler SpecialEndGameShouldAgreeEvent; //旁观：选牌
-        
+        public event NotifyEmojiEventHandler NotifyEmojiEvent; //表情包
+
         public event DistributingLast8CardsEventHandler DistributingLast8Cards;
         public event DiscardingLast8EventHandler DiscardingLast8;
         public event Last8DiscardedEventHandler Last8Discarded;
@@ -204,6 +206,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.PlayerToggleIsRobot(this.PlayerId);
         }
 
+        public void SendEmoji(int emojiType)
+        {
+            _tractorHost.PlayerSendEmoji(this.PlayerId, emojiType);
+        }
+
         public void ExitRoom(string playerID)
         {
             _tractorHost.PlayerExitRoom(playerID);
@@ -283,6 +290,12 @@ namespace Duan.Xiugang.Tractor.Player
         {
             if (msg != null && msg.Length > 0 && NotifyMessageEvent != null)
                 NotifyMessageEvent(msg);
+        }
+
+        public void NotifyEmoji(string playerID, int emojiType)
+        {
+            if (NotifyEmojiEvent != null)
+                NotifyEmojiEvent(playerID, emojiType);
         }
 
         public void NotifyStartTimer(int timerLength)
@@ -455,6 +468,7 @@ namespace Duan.Xiugang.Tractor.Player
             }
 
             bool teamMade = false;
+            bool playerAdded = false;
             bool observerAdded = false;
             foreach (PlayerEntity p in gameState.Players)
             {
@@ -472,6 +486,10 @@ namespace Duan.Xiugang.Tractor.Player
             int totalPlayers = 0;
             for (int i = 0; i < 4; i++)
             {
+                if (!playerAdded && !this.CurrentGameState.Players.Exists(p => p != null && gameState.Players[i] != null && p.PlayerId == gameState.Players[i].PlayerId))
+                {
+                    playerAdded = true;
+                }
                 if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None &&
                     (this.CurrentGameState.Players[i] == null || this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
                 {
@@ -520,7 +538,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
-            if (NewPlayerJoined != null)
+            if ((playerAdded || observerAdded) && NewPlayerJoined != null)
             {
                 NewPlayerJoined(meJoined);
             }

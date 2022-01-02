@@ -24,6 +24,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void NotifyMessage(string[] msg);
 
+        //表情包
+        [OperationContract(IsOneWay = true)]
+        void NotifyEmoji(string playerID, int emojiType);
+
         //广播倒计时
         [OperationContract(IsOneWay = true)]
         void NotifyStartTimer(int timerLength);

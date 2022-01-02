@@ -104,12 +104,22 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayFile = new System.Windows.Forms.Label();
             this.btnLoadReplay = new System.Windows.Forms.Button();
             this.ttpReplayUI = new System.Windows.Forms.ToolTip(this.components);
+            this.emojiPic1 = new System.Windows.Forms.PictureBox();
+            this.emojiPic2 = new System.Windows.Forms.PictureBox();
+            this.emojiPic3 = new System.Windows.Forms.PictureBox();
+            this.emojiPic4 = new System.Windows.Forms.PictureBox();
+            this.cbbEmoji = new System.Windows.Forms.ComboBox();
+            this.btnSendEmoji = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic4)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -843,11 +853,96 @@ namespace Duan.Xiugang.Tractor
             this.btnLoadReplay.Visible = false;
             this.btnLoadReplay.Click += new System.EventHandler(this.btnLoadReplay_Click);
             // 
+            // emojiPic1
+            // 
+            this.emojiPic1.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.emojiPic1.BackColor = System.Drawing.Color.Transparent;
+            this.emojiPic1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.emojiPic1.InitialImage = null;
+            this.emojiPic1.Location = new System.Drawing.Point(229, 748);
+            this.emojiPic1.Name = "emojiPic1";
+            this.emojiPic1.Size = new System.Drawing.Size(91, 73);
+            this.emojiPic1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.emojiPic1.TabIndex = 44;
+            this.emojiPic1.TabStop = false;
+            this.emojiPic1.Visible = false;
+            // 
+            // emojiPic2
+            // 
+            this.emojiPic2.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.emojiPic2.BackColor = System.Drawing.Color.Transparent;
+            this.emojiPic2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.emojiPic2.InitialImage = null;
+            this.emojiPic2.Location = new System.Drawing.Point(727, 430);
+            this.emojiPic2.Name = "emojiPic2";
+            this.emojiPic2.Size = new System.Drawing.Size(91, 73);
+            this.emojiPic2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.emojiPic2.TabIndex = 45;
+            this.emojiPic2.TabStop = false;
+            this.emojiPic2.Visible = false;
+            // 
+            // emojiPic3
+            // 
+            this.emojiPic3.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.emojiPic3.BackColor = System.Drawing.Color.Transparent;
+            this.emojiPic3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.emojiPic3.InitialImage = null;
+            this.emojiPic3.Location = new System.Drawing.Point(379, 75);
+            this.emojiPic3.Name = "emojiPic3";
+            this.emojiPic3.Size = new System.Drawing.Size(91, 73);
+            this.emojiPic3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.emojiPic3.TabIndex = 46;
+            this.emojiPic3.TabStop = false;
+            this.emojiPic3.Visible = false;
+            // 
+            // emojiPic4
+            // 
+            this.emojiPic4.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.emojiPic4.BackColor = System.Drawing.Color.Transparent;
+            this.emojiPic4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.emojiPic4.InitialImage = null;
+            this.emojiPic4.Location = new System.Drawing.Point(0, 430);
+            this.emojiPic4.Name = "emojiPic4";
+            this.emojiPic4.Size = new System.Drawing.Size(91, 73);
+            this.emojiPic4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.emojiPic4.TabIndex = 47;
+            this.emojiPic4.TabStop = false;
+            this.emojiPic4.Visible = false;
+            // 
+            // cbbEmoji
+            // 
+            this.cbbEmoji.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbbEmoji.FormattingEnabled = true;
+            this.cbbEmoji.Location = new System.Drawing.Point(502, 776);
+            this.cbbEmoji.Name = "cbbEmoji";
+            this.cbbEmoji.Size = new System.Drawing.Size(121, 28);
+            this.cbbEmoji.TabIndex = 48;
+            this.cbbEmoji.Visible = false;
+            // 
+            // btnSendEmoji
+            // 
+            this.btnSendEmoji.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSendEmoji.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnSendEmoji.Location = new System.Drawing.Point(646, 776);
+            this.btnSendEmoji.Name = "btnSendEmoji";
+            this.btnSendEmoji.Size = new System.Drawing.Size(72, 45);
+            this.btnSendEmoji.TabIndex = 49;
+            this.btnSendEmoji.Text = "·¢ËÍ";
+            this.btnSendEmoji.UseVisualStyleBackColor = true;
+            this.btnSendEmoji.Visible = false;
+            this.btnSendEmoji.Click += new System.EventHandler(this.btnSendEmoji_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnSendEmoji);
+            this.Controls.Add(this.cbbEmoji);
+            this.Controls.Add(this.emojiPic4);
+            this.Controls.Add(this.emojiPic3);
+            this.Controls.Add(this.emojiPic2);
+            this.Controls.Add(this.emojiPic1);
             this.Controls.Add(this.btnLoadReplay);
             this.Controls.Add(this.cbbReplayFile);
             this.Controls.Add(this.lblReplayFile);
@@ -904,6 +999,10 @@ namespace Duan.Xiugang.Tractor
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.emojiPic4)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -985,6 +1084,12 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.Label lblReplayFile;
         private System.Windows.Forms.Button btnLoadReplay;
         private System.Windows.Forms.ToolTip ttpReplayUI;
+        public System.Windows.Forms.PictureBox emojiPic1;
+        public System.Windows.Forms.PictureBox emojiPic2;
+        public System.Windows.Forms.PictureBox emojiPic3;
+        public System.Windows.Forms.PictureBox emojiPic4;
+        private System.Windows.Forms.ComboBox cbbEmoji;
+        private System.Windows.Forms.Button btnSendEmoji;
     }
 }
 

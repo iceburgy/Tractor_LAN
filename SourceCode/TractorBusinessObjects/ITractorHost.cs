@@ -24,6 +24,9 @@ namespace Duan.Xiugang.Tractor.Objects
         void PlayerToggleIsRobot(string playerId);
 
         [OperationContract(IsOneWay = true)]
+        void PlayerSendEmoji(string playerId, int emojiType);
+
+        [OperationContract(IsOneWay = true)]
         void PlayerExitRoom(string playerId);
 
         [OperationContract(IsOneWay = true)]

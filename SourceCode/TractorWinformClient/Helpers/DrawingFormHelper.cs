@@ -12,9 +12,18 @@ using System.Threading;
 using Kuaff.CardResouces;
 using Duan.Xiugang.Tractor.Player;
 using Duan.Xiugang.Tractor.Objects;
+using System.Reflection;
 
 namespace Duan.Xiugang.Tractor
 {
+    public enum EmojiType
+    {
+        GoodJob,
+        BadJob,
+        Happy,
+        Sad
+    }
+
     /// <summary>
     /// 实现大部分的绘画操作
     /// </summary>
@@ -34,6 +43,10 @@ namespace Duan.Xiugang.Tractor
         public int[][][] overridingFlagLocations;
         public int[][] overridingFlagSizes;
 
+        public Dictionary<EmojiType, Bitmap[]> emojiDict;
+        public PictureBox[] emojiPictureBoxes;
+        public Bitmap[] emojiPictures;
+
         private int suitSequence = 0;
         private Font suitSequenceFont = new Font("Arial", 9, FontStyle.Bold);
         private Font suitSequenceFontReplay = new Font("Arial", 6, FontStyle.Bold);
@@ -42,11 +55,12 @@ namespace Duan.Xiugang.Tractor
         {
             this.mainForm = mainForm;
             this.offsetSideBar = mainForm.Width - 70 - 20;
-            initOverridingLabels();
+            initPictureBoxes();
         }
 
-        private void initOverridingLabels()
+        private void initPictureBoxes()
         {
+            //init overriding
             int width = 75;
             int height = 50;
             this.overridingFlagLabels = new PictureBox[] { this.mainForm.imbOverridingFlag_1, this.mainForm.imbOverridingFlag_2, this.mainForm.imbOverridingFlag_3, this.mainForm.imbOverridingFlag_4 };
@@ -71,6 +85,15 @@ namespace Duan.Xiugang.Tractor
             this.overridingFlagLocations[1][3] = new int[] { 245, 187 + offsetCenterHalf + 96 * scaleDividend / scaleDivisor - height };
 
             this.overridingFlagSizes[1] = new int[] { width, height };
+
+            //init emoji
+            this.emojiPictureBoxes = new PictureBox[] { this.mainForm.emojiPic1, this.mainForm.emojiPic2, this.mainForm.emojiPic3, this.mainForm.emojiPic4 };
+
+            emojiDict = new Dictionary<EmojiType, Bitmap[]>();
+            emojiDict[EmojiType.GoodJob] = new Bitmap[] { Properties.Resources.goodjob, Properties.Resources.goodjob2, Properties.Resources.goodjob3, Properties.Resources.goodjob4 };
+            emojiDict[EmojiType.BadJob] = new Bitmap[] { Properties.Resources.badjob, Properties.Resources.badjob2, Properties.Resources.badjob3, Properties.Resources.badjob4 };
+            emojiDict[EmojiType.Happy] = new Bitmap[] { Properties.Resources.happy, Properties.Resources.happy2, Properties.Resources.happy3, Properties.Resources.happy4 };
+            emojiDict[EmojiType.Sad] = new Bitmap[] { Properties.Resources.sad, Properties.Resources.sad2, Properties.Resources.sad3, Properties.Resources.sad4 };
         }
 
         private void setOverridingLabel(int position, int sizeLevel) {

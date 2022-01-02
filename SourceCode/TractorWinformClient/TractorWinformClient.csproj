@@ -300,6 +300,22 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Resources\zhugong.png" />
+    <None Include="Resources\badjob.gif" />
+    <None Include="Resources\badjob2.gif" />
+    <None Include="Resources\badjob3.gif" />
+    <None Include="Resources\goodjob.gif" />
+    <None Include="Resources\goodjob2.gif" />
+    <None Include="Resources\goodjob4.gif" />
+    <None Include="Resources\happy.gif" />
+    <None Include="Resources\happy2.gif" />
+    <None Include="Resources\happy3.gif" />
+    <None Include="Resources\happy4.gif" />
+    <None Include="Resources\sad.gif" />
+    <None Include="Resources\sad2.gif" />
+    <None Include="Resources\badjob4.gif" />
+    <None Include="Resources\sad3.gif" />
+    <None Include="Resources\sad4.gif" />
+    <None Include="Resources\goodjob3.gif" />
     <Content Include="Tractor.ico" />
   </ItemGroup>
   <ItemGroup>
