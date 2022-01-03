@@ -21,7 +21,8 @@ namespace Duan.Xiugang.Tractor
         GoodJob,
         BadJob,
         Happy,
-        Sad
+        Sad,
+        HurryUp
     }
 
     /// <summary>
@@ -94,6 +95,7 @@ namespace Duan.Xiugang.Tractor
             emojiDict[EmojiType.BadJob] = new Bitmap[] { Properties.Resources.badjob, Properties.Resources.badjob2, Properties.Resources.badjob3, Properties.Resources.badjob4 };
             emojiDict[EmojiType.Happy] = new Bitmap[] { Properties.Resources.happy, Properties.Resources.happy2, Properties.Resources.happy3, Properties.Resources.happy4 };
             emojiDict[EmojiType.Sad] = new Bitmap[] { Properties.Resources.sad, Properties.Resources.sad2, Properties.Resources.sad3, Properties.Resources.sad4 };
+            emojiDict[EmojiType.HurryUp] = new Bitmap[] { Properties.Resources.hurryup, Properties.Resources.hurryup2, Properties.Resources.hurryup3, Properties.Resources.hurryup4 };
         }
 
         private void setOverridingLabel(int position, int sizeLevel) {

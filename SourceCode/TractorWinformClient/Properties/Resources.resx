@@ -238,6 +238,18 @@
   <data name="happy4" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\happy4.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="hurryup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hurryup.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hurryup2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hurryup2.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hurryup3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hurryup3.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hurryup4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\hurryup4.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="sad" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sad.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
