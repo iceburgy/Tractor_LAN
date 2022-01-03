@@ -496,10 +496,10 @@ namespace Duan.Xiugang.Tractor.Player
                     teamMade = true;
                 }
                 HashSet<string> oldObs = new HashSet<string>(), newObs = new HashSet<string>();
-                if (gameState.Players[i] != null) oldObs = gameState.Players[i].Observers;
-                if (this.CurrentGameState.Players[i] != null) newObs = this.CurrentGameState.Players[i].Observers;
+                if (this.CurrentGameState.Players[i] != null) oldObs = this.CurrentGameState.Players[i].Observers;
+                if (gameState.Players[i] != null) newObs = gameState.Players[i].Observers;
                 newObs.ExceptWith(oldObs);
-                if (newObs.Count>0)
+                if (newObs.Count > 0)
                 {
                     observerAdded = true;
                 }

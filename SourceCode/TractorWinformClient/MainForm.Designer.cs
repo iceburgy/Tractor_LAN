@@ -913,9 +913,9 @@ namespace Duan.Xiugang.Tractor
             // 
             this.cbbEmoji.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbEmoji.FormattingEnabled = true;
-            this.cbbEmoji.Location = new System.Drawing.Point(502, 776);
+            this.cbbEmoji.Location = new System.Drawing.Point(575, 776);
             this.cbbEmoji.Name = "cbbEmoji";
-            this.cbbEmoji.Size = new System.Drawing.Size(121, 28);
+            this.cbbEmoji.Size = new System.Drawing.Size(80, 28);
             this.cbbEmoji.TabIndex = 48;
             this.cbbEmoji.Visible = false;
             // 
@@ -923,7 +923,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.btnSendEmoji.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSendEmoji.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnSendEmoji.Location = new System.Drawing.Point(646, 776);
+            this.btnSendEmoji.Location = new System.Drawing.Point(660, 776);
             this.btnSendEmoji.Name = "btnSendEmoji";
             this.btnSendEmoji.Size = new System.Drawing.Size(72, 45);
             this.btnSendEmoji.TabIndex = 49;
