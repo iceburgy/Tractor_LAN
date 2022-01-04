@@ -468,8 +468,8 @@ namespace Duan.Xiugang.Tractor.Player
             }
 
             bool teamMade = false;
-            bool playerAdded = false;
-            bool observerAdded = false;
+            bool playerChanged = false;
+            bool ObserverChanged = false;
             foreach (PlayerEntity p in gameState.Players)
             {
                 if (p != null && p.Observers.Contains(this.MyOwnId))
@@ -486,29 +486,19 @@ namespace Duan.Xiugang.Tractor.Player
             int totalPlayers = 0;
             for (int i = 0; i < 4; i++)
             {
-                if (!playerAdded && !this.CurrentGameState.Players.Exists(p => p != null && gameState.Players[i] != null && p.PlayerId == gameState.Players[i].PlayerId))
-                {
-                    playerAdded = true;
-                }
+                playerChanged = playerChanged || !(this.CurrentGameState.Players[i] != null && gameState.Players[i] != null && this.CurrentGameState.Players[i].PlayerId == gameState.Players[i].PlayerId);
+                ObserverChanged = ObserverChanged || !(this.CurrentGameState.Players[i] != null && gameState.Players[i] != null && this.CurrentGameState.Players[i].Observers.SetEquals(gameState.Players[i].Observers));
+
                 if (gameState.Players[i] != null && gameState.Players[i].Team != GameTeam.None &&
                     (this.CurrentGameState.Players[i] == null || this.CurrentGameState.Players[i].PlayerId != gameState.Players[i].PlayerId || this.CurrentGameState.Players[i].Team != gameState.Players[i].Team))
                 {
                     teamMade = true;
-                }
-                HashSet<string> oldObs = new HashSet<string>(), newObs = new HashSet<string>();
-                if (this.CurrentGameState.Players[i] != null) oldObs = this.CurrentGameState.Players[i].Observers;
-                if (gameState.Players[i] != null) newObs = CommonMethods.DeepClone<HashSet<string>>(gameState.Players[i].Observers);
-                newObs.ExceptWith(oldObs);
-                if (newObs.Count > 0)
-                {
-                    observerAdded = true;
                 }
                 if (gameState.Players[i] != null)
                 {
                     totalPlayers++;
                 }
             }
-            observerAdded = observerAdded && totalPlayers == 4;
             bool meJoined = !this.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId) && gameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId);
 
             this.CurrentGameState = gameState;
@@ -530,7 +520,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
-            if (teamMade || observerAdded)
+            if (teamMade || ObserverChanged && totalPlayers == 4)
             {
                 if (PlayersTeamMade != null)
                 {
@@ -538,7 +528,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
 
-            if ((playerAdded || observerAdded) && NewPlayerJoined != null)
+            if ((playerChanged || ObserverChanged) && NewPlayerJoined != null)
             {
                 NewPlayerJoined(meJoined);
             }
