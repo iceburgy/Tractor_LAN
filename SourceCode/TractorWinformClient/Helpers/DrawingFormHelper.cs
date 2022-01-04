@@ -46,7 +46,6 @@ namespace Duan.Xiugang.Tractor
 
         public Dictionary<EmojiType, Bitmap[]> emojiDict;
         public PictureBox[] emojiPictureBoxes;
-        public Bitmap[] emojiPictures;
 
         private int suitSequence = 0;
         private Font suitSequenceFont = new Font("Arial", 9, FontStyle.Bold);

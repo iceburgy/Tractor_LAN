@@ -462,6 +462,9 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[observerId];
                 gameRoom.ObservePlayerById(playerId, observerId);
+                Thread.Sleep(500);
+                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                thr.Start();
             }
         }
 

@@ -1619,15 +1619,47 @@ namespace Duan.Xiugang.Tractor
                         labelRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}", roomControlPrefix, room.RoomID, j);
                         labelRoomByPos.Size = new System.Drawing.Size(seatSize, seatSize);
 
-                        if (j % 2 == 0)
+                        if (j == 2)
                         {
-                            labelRoomByPos.AutoSize = false;
-                            labelRoomByPos.Size = new System.Drawing.Size(seatSize * 9 / 2, seatSize);
-                            labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat - seatSize * 7 / 4 + labelOffsetX, offsetYSeat + labelOffsetY);
-                            labelRoomByPos.TextAlign = ContentAlignment.MiddleCenter;
+                            labelOffsetX = -seatSize / 2;
+                            labelRoomByPos.Location = new System.Drawing.Point(offsetXSeat + labelOffsetX, offsetYSeat + labelOffsetY);
                         }
+                        
+                        if (j == 0)
+                        {
+                            labelRoomByPos.Location = new System.Drawing.Point(0, 0);
+                            labelRoomByPos.Size = new System.Drawing.Size(0, seatSize);
 
-                        if (j == 1)
+                            labelRoomByPos.Dock = System.Windows.Forms.DockStyle.Bottom;
+                            labelRoomByPos.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+
+                            TableLayoutPanel tlpRoomByPos = new TableLayoutPanel();
+                            tlpRoomByPos.SuspendLayout();
+
+                            tlpRoomByPos.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+                            tlpRoomByPos.Size = new System.Drawing.Size(0, seatSize);
+                            tlpRoomByPos.AutoSize = true;
+                            tlpRoomByPos.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+                            tlpRoomByPos.BackColor = System.Drawing.Color.Transparent;
+                            tlpRoomByPos.ColumnCount = 1;
+                            tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+                            tlpRoomByPos.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+                            tlpRoomByPos.Controls.Add(labelRoomByPos, 0, 0);
+
+                            labelOffsetX = -seatSize / 2;
+                            tlpRoomByPos.Location = new System.Drawing.Point(offsetXSeat + labelOffsetX, offsetYSeat + labelOffsetY);
+
+                            tlpRoomByPos.Name = string.Format("{0}_lblRoom_{1}_{2}_tlp", roomControlPrefix, room.RoomID, j);
+                            tlpRoomByPos.RowCount = 1;
+                            tlpRoomByPos.RowStyles.Add(new System.Windows.Forms.RowStyle());
+                            tlpRoomByPos.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+
+                            this.Controls.Add(tlpRoomByPos);
+
+                            tlpRoomByPos.ResumeLayout(false);
+                            tlpRoomByPos.PerformLayout();
+                        }
+                        else if (j == 1)
                         {
                             labelRoomByPos.Location = new System.Drawing.Point(0, 0);
                             labelRoomByPos.Size = new System.Drawing.Size(0, seatSize);
@@ -1664,6 +1696,10 @@ namespace Duan.Xiugang.Tractor
                         }
 
                         labelRoomByPos.Text += players[j].PlayerId;
+                        foreach (string ob in players[j].Observers)
+                        {
+                            labelRoomByPos.Text += string.Format("\n¡¾{0}¡¿", ob);
+                        }
                     }
                 }
             }
