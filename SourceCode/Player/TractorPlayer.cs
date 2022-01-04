@@ -497,7 +497,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
                 HashSet<string> oldObs = new HashSet<string>(), newObs = new HashSet<string>();
                 if (this.CurrentGameState.Players[i] != null) oldObs = this.CurrentGameState.Players[i].Observers;
-                if (gameState.Players[i] != null) newObs = gameState.Players[i].Observers;
+                if (gameState.Players[i] != null) newObs = CommonMethods.DeepClone<HashSet<string>>(gameState.Players[i].Observers);
                 newObs.ExceptWith(oldObs);
                 if (newObs.Count > 0)
                 {
