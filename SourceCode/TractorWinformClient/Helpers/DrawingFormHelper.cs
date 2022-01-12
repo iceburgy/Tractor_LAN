@@ -89,6 +89,7 @@ namespace Duan.Xiugang.Tractor
             //init emoji
             this.emojiPictureBoxes = new PictureBox[] { this.mainForm.emojiPic1, this.mainForm.emojiPic2, this.mainForm.emojiPic3, this.mainForm.emojiPic4 };
 
+            //for now, only supports up to 9 emoji types with shortcuts mapped to 1-9 number keys
             emojiDict = new Dictionary<EmojiType, Bitmap[]>();
             emojiDict[EmojiType.GoodJob] = new Bitmap[] { Properties.Resources.goodjob, Properties.Resources.goodjob2, Properties.Resources.goodjob3, Properties.Resources.goodjob4 };
             emojiDict[EmojiType.BadJob] = new Bitmap[] { Properties.Resources.badjob, Properties.Resources.badjob2, Properties.Resources.badjob3, Properties.Resources.badjob4 };

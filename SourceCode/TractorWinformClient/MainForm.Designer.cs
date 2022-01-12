@@ -104,12 +104,12 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayFile = new System.Windows.Forms.Label();
             this.btnLoadReplay = new System.Windows.Forms.Button();
             this.ttpReplayUI = new System.Windows.Forms.ToolTip(this.components);
+            this.cbbEmoji = new System.Windows.Forms.ComboBox();
+            this.btnSendEmoji = new System.Windows.Forms.Button();
             this.emojiPic1 = new System.Windows.Forms.PictureBox();
             this.emojiPic2 = new System.Windows.Forms.PictureBox();
             this.emojiPic3 = new System.Windows.Forms.PictureBox();
             this.emojiPic4 = new System.Windows.Forms.PictureBox();
-            this.cbbEmoji = new System.Windows.Forms.ComboBox();
-            this.btnSendEmoji = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -853,6 +853,31 @@ namespace Duan.Xiugang.Tractor
             this.btnLoadReplay.Visible = false;
             this.btnLoadReplay.Click += new System.EventHandler(this.btnLoadReplay_Click);
             // 
+            // cbbEmoji
+            // 
+            this.cbbEmoji.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbbEmoji.FormattingEnabled = true;
+            this.cbbEmoji.Location = new System.Drawing.Point(575, 776);
+            this.cbbEmoji.Name = "cbbEmoji";
+            this.cbbEmoji.Size = new System.Drawing.Size(80, 28);
+            this.cbbEmoji.TabIndex = 48;
+            this.ttpReplayUI.SetToolTip(this.cbbEmoji, "快捷键：表情包所对应的数字");
+            this.cbbEmoji.Visible = false;
+            // 
+            // btnSendEmoji
+            // 
+            this.btnSendEmoji.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSendEmoji.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btnSendEmoji.Location = new System.Drawing.Point(660, 776);
+            this.btnSendEmoji.Name = "btnSendEmoji";
+            this.btnSendEmoji.Size = new System.Drawing.Size(72, 45);
+            this.btnSendEmoji.TabIndex = 49;
+            this.btnSendEmoji.Text = "发送";
+            this.ttpReplayUI.SetToolTip(this.btnSendEmoji, "快捷键：表情包下拉菜单中所对应的数字");
+            this.btnSendEmoji.UseVisualStyleBackColor = true;
+            this.btnSendEmoji.Visible = false;
+            this.btnSendEmoji.Click += new System.EventHandler(this.btnSendEmoji_Click);
+            // 
             // emojiPic1
             // 
             this.emojiPic1.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -908,29 +933,6 @@ namespace Duan.Xiugang.Tractor
             this.emojiPic4.TabIndex = 47;
             this.emojiPic4.TabStop = false;
             this.emojiPic4.Visible = false;
-            // 
-            // cbbEmoji
-            // 
-            this.cbbEmoji.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbbEmoji.FormattingEnabled = true;
-            this.cbbEmoji.Location = new System.Drawing.Point(575, 776);
-            this.cbbEmoji.Name = "cbbEmoji";
-            this.cbbEmoji.Size = new System.Drawing.Size(80, 28);
-            this.cbbEmoji.TabIndex = 48;
-            this.cbbEmoji.Visible = false;
-            // 
-            // btnSendEmoji
-            // 
-            this.btnSendEmoji.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSendEmoji.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnSendEmoji.Location = new System.Drawing.Point(660, 776);
-            this.btnSendEmoji.Name = "btnSendEmoji";
-            this.btnSendEmoji.Size = new System.Drawing.Size(72, 45);
-            this.btnSendEmoji.TabIndex = 49;
-            this.btnSendEmoji.Text = "发送";
-            this.btnSendEmoji.UseVisualStyleBackColor = true;
-            this.btnSendEmoji.Visible = false;
-            this.btnSendEmoji.Click += new System.EventHandler(this.btnSendEmoji_Click);
             // 
             // MainForm
             // 

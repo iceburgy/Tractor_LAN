@@ -225,9 +225,10 @@ namespace Duan.Xiugang.Tractor
                 cardsImages[i] = null; //初始化
             }
 
+            int shortCutKey = 1;
             foreach (string name in Enum.GetNames(typeof(EmojiType)))
             {
-                this.cbbEmoji.Items.Add(name);
+                this.cbbEmoji.Items.Add(string.Format("{0}-{1}", shortCutKey++, name));
             }
             this.cbbEmoji.SelectedIndex = 0;
         }
@@ -2470,6 +2471,7 @@ namespace Duan.Xiugang.Tractor
             userManual += "\n- 八卦图标代表一圈中的大牌，【杀】图标代表主毙牌";
             userManual += "\n\n【快捷键】";
             userManual += "\n- 出牌：按键S（Show cards）";
+            userManual += "\n- 表情包：表情包下拉菜单中所对应的数字";
             userManual += "\n- 录像回放上一轮：左箭头";
             userManual += "\n- 录像回放下一轮：右箭头";
             userManual += "\n- 进入大厅：F1";
@@ -2581,6 +2583,26 @@ namespace Duan.Xiugang.Tractor
                     {
                         this.btnReplayAngle.PerformClick();
                         return true;
+                    }
+                    break;
+                case Keys.D1:
+                case Keys.D2:
+                case Keys.D3:
+                case Keys.D4:
+                case Keys.D5:
+                case Keys.D6:
+                case Keys.D7:
+                case Keys.D8:
+                case Keys.D9:
+                    if (this.cbbEmoji.Visible && this.btnSendEmoji.Visible && this.btnSendEmoji.Enabled)
+                    {
+                        int emojiIndex = (int)keyData - (int)Keys.D1;
+                        if (0 <= emojiIndex && emojiIndex < this.drawingFormHelper.emojiDict.Count)
+                        {
+                            this.cbbEmoji.SelectedIndex = emojiIndex;
+                            this.btnSendEmoji.PerformClick();
+                            return true;
+                        }
                     }
                     break;
                 default:
