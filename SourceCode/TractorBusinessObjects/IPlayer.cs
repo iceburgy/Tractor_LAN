@@ -96,6 +96,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [OperationContract(IsOneWay = true)]
         void SpecialEndGameShouldAgree();
 
+        //甩牌检查返回结果
+        [OperationContract(IsOneWay = true)]
+        void NotifyTryToDumpResult(ShowingCardsValidationResult result);
+
         /// <summary>
         ///     切牌
         /// </summary>

@@ -393,14 +393,13 @@ namespace TractorServer
             }
         }
 
-        public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
+        public void ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
-                return gameRoom.ValidateDumpingCards(selectedCards, playerId);
+                gameRoom.ValidateDumpingCards(selectedCards, playerId);
             }
-            return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Unknown };
         }
 
         public void RefreshPlayersCurrentHandState(string playerId)

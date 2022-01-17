@@ -88,7 +88,7 @@ namespace Duan.Xiugang.Tractor.Objects
         void SaveRoomSetting(string playerId, RoomSetting roomSetting);
 
         //甩牌检查
-        [OperationContract]
-        ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId);
+        [OperationContract(IsOneWay = true)]
+        void ValidateDumpingCards(List<int> selectedCards, string playerId);
     }
 }

@@ -214,6 +214,7 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.DiscardingLast8 += ThisPlayer_DiscardingLast8;
             ThisPlayer.DumpingFail += ThisPlayer_DumpingFail;
             ThisPlayer.NotifyEmojiEvent += ThisPlayer_NotifyEmojiEventHandler;
+            ThisPlayer.NotifyTryToDumpResultEvent += ThisPlayer_NotifyTryToDumpResultEventHandler;
             SelectedCards = new List<int>();
             PlayerPosition = new Dictionary<string, int>();
             PositionPlayer = new Dictionary<int, string>();
@@ -781,37 +782,40 @@ namespace Duan.Xiugang.Tractor
                     //≤¡»•–°÷Ì
                     this.btnPig.Visible = false;
 
-                    ShowingCardsValidationResult result = ThisPlayer.ValidateDumpingCards(ThisPlayer.MyOwnId, SelectedCards);
-                    if (result.ResultType == ShowingCardsValidationResultType.DumpingSuccess) //À¶≈∆≥…π¶.
-                    {
-                        foreach (int card in SelectedCards)
-                        {
-                            ThisPlayer.CurrentPoker.RemoveCard(card);
-                        }
-                        ThisPlayer.ShowCards(ThisPlayer.MyOwnId, SelectedCards);
-
-                        drawingFormHelper.DrawMyHandCards();
-                        SelectedCards.Clear();
-                    }
-					//À¶≈∆ ß∞‹
-                    else
-                    {
-                        this.drawingFormHelper.DrawMessages(new string[] { string.Format("À¶≈∆{0}’≈ ß∞‹", SelectedCards.Count), string.Format("∑£∑÷£∫{0}", SelectedCards.Count * 10) });
-                        //À¶≈∆ ß∞‹≤•∑≈Ã· æ“Ù
-                        soundPlayerDumpFailure.Play(this.enableSound);
-
-                        Thread.Sleep(5000);
-                        foreach (int card in result.MustShowCardsForDumpingFail)
-                        {
-                            ThisPlayer.CurrentPoker.RemoveCard(card);
-                        }
-                        ThisPlayer.ShowCards(ThisPlayer.MyOwnId, result.MustShowCardsForDumpingFail);
-
-                        drawingFormHelper.DrawMyHandCards();
-                        SelectedCards = result.MustShowCardsForDumpingFail;
-                        SelectedCards.Clear();
-                    }
+                    ThisPlayer.ValidateDumpingCards(ThisPlayer.MyOwnId, SelectedCards);
                 }
+            }
+        }
+
+        private void ThisPlayer_NotifyTryToDumpResultEventHandler(ShowingCardsValidationResult result)
+        {
+            if (result.ResultType == ShowingCardsValidationResultType.DumpingSuccess) //À¶≈∆≥…π¶.
+            {
+                foreach (int card in SelectedCards)
+                {
+                    ThisPlayer.CurrentPoker.RemoveCard(card);
+                }
+                ThisPlayer.ShowCards(ThisPlayer.MyOwnId, SelectedCards);
+                drawingFormHelper.DrawMyHandCards();
+                SelectedCards.Clear();
+            }
+            //À¶≈∆ ß∞‹
+            else
+            {
+                this.drawingFormHelper.DrawMessages(new string[] { string.Format("À¶≈∆{0}’≈ ß∞‹", SelectedCards.Count), string.Format("∑£∑÷£∫{0}", SelectedCards.Count * 10) });
+                //À¶≈∆ ß∞‹≤•∑≈Ã· æ“Ù
+                soundPlayerDumpFailure.Play(this.enableSound);
+
+                Thread.Sleep(5000);
+                foreach (int card in result.MustShowCardsForDumpingFail)
+                {
+                    ThisPlayer.CurrentPoker.RemoveCard(card);
+                }
+                ThisPlayer.ShowCards(ThisPlayer.MyOwnId, result.MustShowCardsForDumpingFail);
+
+                drawingFormHelper.DrawMyHandCards();
+                SelectedCards = result.MustShowCardsForDumpingFail;
+                SelectedCards.Clear();
             }
         }
 

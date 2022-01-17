@@ -1004,7 +1004,7 @@ namespace TractorServer
             UpdatePlayerCurrentTrickState();
         }
 
-        public ShowingCardsValidationResult ValidateDumpingCards(List<int> selectedCards, string playerId)
+        public void ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
             lock (CurrentRoomState.CurrentGameState)
             {
@@ -1063,7 +1063,7 @@ namespace TractorServer
                     cardString += card.ToString() + " ";
                 }
                 log.Debug(playerId + " tried to dump cards: " + cardString + " Result: " + result.ResultType.ToString());
-                return result;
+                IPlayerInvokeForAll(PlayersProxy, new List<string>() { playerId }, "NotifyTryToDumpResult", new List<object>() { result });
             }
         }
 
