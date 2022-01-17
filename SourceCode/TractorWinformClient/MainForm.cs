@@ -1936,7 +1936,7 @@ namespace Duan.Xiugang.Tractor
                     Bitmap[] emojiList = this.drawingFormHelper.emojiDict[EmojiType.Fireworks];
                     int emojiListSize = emojiList.Length;
                     int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
-                    this.ThisPlayer_PlayCenterEmoji((int)EmojiType.Fireworks, emojiRandomIndex);
+                    ThisPlayer.SendEmoji((int)EmojiType.Fireworks, emojiRandomIndex, true);
                 }
                 else if (m.Equals(CommonMethods.reenterRoomSignal))
                 {
@@ -1968,54 +1968,42 @@ namespace Duan.Xiugang.Tractor
             this.drawingFormHelper.DrawMessages(msgs);
         }
 
-        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex)
+        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter)
         {
             var threadDrawEmoji = new Thread(() =>
             {
-                int position = PlayerPosition[playerID];
+                PictureBox pic;
+                int displayDuration;
+                if (isCenter)
+                {
+                    pic = this.fireworksPic;
+                    displayDuration = 5000;
+                }
+                else
+                {
+                    int position = PlayerPosition[playerID];
+                    pic = this.drawingFormHelper.emojiPictureBoxes[position - 1];
+                    displayDuration = 3000;
+                }
                 EmojiType emojiEnumType = (EmojiType)emojiType;
                 Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
 
                 Invoke(new Action(() =>
                 {
-                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Show();
-                    this.drawingFormHelper.emojiPictureBoxes[position - 1].BringToFront();
-                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Image = emojiList[emojiIndex];
+                    pic.Show();
+                    pic.BringToFront();
+                    pic.Image = emojiList[emojiIndex];
                 }));
 
-                Thread.Sleep(3000);
+                Thread.Sleep(displayDuration);
                 if (this.IsDisposed) return;
                 Invoke(new Action(() =>
                 {
-                    this.drawingFormHelper.emojiPictureBoxes[position - 1].Hide();
-                    if (!ThisPlayer.isObserver && playerID == ThisPlayer.MyOwnId)
+                    pic.Hide();
+                    if (!isCenter && !ThisPlayer.isObserver && playerID == ThisPlayer.MyOwnId)
                     {
                         this.btnSendEmoji.Enabled = true;
                     }
-                }));
-            });
-            threadDrawEmoji.Start();
-        }
-
-        private void ThisPlayer_PlayCenterEmoji(int emojiType, int emojiIndex)
-        {
-            var threadDrawEmoji = new Thread(() =>
-            {
-                EmojiType emojiEnumType = (EmojiType)emojiType;
-                Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
-
-                Invoke(new Action(() =>
-                {
-                    this.fireworksPic.Show();
-                    this.fireworksPic.BringToFront();
-                    this.fireworksPic.Image = emojiList[emojiIndex];
-                }));
-
-                Thread.Sleep(5000);
-                if (this.IsDisposed) return;
-                Invoke(new Action(() =>
-                {
-                    this.fireworksPic.Hide();
                 }));
             });
             threadDrawEmoji.Start();
@@ -2362,7 +2350,7 @@ namespace Duan.Xiugang.Tractor
             int emojiListSize = emojiList.Length;
             int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
 
-            ThisPlayer.SendEmoji(this.cbbEmoji.SelectedIndex, emojiRandomIndex);
+            ThisPlayer.SendEmoji(this.cbbEmoji.SelectedIndex, emojiRandomIndex, false);
         }
 
         private void ToolStripMenuItemObserverNextPlayer_Click(object sender, EventArgs e)

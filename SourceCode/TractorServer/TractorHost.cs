@@ -355,12 +355,12 @@ namespace TractorServer
             }
         }
 
-        public void PlayerSendEmoji(string playerID, int emojiType, int emojiIndex)
+        public void PlayerSendEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex);
+                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter);
             }
         }
 
