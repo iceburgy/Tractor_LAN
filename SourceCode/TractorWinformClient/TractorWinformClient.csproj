@@ -320,6 +320,10 @@
     <None Include="Resources\hurryup2.gif" />
     <None Include="Resources\hurryup3.gif" />
     <None Include="Resources\hurryup4.gif" />
+    <None Include="Resources\fireworks.gif" />
+    <None Include="Resources\fireworks2.gif" />
+    <None Include="Resources\fireworks3.gif" />
+    <None Include="Resources\fireworks4.gif" />
     <Content Include="Tractor.ico" />
   </ItemGroup>
   <ItemGroup>

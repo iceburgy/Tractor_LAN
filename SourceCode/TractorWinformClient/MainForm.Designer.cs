@@ -110,6 +110,7 @@ namespace Duan.Xiugang.Tractor
             this.emojiPic2 = new System.Windows.Forms.PictureBox();
             this.emojiPic3 = new System.Windows.Forms.PictureBox();
             this.emojiPic4 = new System.Windows.Forms.PictureBox();
+            this.fireworksPic = new System.Windows.Forms.PictureBox();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -120,6 +121,7 @@ namespace Duan.Xiugang.Tractor
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fireworksPic)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -934,6 +936,20 @@ namespace Duan.Xiugang.Tractor
             this.emojiPic4.TabStop = false;
             this.emojiPic4.Visible = false;
             // 
+            // fireworksPic
+            // 
+            this.fireworksPic.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.fireworksPic.BackColor = System.Drawing.Color.Transparent;
+            this.fireworksPic.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.fireworksPic.InitialImage = null;
+            this.fireworksPic.Location = new System.Drawing.Point(216, 265);
+            this.fireworksPic.Name = "fireworksPic";
+            this.fireworksPic.Size = new System.Drawing.Size(430, 290);
+            this.fireworksPic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.fireworksPic.TabIndex = 50;
+            this.fireworksPic.TabStop = false;
+            this.fireworksPic.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -980,6 +996,7 @@ namespace Duan.Xiugang.Tractor
             this.Controls.Add(this.lblNorthNickName);
             this.Controls.Add(this.lblSouthNickName);
             this.Controls.Add(this.menuStrip);
+            this.Controls.Add(this.fireworksPic);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1005,6 +1022,7 @@ namespace Duan.Xiugang.Tractor
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.emojiPic4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fireworksPic)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1092,6 +1110,7 @@ namespace Duan.Xiugang.Tractor
         public System.Windows.Forms.PictureBox emojiPic4;
         private System.Windows.Forms.ComboBox cbbEmoji;
         private System.Windows.Forms.Button btnSendEmoji;
+        public System.Windows.Forms.PictureBox fireworksPic;
     }
 }
 

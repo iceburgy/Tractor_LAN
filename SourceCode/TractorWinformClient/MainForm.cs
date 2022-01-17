@@ -1927,6 +1927,12 @@ namespace Duan.Xiugang.Tractor
                 if (m.Contains("»ñÊ¤£¡"))
                 {
                     soundPlayerGameOver.Play(this.enableSound);
+
+                    // ²¥·ÅÑÌ»¨
+                    Bitmap[] emojiList = this.drawingFormHelper.emojiDict[EmojiType.Fireworks];
+                    int emojiListSize = emojiList.Length;
+                    int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
+                    this.ThisPlayer_PlayCenterEmoji((int)EmojiType.Fireworks, emojiRandomIndex);
                 }
                 else if (m.Equals(CommonMethods.reenterRoomSignal))
                 {
@@ -1982,6 +1988,30 @@ namespace Duan.Xiugang.Tractor
                     {
                         this.btnSendEmoji.Enabled = true;
                     }
+                }));
+            });
+            threadDrawEmoji.Start();
+        }
+
+        private void ThisPlayer_PlayCenterEmoji(int emojiType, int emojiIndex)
+        {
+            var threadDrawEmoji = new Thread(() =>
+            {
+                EmojiType emojiEnumType = (EmojiType)emojiType;
+                Bitmap[] emojiList = this.drawingFormHelper.emojiDict[emojiEnumType];
+
+                Invoke(new Action(() =>
+                {
+                    this.fireworksPic.Show();
+                    this.fireworksPic.BringToFront();
+                    this.fireworksPic.Image = emojiList[emojiIndex];
+                }));
+
+                Thread.Sleep(5000);
+                if (this.IsDisposed) return;
+                Invoke(new Action(() =>
+                {
+                    this.fireworksPic.Hide();
                 }));
             });
             threadDrawEmoji.Start();
