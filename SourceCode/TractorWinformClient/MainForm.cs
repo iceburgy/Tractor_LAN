@@ -1933,10 +1933,13 @@ namespace Duan.Xiugang.Tractor
                     soundPlayerGameOver.Play(this.enableSound);
 
                     // ²¥·ÅÑÌ»¨
-                    Bitmap[] emojiList = this.drawingFormHelper.emojiDict[EmojiType.Fireworks];
-                    int emojiListSize = emojiList.Length;
-                    int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
-                    ThisPlayer.SendEmoji((int)EmojiType.Fireworks, emojiRandomIndex, true);
+                    if (this.ThisPlayer.CurrentRoomSetting.RoomOwner == this.ThisPlayer.MyOwnId)
+                    {
+                        Bitmap[] emojiList = this.drawingFormHelper.emojiDict[EmojiType.Fireworks];
+                        int emojiListSize = emojiList.Length;
+                        int emojiRandomIndex = CommonMethods.RandomNext(emojiListSize);
+                        ThisPlayer.SendEmoji((int)EmojiType.Fireworks, emojiRandomIndex, true);
+                    }
                 }
                 else if (m.Equals(CommonMethods.reenterRoomSignal))
                 {
