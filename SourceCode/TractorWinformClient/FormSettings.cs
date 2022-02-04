@@ -36,7 +36,7 @@ namespace Duan.Xiugang.Tractor
         public static bool DefaultEnableCutCards = true;
         public static bool DefaultShowSuitSeq = true;
         public static string DefaultSoundVolume = "5";
-        public static string DefaultVideoCallUrl = "https://bit.ly/sgsnight";
+        public static string DefaultVideoCallUrl = "https://to_be_set";
 
         public static Dictionary<string, bool> initToDefaultBool = new Dictionary<string, bool>() {
             { KeyEnableCutCards, DefaultEnableCutCards },
