@@ -568,7 +568,10 @@ namespace Duan.Xiugang.Tractor
 
                                 List<int> cardsToDump = new List<int>();
                                 List<int> cardsToDumpCardNumber = new List<int>();
-                                bool selectTopToDump = (int)myCardsNumber[i] % 13 == 12 || (int)myCardsNumber[i] == 53; //如果右键点的A或者大王，且满足甩多张的条件，则向左选中所有本门合理可甩的牌
+
+                                bool isClickedTrump = PokerHelper.IsTrump(clickedCardNumber, (Suit)showingCardsCp.TrumpInt, showingCardsCp.Rank);
+                                int maxCard = showingCardsCp.Rank == 12 ? 11 : 12;
+                                bool selectTopToDump = !isClickedTrump && (int)myCardsNumber[i] % 13 == maxCard || isClickedTrump && (int)myCardsNumber[i] == 53; //如果右键点的A或者大王，且满足甩多张的条件，则向左选中所有本门合理可甩的牌
                                 if (selectTopToDump)
                                 {
                                     bool singleCardFound = false;
@@ -578,7 +581,7 @@ namespace Duan.Xiugang.Tractor
                                         int toAddCardNumberOnRight = (int)myCardsNumber[i - j + 1];
                                         //如果候选牌是同一花色
                                         if (PokerHelper.GetSuit(toAddCardNumber) == PokerHelper.GetSuit(clickedCardNumber) ||
-                                            PokerHelper.IsTrump(toAddCardNumber, (Suit)showingCardsCp.TrumpInt, showingCardsCp.Rank) && PokerHelper.IsTrump(clickedCardNumber, (Suit)showingCardsCp.TrumpInt, showingCardsCp.Rank))
+                                            PokerHelper.IsTrump(toAddCardNumber, (Suit)showingCardsCp.TrumpInt, showingCardsCp.Rank) && isClickedTrump)
                                         {
                                             if (isLeader)
                                             {
