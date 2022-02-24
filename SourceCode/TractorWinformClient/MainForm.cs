@@ -542,17 +542,23 @@ namespace Duan.Xiugang.Tractor
                             int clickedCardNumber = (int)myCardsNumber[i];
                             //响应右键的3种情况：
                             //1. 首出（默认）
-                            int selectMoreCount = i;
+                            int selectMoreCount = 0;
+                            for (int left = i - 1; left >= 0; left--)
+                            {
+                                if ((int)myCardsLocation[left] == (x - (i - left) * 12 * drawingFormHelper.scaleDividend / drawingFormHelper.scaleDivisor)) selectMoreCount++;
+                                else break;
+                            }
+
                             bool isLeader = ThisPlayer.CurrentTrickState.Learder == ThisPlayer.PlayerId;
                             if (ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
                             {
                                 //2. 埋底牌
-                                selectMoreCount = Math.Min(i, 8 - 1 - readyCount);
+                                selectMoreCount = Math.Min(selectMoreCount, 8 - 1 - readyCount);
                             }
                             else if (ThisPlayer.CurrentTrickState.LeadingCards != null && ThisPlayer.CurrentTrickState.LeadingCards.Count > 0)
                             {
                                 //3. 跟出
-                                selectMoreCount = Math.Min(i, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1 - readyCount);
+                                selectMoreCount = Math.Min(selectMoreCount, ThisPlayer.CurrentTrickState.LeadingCards.Count - 1 - readyCount);
                             }
                             if (b)
                             {
@@ -646,10 +652,14 @@ namespace Duan.Xiugang.Tractor
                                                 }
                                             }
                                         }
+                                        else
+                                        {
+                                            break;
+                                        }
                                     }
                                 }
 
-                                if (cardsToDump.Count >= 3)
+                                if (cardsToDump.Count >= 2)
                                 {
                                     foreach (int c in cardsToDump)
                                     {
