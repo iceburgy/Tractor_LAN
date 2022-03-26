@@ -1874,8 +1874,19 @@ namespace Duan.Xiugang.Tractor
                 ThisPlayer.CurrentTrickState.NextPlayer() == ThisPlayer.PlayerId &&
                 ThisPlayer.CurrentTrickState.IsStarted())
             {
+                List<int> tempSelectedCards = new List<int>();
+                Algorithm.MustSelectedCards(tempSelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+
                 SelectedCards.Clear();
-                Algorithm.MustSelectedCards(this.SelectedCards, this.ThisPlayer.CurrentTrickState, this.ThisPlayer.CurrentPoker);
+                for (int i = 0; i < myCardsNumber.Count; i++)
+                {
+                    if (tempSelectedCards.Contains((int)myCardsNumber[i]))
+                    {
+                        SelectedCards.Add((int)myCardsNumber[i]);
+                        tempSelectedCards.Remove((int)myCardsNumber[i]);
+                    }
+                }
+
                 ShowingCardsValidationResult showingCardsValidationResult =
                     TractorRules.IsValid(ThisPlayer.CurrentTrickState, SelectedCards, ThisPlayer.CurrentPoker);
                 if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
@@ -1902,13 +1913,14 @@ namespace Duan.Xiugang.Tractor
                 if (tempSelectedCards.Count > 0)
                 {
                     SelectedCards.Clear();
-                    SelectedCards.AddRange(tempSelectedCards);
-                    //将选定的牌向上提升 via myCardIsReady
                     for (int i = 0; i < myCardsNumber.Count; i++)
                     {
-                        if (SelectedCards.Contains((int)myCardsNumber[i]))
+                        if (tempSelectedCards.Contains((int)myCardsNumber[i]))
                         {
+                            //将选定的牌向上提升 via myCardIsReady
                             myCardIsReady[i] = true;
+                            SelectedCards.Add((int)myCardsNumber[i]);
+                            tempSelectedCards.Remove((int)myCardsNumber[i]);
                         }
                     }
 
