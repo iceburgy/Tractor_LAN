@@ -1137,7 +1137,7 @@ namespace TractorServer
             int lastStarterIndex = -1;
             for (int i = 0; i < 4; i++)
             {
-                if (gs.Players[i] != null && gs.Players[i].PlayerId == hs.Starter)
+                if (gs.Players[i] != null && gs.startNextHandStarter != null && gs.Players[i].PlayerId == gs.startNextHandStarter.PlayerId)
                 {
                     lastStarterIndex = i;
                     break;
