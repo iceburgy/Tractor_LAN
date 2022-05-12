@@ -1531,7 +1531,7 @@ namespace Duan.Xiugang.Tractor
                 this.BeginRankToolStripMenuItem.Visible = true;
                 this.ResumeGameToolStripMenuItem.Visible = true;
                 this.TeamUpToolStripMenuItem.Visible = true;
-                this.SwapSeatWithNextPlayerToolStripMenuItem.Visible = true;
+                this.SwapSeatToolStripMenuItem.Visible = true;
             }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
             if (showMessage)
@@ -1596,7 +1596,7 @@ namespace Duan.Xiugang.Tractor
             this.BeginRankToolStripMenuItem.Visible = false;
             this.ResumeGameToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Visible = false;
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Visible = false;
+            this.SwapSeatToolStripMenuItem.Visible = false;
 
             //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
             this.ThisPlayer.CurrentGameState = new GameState();
@@ -2405,16 +2405,34 @@ namespace Duan.Xiugang.Tractor
             ThisPlayer.TeamUp(ThisPlayer.MyOwnId);
         }
 
-        private void SwapSeatWithNextPlayerToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SwapSeatToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ThisPlayer.isObserver) return;
             if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
-                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许和下家换座", "请完成此盘游戏后重试" });
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许和玩家换座", "请完成此盘游戏后重试" });
                 return;
             }
 
-            ThisPlayer.SwapSeatWithNextPlayer(ThisPlayer.MyOwnId);
+            int offset = -1;
+            var menuItem = (ToolStripMenuItem)sender;
+
+            switch (menuItem.Text)
+            {
+                case "下家":
+                    offset = 1;
+                    break;
+                case "对家":
+                    offset = 2;
+                    break;
+                case "上家":
+                    offset = 3;
+                    break;
+                default:
+                    break;
+            }
+
+            ThisPlayer.SwapSeat(ThisPlayer.MyOwnId, offset);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

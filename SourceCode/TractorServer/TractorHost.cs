@@ -424,13 +424,13 @@ namespace TractorServer
             }
         }
 
-        //和下家换座
-        public void SwapSeatWithNextPlayer(string playerId)
+        //换座
+        public void SwapSeat(string playerId, int offset)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerId))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
-                gameRoom.SwapSeatWithNextPlayer(playerId);
+                gameRoom.SwapSeat(playerId, offset);
                 Thread.Sleep(500);
                 Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
                 thr.Start();

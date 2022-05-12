@@ -54,7 +54,10 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankA = new System.Windows.Forms.ToolStripMenuItem();
             this.ResumeGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TeamUpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SwapSeatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SwapSeatWithNextPlayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemGetReady = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemRobot = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolStripMenuItemObserve = new System.Windows.Forms.ToolStripMenuItem();
@@ -195,7 +198,7 @@ namespace Duan.Xiugang.Tractor
             this.BeginRankToolStripMenuItem,
             this.ResumeGameToolStripMenuItem,
             this.TeamUpToolStripMenuItem,
-            this.SwapSeatWithNextPlayerToolStripMenuItem,
+            this.SwapSeatToolStripMenuItem,
             this.ToolStripMenuItemGetReady,
             this.ToolStripMenuItemRobot});
             this.ToolStripMenuItemInRoom.Name = "ToolStripMenuItemInRoom";
@@ -330,13 +333,37 @@ namespace Duan.Xiugang.Tractor
             this.TeamUpToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
             // 
+            // SwapSeatToolStripMenuItem
+            // 
+            this.SwapSeatToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem,
+            this.SwapSeatWithNextPlayerToolStripMenuItem,
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1});
+            this.SwapSeatToolStripMenuItem.Name = "SwapSeatToolStripMenuItem";
+            this.SwapSeatToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatToolStripMenuItem.Text = "换座";
+            this.SwapSeatToolStripMenuItem.Visible = false;
+            // 
+            // SwapSeatWithPreviousPlayerToolStripMenuItem
+            // 
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Name = "SwapSeatWithPreviousPlayerToolStripMenuItem";
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Text = "上家";
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
+            // 
             // SwapSeatWithNextPlayerToolStripMenuItem
             // 
             this.SwapSeatWithNextPlayerToolStripMenuItem.Name = "SwapSeatWithNextPlayerToolStripMenuItem";
             this.SwapSeatWithNextPlayerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Text = "和下家换座";
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Visible = false;
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatWithNextPlayerToolStripMenuItem_Click);
+            this.SwapSeatWithNextPlayerToolStripMenuItem.Text = "下家";
+            this.SwapSeatWithNextPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
+            // 
+            // SwapSeatWithFriendPlayerToolStripMenuItem1
+            // 
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Name = "SwapSeatWithFriendPlayerToolStripMenuItem1";
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Text = "对家";
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
             // ToolStripMenuItemGetReady
             // 
@@ -1121,7 +1148,10 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ComboBox cbbEmoji;
         private System.Windows.Forms.Button btnSendEmoji;
         public System.Windows.Forms.PictureBox fireworksPic;
+        private System.Windows.Forms.ToolStripMenuItem SwapSeatToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SwapSeatWithPreviousPlayerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem SwapSeatWithNextPlayerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SwapSeatWithFriendPlayerToolStripMenuItem1;
     }
 }
 

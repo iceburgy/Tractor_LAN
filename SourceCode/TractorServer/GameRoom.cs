@@ -1120,11 +1120,12 @@ namespace TractorServer
             PublishMessage(msgs);
         }
 
-        //和下家换座
-        public void SwapSeatWithNextPlayer(string playerID)
+        //换座
+        public void SwapSeat(string playerID, int offset)
         {
+            string[] playerPositions = new string[] { "", "下家", "对家", "上家" };
             List<string> msgs = new List<string>();
-            msgs.Add(string.Format("玩家【{0}】尝试与下家换座", playerID));
+            msgs.Add(string.Format("玩家【{0}】尝试与【{1}】换座", playerID, playerPositions[offset]));
             bool isValid = true;
             int curSeat = -1;
             for (int i = 0; i < CurrentRoomState.CurrentGameState.Players.Count; i++)
@@ -1141,29 +1142,28 @@ namespace TractorServer
                 }
             }
 
+
             if (!isValid)
             {
-                msgs.Add("和下家换座失败");
-                msgs.Add("玩家人数不够");
+                msgs.Add("换座失败，玩家人数不够");
                 PublishMessage(msgs.ToArray());
                 return;
             }
 
             if (curSeat < 0)
             {
-                msgs.Add("和下家换座失败");
-                msgs.Add("未找到当前玩家");
+                msgs.Add("换座失败，未找到当前玩家");
                 PublishMessage(msgs.ToArray());
                 return;
             }
 
+            int nextSeat = (curSeat + offset) % 4;
             msgs.Add("换座前");
             for (int i = 0; i < 4; i++)
             {
                 msgs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
             }
 
-            int nextSeat = (curSeat + 1) % 4;
             SwapPlayers(curSeat, nextSeat);
 
             CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
