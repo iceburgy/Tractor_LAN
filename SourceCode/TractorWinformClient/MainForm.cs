@@ -1531,6 +1531,7 @@ namespace Duan.Xiugang.Tractor
                 this.BeginRankToolStripMenuItem.Visible = true;
                 this.ResumeGameToolStripMenuItem.Visible = true;
                 this.TeamUpToolStripMenuItem.Visible = true;
+                this.SwapSeatWithNextPlayerToolStripMenuItem.Visible = true;
             }
             this.lblRoomName.Text = this.ThisPlayer.CurrentRoomSetting.RoomName;
             if (showMessage)
@@ -1595,6 +1596,7 @@ namespace Duan.Xiugang.Tractor
             this.BeginRankToolStripMenuItem.Visible = false;
             this.ResumeGameToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Visible = false;
+            this.SwapSeatWithNextPlayerToolStripMenuItem.Visible = false;
 
             //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
             this.ThisPlayer.CurrentGameState = new GameState();
@@ -2401,6 +2403,18 @@ namespace Duan.Xiugang.Tractor
             }
 
             ThisPlayer.TeamUp(ThisPlayer.MyOwnId);
+        }
+
+        private void SwapSeatWithNextPlayerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ThisPlayer.isObserver) return;
+            if (AllOnline() && !ThisPlayer.isObserver && ThisPlayer.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            {
+                this.ThisPlayer_NotifyMessageEventHandler(new string[] { "游戏中途不允许和下家换座", "请完成此盘游戏后重试" });
+                return;
+            }
+
+            ThisPlayer.SwapSeatWithNextPlayer(ThisPlayer.MyOwnId);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

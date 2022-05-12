@@ -178,6 +178,11 @@ namespace Duan.Xiugang.Tractor.Player
             _tractorHost.TeamUp(playerId);
         }
 
+        public void SwapSeatWithNextPlayer(string playerId)
+        {
+            _tractorHost.SwapSeatWithNextPlayer(playerId);
+        }
+
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
             _tractorHost.CardsReady(playerId, myCardIsReady);

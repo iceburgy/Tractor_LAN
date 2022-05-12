@@ -1120,6 +1120,67 @@ namespace TractorServer
             PublishMessage(msgs);
         }
 
+        //和下家换座
+        public void SwapSeatWithNextPlayer(string playerID)
+        {
+            List<string> msgs = new List<string>();
+            msgs.Add(string.Format("玩家【{0}】尝试与下家换座", playerID));
+            bool isValid = true;
+            int curSeat = -1;
+            for (int i = 0; i < CurrentRoomState.CurrentGameState.Players.Count; i++)
+            {
+                PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
+                if (player == null || player.Team == GameTeam.None)
+                {
+                    isValid = false;
+                    break;
+                }
+                if (player.PlayerId == playerID)
+                {
+                    curSeat = i;
+                }
+            }
+
+            if (!isValid)
+            {
+                msgs.Add("和下家换座失败");
+                msgs.Add("玩家人数不够");
+                PublishMessage(msgs.ToArray());
+                return;
+            }
+
+            if (curSeat < 0)
+            {
+                msgs.Add("和下家换座失败");
+                msgs.Add("未找到当前玩家");
+                PublishMessage(msgs.ToArray());
+                return;
+            }
+
+            msgs.Add("换座前");
+            for (int i = 0; i < 4; i++)
+            {
+                msgs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
+            }
+
+            int nextSeat = (curSeat + 1) % 4;
+            SwapPlayers(curSeat, nextSeat);
+
+            CurrentRoomState.CurrentGameState.Players[0].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
+            CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
+            CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
+            ResetAndRestartGame();
+            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+
+            msgs.Add("换座后");
+            for (int i = 0; i < 4; i++)
+            {
+                msgs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
+            }
+            PublishMessage(msgs.ToArray());
+        }
+
         //旁观：选牌
         public void CardsReady(string playerId, ArrayList myCardIsReady)
         {
