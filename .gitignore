@@ -43,10 +43,12 @@ SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.dll
 SourceCode/TractorWinformClient/bin/Debug/AutoUpdater.NET.xml
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Objects.dll
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Player.dll
+SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.Player.dll.config
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.application
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe.config
 SourceCode/TractorWinformClient/bin/Debug/Duan.Xiugang.Tractor.exe.manifest
+SourceCode/TractorWinformClient/bin/Debug/Fleck.dll
 SourceCode/TractorWinformClient/bin/Debug/Kuaff.CardResources.dll
 SourceCode/TractorWinformClient/bin/Debug/Kuaff.ModelResources.dll
 SourceCode/TractorWinformClient/bin/Debug/Kuaff.OperaResources.dll
@@ -57,6 +59,7 @@ SourceCode/TractorWinformClient/bin/Debug/music/*.mp3
 SourceCode/TractorWinformClient/bin/Debug/logs/
 SourceCode/TractorWinformClient/bin/Debug/replays/
 SourceCode/UnitTest/bin/
+SourceCode/TractorWinformClient/bin/Debug/app.publish
 
 # NUNIT
 *.VisualState.xml

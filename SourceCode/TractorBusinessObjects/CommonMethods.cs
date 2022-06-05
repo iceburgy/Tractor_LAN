@@ -90,6 +90,21 @@ namespace Duan.Xiugang.Tractor.Objects
             return default(T);
         }
 
+        public static T ReadObjectFromString<T>(string jsonString)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    return JsonConvert.DeserializeObject<T>(jsonString);
+                }
+            }
+            catch (Exception e)
+            {
+            }
+            return default(T);
+        }
+
         public static string[] GetReplayEntityFullFilePath(ReplayEntity replayEntity, string folder)
         {
             string[] paths = replayEntity.ReplayId.Split(new string[] { CommonMethods.replaySeparator }, StringSplitOptions.RemoveEmptyEntries);

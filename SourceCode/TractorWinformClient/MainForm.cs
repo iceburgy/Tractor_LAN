@@ -1598,7 +1598,7 @@ namespace Duan.Xiugang.Tractor
             this.TeamUpToolStripMenuItem.Visible = false;
             this.SwapSeatToolStripMenuItem.Visible = false;
 
-            //旁观玩家若在游戏中退出房间，则应重置状态，否则会因仍在游戏中而无法退出游戏
+            //重置状态
             this.ThisPlayer.CurrentGameState = new GameState();
             this.ThisPlayer.CurrentHandState = new CurrentHandState(this.ThisPlayer.CurrentGameState);
 

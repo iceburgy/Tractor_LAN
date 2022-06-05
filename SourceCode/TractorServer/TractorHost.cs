@@ -12,7 +12,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 using System.ServiceModel.Channels;
 using System.Configuration;
-
+using Fleck;
+using Newtonsoft.Json;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -26,8 +27,10 @@ namespace TractorServer
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
+        internal string Webport = "";
         public string KeyMaxRoom = "maxRoom";
         public string KeyAllowSameIP = "allowSameIP";
+        public string KeyWebport = "webport";
         public string KeyIsFullDebug = "isFullDebug";
 
         public CardsShoe CardsShoe { get; set; }
@@ -51,6 +54,7 @@ namespace TractorServer
             {
                 MaxRoom = (int)myreader.GetValue(KeyMaxRoom, typeof(int));
                 AllowSameIP = (bool)myreader.GetValue(KeyAllowSameIP, typeof(bool));
+                Webport = (string)myreader.GetValue(KeyWebport, typeof(string));
                 gameConfig.IsFullDebug = (bool)myreader.GetValue(KeyIsFullDebug, typeof(bool));
             }
             catch (Exception ex)
@@ -75,6 +79,57 @@ namespace TractorServer
             }
             SessionIDGameRoom = new Dictionary<string, GameRoom>();
 
+            var threadStartHostWS = new Thread(() =>
+            {
+                var server = new WebSocketServer("ws://0.0.0.0:" + Webport);
+                server.Start(socket =>
+                {
+                    socket.OnOpen = () => Console.WriteLine("Open!");
+                    socket.OnClose = () =>
+                    {
+                        Console.WriteLine("Close!");
+                        var ip = socket.ConnectionInfo.ClientIpAddress;
+                        string playerID = getPlayIDByWSProxy(socket);
+                        if (!string.IsNullOrEmpty(playerID))
+                        {
+                            this.handleWSPlayerDisconnect(playerID, true);
+                        }
+                    };
+                    socket.OnMessage = (message) =>
+                    {
+                        WebSocketObjects.WebSocketMessage messageObj = CommonMethods.ReadObjectFromString<WebSocketObjects.WebSocketMessage>(message);
+                        if (messageObj == null)
+                        {
+                            log.Debug(string.Format("failed to unmarshal WS message: {0}", message));
+                            return;
+                        }
+
+                        var playerProxy = new PlayerWSImpl(socket);
+
+                        if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
+                        {
+                            if (this.PlayersProxy.ContainsKey(messageObj.playerID))
+                            {
+                                string clientIP = socket.ConnectionInfo.ClientIpAddress;
+                                if (this.PlayerToIP.ContainsValue(clientIP))
+                                {
+                                    playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
+                                }
+                                else
+                                {
+                                    playerProxy.NotifyMessage(new string[] { "玩家昵称重名", "请更改昵称后重试" });
+                                }
+                                return;
+                            }
+                            this.PlayersProxy.Add(messageObj.playerID, playerProxy);
+                        }
+
+                        WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
+                    };
+                });
+            });
+            threadStartHostWS.Start();
+
             // setup logger
             AppDomain currentDomain = default(AppDomain);
             currentDomain = AppDomain.CurrentDomain;
@@ -82,6 +137,80 @@ namespace TractorServer
             currentDomain.FirstChanceException += GlobalFirstChanceExceptionHandler;
             // Handler for exceptions in threads behind forms.
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
+        }
+
+        private void handleWSPlayerDisconnect(string playerID, bool exitHall)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                if (gameRoom.handleWSPlayerDisconnect(playerID))
+                {
+                    return;
+                }
+                else
+                {
+                    PlayerExitRoom(playerID);
+                }
+            }
+            if (exitHall) PlayerExitHall(playerID);
+        }
+
+        private string getPlayIDByWSProxy(IWebSocketConnection proxy)
+        {
+            if (proxy != null)
+            {
+                foreach (KeyValuePair<string, IPlayer> entry in this.PlayersProxy)
+                {
+                    if (entry.Value is PlayerWSImpl && proxy.Equals(((PlayerWSImpl)entry.Value).Socket))
+                    {
+                        return (string)entry.Key;
+                    }
+                }
+            }
+            return "";
+        }
+
+        private void WSMessageHandler(string messageType, string playerID, string content)
+        {
+            switch (messageType)
+            {
+                case WebSocketObjects.WebSocketMessageType_PlayerEnterHall:
+                    this.PlayerEnterHallWS(playerID);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_PlayerEnterRoom:
+                    this.PlayerEnterRoomWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ReadyToStart:
+                    this.PlayerIsReadyToStart(playerID);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ToggleIsRobot:
+                    this.PlayerToggleIsRobot(playerID);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ObserveNext:
+                    this.ObservePlayerById(content, playerID);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ExitRoom:
+                    this.handleWSPlayerDisconnect(playerID, false);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_PlayerMakeTrump:
+                    this.PlayerMakeTrumpWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_StoreDiscardedCards:
+                    this.StoreDiscardedCardsWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_PlayerShowCards:
+                    this.PlayerShowCardsWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ValidateDumpingCards:
+                    this.ValidateDumpingCardsWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_CardsReady:
+                    this.CardsReadyWS(playerID, content);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void GlobalFirstChanceExceptionHandler(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
@@ -152,6 +281,38 @@ namespace TractorServer
             }
         }
 
+        public void PlayerEnterHallWS(string playerID)
+        {
+            string clientIP = ((PlayerWSImpl)this.PlayersProxy[playerID]).Socket.ConnectionInfo.ClientIpAddress;
+            LogClientInfo(clientIP, playerID, false);
+            IPlayer player = this.PlayersProxy[playerID];
+            this.PlayerToIP.Add(playerID, clientIP);
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                //断线重连
+                log.Debug(string.Format("player {0} re-entered hall from offline.", playerID));
+                player.NotifyMessage(new string[] { CommonMethods.reenterRoomSignal });
+                Thread.Sleep(2000);
+
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                lock (gameRoom)
+                {
+                    bool entered = gameRoom.PlayerReenterRoom(playerID, clientIP, player, AllowSameIP);
+                    if (entered)
+                    {
+                        Thread.Sleep(500);
+                        Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                        thr.Start();
+                    }
+                }
+            }
+            else
+            {
+                log.Debug(string.Format("player {0} entered hall.", playerID));
+                UpdateGameHall();
+            }
+        }
+
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
             string clientIP = PlayerToIP[playerID];
@@ -181,6 +342,41 @@ namespace TractorServer
             else
             {
                 log.Debug(string.Format("PlayerEnterRoom failed, playerID: {0}, roomID: {1}", playerID, roomID));
+            }
+        }
+
+        private void PlayerEnterRoomWS(string playerID, string content)
+        {
+            WebSocketObjects.PlayerEnterRoomWSMessage messageObj = CommonMethods.ReadObjectFromString<WebSocketObjects.PlayerEnterRoomWSMessage>(content);
+            if (messageObj == null)
+            {
+                log.Debug(string.Format("failed to unmarshal PlayerEnterRoomWSMessage: {0}", content));
+                return;
+            }
+            IPlayer player = PlayersProxy[playerID];
+            if (player == null)
+            {
+                log.Debug(string.Format("PlayerEnterRoom failed, playerID: {0}, roomID: {1}", playerID, messageObj.roomID));
+                return;
+            }
+
+            GameRoom gameRoom = this.GameRooms.Single((room) => room.CurrentRoomState.RoomID == messageObj.roomID);
+            if (gameRoom == null)
+            {
+                player.NotifyMessage(new string[] { "加入房间失败", string.Format("房间号【{0}】不存在", messageObj.roomID) });
+                return;
+            }
+            lock (gameRoom)
+            {
+                string clientIP = PlayerToIP[playerID];
+                bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID);
+                if (entered)
+                {
+                    SessionIDGameRoom[playerID] = gameRoom;
+                    Thread.Sleep(500);
+                    Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
+                    thr.Start();
+                }
             }
         }
 
@@ -374,6 +570,13 @@ namespace TractorServer
             }
         }
 
+        //player discard last 8 cards
+        public void StoreDiscardedCardsWS(string playerId, string content)
+        {
+            int[] messageObj = CommonMethods.ReadObjectFromString<int[]>(content);
+            this.StoreDiscardedCards(playerId, messageObj);
+        }
+
         //亮主
         public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
         {
@@ -382,6 +585,11 @@ namespace TractorServer
                 GameRoom gameRoom = this.SessionIDGameRoom[trumpMaker];
                 gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
             }
+        }
+        public void PlayerMakeTrumpWS(string trumpMaker, string content)
+        {
+            List<int> messageObj = CommonMethods.ReadObjectFromString<List<int>>(content);
+            this.PlayerMakeTrump((TrumpExposingPoker)messageObj[0], (Suit)messageObj[1], trumpMaker);
         }
 
         public void PlayerShowCards(string playerId, CurrentTrickState currentTrickState)
@@ -393,6 +601,12 @@ namespace TractorServer
             }
         }
 
+        public void PlayerShowCardsWS(string playerId, string content)
+        {
+            CurrentTrickState currentTrickState = CommonMethods.ReadObjectFromString<CurrentTrickState>(content);
+            this.PlayerShowCards(playerId, currentTrickState);
+        }
+
         public void ValidateDumpingCards(List<int> selectedCards, string playerId)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerId))
@@ -400,6 +614,12 @@ namespace TractorServer
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.ValidateDumpingCards(selectedCards, playerId);
             }
+        }
+
+        public void ValidateDumpingCardsWS(string playerId, string content)
+        {
+            List<int> selectedCards = CommonMethods.ReadObjectFromString<List<int>>(content);
+            this.ValidateDumpingCards(selectedCards, playerId);
         }
 
         public void RefreshPlayersCurrentHandState(string playerId)
@@ -445,6 +665,13 @@ namespace TractorServer
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.CardsReady(playerId, myCardIsReady);
             }
+        }
+
+        //旁观：选牌
+        public void CardsReadyWS(string playerId, string content)
+        {
+            List<bool> myCardIsReady = CommonMethods.ReadObjectFromString<List<bool>>(content);
+            this.CardsReady(playerId, new ArrayList(myCardIsReady));
         }
 
         //继续牌局
