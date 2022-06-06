@@ -115,6 +115,7 @@ namespace Duan.Xiugang.Tractor
             this.emojiPic3 = new System.Windows.Forms.PictureBox();
             this.emojiPic4 = new System.Windows.Forms.PictureBox();
             this.fireworksPic = new System.Windows.Forms.PictureBox();
+            this.btnShengjiweb = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imbOverridingFlag_1)).BeginInit();
@@ -347,21 +348,21 @@ namespace Duan.Xiugang.Tractor
             // SwapSeatWithPreviousPlayerToolStripMenuItem
             // 
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Name = "SwapSeatWithPreviousPlayerToolStripMenuItem";
-            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Text = "上家";
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
             // SwapSeatWithNextPlayerToolStripMenuItem
             // 
             this.SwapSeatWithNextPlayerToolStripMenuItem.Name = "SwapSeatWithNextPlayerToolStripMenuItem";
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatWithNextPlayerToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.SwapSeatWithNextPlayerToolStripMenuItem.Text = "下家";
             this.SwapSeatWithNextPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
             // SwapSeatWithFriendPlayerToolStripMenuItem1
             // 
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Name = "SwapSeatWithFriendPlayerToolStripMenuItem1";
-            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Size = new System.Drawing.Size(100, 22);
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Text = "对家";
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
@@ -987,11 +988,23 @@ namespace Duan.Xiugang.Tractor
             this.fireworksPic.TabStop = false;
             this.fireworksPic.Visible = false;
             // 
+            // btnShengjiweb
+            // 
+            this.btnShengjiweb.BackColor = System.Drawing.Color.Plum;
+            this.btnShengjiweb.Location = new System.Drawing.Point(288, 448);
+            this.btnShengjiweb.Name = "btnShengjiweb";
+            this.btnShengjiweb.Size = new System.Drawing.Size(109, 55);
+            this.btnShengjiweb.TabIndex = 51;
+            this.btnShengjiweb.Text = "进入web版";
+            this.btnShengjiweb.UseVisualStyleBackColor = false;
+            this.btnShengjiweb.Click += new System.EventHandler(this.btnShengjiweb_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackgroundImage = global::Duan.Xiugang.Tractor.Properties.Resources.Backgroud;
             this.ClientSize = new System.Drawing.Size(820, 830);
+            this.Controls.Add(this.btnShengjiweb);
             this.Controls.Add(this.btnSendEmoji);
             this.Controls.Add(this.cbbEmoji);
             this.Controls.Add(this.emojiPic4);
@@ -1152,6 +1165,7 @@ namespace Duan.Xiugang.Tractor
         private System.Windows.Forms.ToolStripMenuItem SwapSeatWithPreviousPlayerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem SwapSeatWithNextPlayerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem SwapSeatWithFriendPlayerToolStripMenuItem1;
+        private System.Windows.Forms.Button btnShengjiweb;
     }
 }
 

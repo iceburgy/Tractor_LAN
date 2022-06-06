@@ -41,6 +41,7 @@ namespace Duan.Xiugang.Tractor
         internal string soundVolume = FormSettings.DefaultSoundVolume;
         internal bool showSuitSeq = false;
         internal string videoCallUrl = FormSettings.DefaultVideoCallUrl;
+        internal string shengjiwebUrl = FormSettings.DefaultShengjiwebUrl;
         internal MciSoundPlayer[] soundPlayersShowCard;
         internal MciSoundPlayer soundPlayerTrumpUpdated;
         internal MciSoundPlayer soundPlayerDiscardingLast8CardsFinished;
@@ -1557,6 +1558,7 @@ namespace Duan.Xiugang.Tractor
         {
             this.ToolStripMenuItemEnterHall.Enabled = false;
             this.btnEnterHall.Hide();
+            this.btnShengjiweb.Hide();
             this.btnReplay.Hide();
             ClearRoom();
             HideRoomControls();
@@ -2074,6 +2076,7 @@ namespace Duan.Xiugang.Tractor
                     {
                         ThisPlayer.IsTryingReenter = true;
                         this.btnEnterHall.Hide();
+                        this.btnShengjiweb.Hide();
                         this.btnReplay.Hide();
                     }
                 }
@@ -2537,6 +2540,7 @@ namespace Duan.Xiugang.Tractor
             {
                 this.ClearRoom();
                 this.btnEnterHall.Show();
+                this.btnShengjiweb.Show();
                 this.btnReplay.Show();
                 this.btnReplayAngle.Hide();
                 this.btnFirstTrick.Hide();
@@ -2563,6 +2567,7 @@ namespace Duan.Xiugang.Tractor
                 }
                 this.ToolStripMenuItemEnterHall.Enabled = true;
                 this.btnEnterHall.Show();
+                this.btnShengjiweb.Show();
                 this.btnReplay.Show();
                 HideRoomControls();
                 return;
@@ -2809,6 +2814,7 @@ namespace Duan.Xiugang.Tractor
             }
 
             btnEnterHall.Hide();
+            btnShengjiweb.Hide();
             this.btnReplay.Hide();
             this.lblReplayDate.Show();
             this.lblReplayFile.Show();
@@ -3189,6 +3195,11 @@ namespace Duan.Xiugang.Tractor
             drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[2]], 2, false);
             drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[3]], 3, false);
             drawingFormHelper.DrawOtherSortedCards(ThisPlayer.replayEntity.CurrentHandState.PlayerHoldingCards[PositionPlayer[4]], 4, false);
+        }
+
+        private void btnShengjiweb_Click(object sender, EventArgs e)
+        {
+            Process.Start(shengjiwebUrl);
         }
     }
 }

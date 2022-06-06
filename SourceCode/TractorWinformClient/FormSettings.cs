@@ -37,6 +37,7 @@ namespace Duan.Xiugang.Tractor
         public static bool DefaultShowSuitSeq = true;
         public static string DefaultSoundVolume = "5";
         public static string DefaultVideoCallUrl = "https://to_be_set";
+        public static string DefaultShengjiwebUrl= "https://bit.ly/shengjiweb";
 
         public static Dictionary<string, bool> initToDefaultBool = new Dictionary<string, bool>() {
             { KeyEnableCutCards, DefaultEnableCutCards },

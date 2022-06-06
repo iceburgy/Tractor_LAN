@@ -114,6 +114,7 @@ namespace TractorServer
                                 if (this.PlayerToIP.ContainsValue(clientIP))
                                 {
                                     playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
+                                    this.handleWSPlayerDormant(messageObj.playerID, true);
                                 }
                                 else
                                 {
@@ -137,6 +138,15 @@ namespace TractorServer
             currentDomain.FirstChanceException += GlobalFirstChanceExceptionHandler;
             // Handler for exceptions in threads behind forms.
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
+        }
+
+        private void handleWSPlayerDormant(string playerID, bool exitHall)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                PlayerExitRoom(playerID);
+            }
+            if (exitHall) PlayerExitHall(playerID);
         }
 
         private void handleWSPlayerDisconnect(string playerID, bool exitHall)
