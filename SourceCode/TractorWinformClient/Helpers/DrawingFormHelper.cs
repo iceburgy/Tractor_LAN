@@ -1735,7 +1735,7 @@ namespace Duan.Xiugang.Tractor
             int wid = 71 * scaleDividend / scaleDivisor * 2 / 3;
             int hei = 96 * scaleDividend / scaleDivisor * 2 / 3;
             //间距加2，看得清楚一点
-            int x = offsetSideBar - wid - 5 - (mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count - 1) * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3);
+            int x = offsetSideBar - wid - 15 - (mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count - 1) * (2 + 12 * scaleDividend / scaleDivisor * 2 / 3);
 
             int y = 130 + 50;
             for (int i = 0; i < mainForm.ThisPlayer.CurrentHandState.ScoreCards.Count; i++)

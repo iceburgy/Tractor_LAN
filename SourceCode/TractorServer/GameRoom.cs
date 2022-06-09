@@ -422,18 +422,14 @@ namespace TractorServer
             return needsRestart && !IsGameOnGoing();
         }
 
-        // returns: is player marked offline
+        // returns: needs to restart
         public bool handleWSPlayerDisconnect(string playerID)
         {
             if (this.IsAllOnline() && this.IsActualPlayer(playerID) && this.CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing)
             {
-                this.PlayerQuitFromCleanup(new List<string>() { playerID });
-                return true;
+                return this.PlayerQuitFromCleanup(new List<string>() { playerID });
             }
-            else
-            {
-                return false;
-            }
+            return true;
         }
 
         public void MarkPlayersOffline(List<string> playerIDs)

@@ -1053,6 +1053,10 @@ namespace Duan.Xiugang.Tractor
         //断线重连，重画手牌和出的牌
         private void ThisPlayer_ReenterOrResumeEventHandler()
         {
+            Graphics g = Graphics.FromImage(bmp);
+            DrawSidebarFull(g);
+            Refresh();
+            g.Dispose();
             this.ThisPlayer.playerLocalCache.ShowedCardsInCurrentTrick = ThisPlayer.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
             this.ThisPlayer_PlayerCurrentTrickShowedCards();
             drawingFormHelper.DrawMyPlayingCards(ThisPlayer.CurrentPoker);
