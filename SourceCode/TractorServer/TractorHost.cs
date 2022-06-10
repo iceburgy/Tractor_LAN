@@ -294,7 +294,7 @@ namespace TractorServer
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 //断线重连
-                log.Debug(string.Format("player {0} re-entered hall from offline.", playerID));
+                log.Debug(string.Format("player {0} re-entered hall from offline - web client.", playerID));
                 player.NotifyMessage(new string[] { CommonMethods.reenterRoomSignal });
                 Thread.Sleep(2000);
 
@@ -312,7 +312,7 @@ namespace TractorServer
             }
             else
             {
-                log.Debug(string.Format("player {0} entered hall.", playerID));
+                log.Debug(string.Format("player {0} entered hall - web client.", playerID));
                 UpdateGameHall();
             }
         }
