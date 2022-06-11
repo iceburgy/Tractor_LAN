@@ -92,7 +92,7 @@ namespace TractorServer
                         string playerID = getPlayIDByWSProxy(socket);
                         if (!string.IsNullOrEmpty(playerID))
                         {
-                            this.handleWSPlayerDisconnect(playerID, true);
+                            this.handlePlayerDisconnect(playerID);
                         }
                     };
                     socket.OnMessage = (message) =>
@@ -114,7 +114,7 @@ namespace TractorServer
                                 if (this.PlayerToIP.ContainsValue(clientIP))
                                 {
                                     playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
-                                    this.handleWSPlayerDisconnect(messageObj.playerID, true);
+                                    this.handlePlayerDisconnect(messageObj.playerID);
                                 }
                                 else
                                 {
@@ -140,21 +140,23 @@ namespace TractorServer
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
         }
 
-        private void handleWSPlayerDisconnect(string playerID, bool exitHall)
+        // returns if needs restart
+        private bool handlePlayerDisconnect(string playerID)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 if (!gameRoom.handleWSPlayerDisconnect(playerID))
                 {
-                    return;
+                    return false;
                 }
                 else
                 {
                     PlayerExitRoom(playerID);
                 }
             }
-            if (exitHall) PlayerExitHall(playerID);
+            PlayerExitHall(playerID);
+            return true;
         }
 
         private string getPlayIDByWSProxy(IWebSocketConnection proxy)
@@ -192,7 +194,7 @@ namespace TractorServer
                     this.ObservePlayerById(content, playerID);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ExitRoom:
-                    this.handleWSPlayerDisconnect(playerID, false);
+                    this.PlayerExitRoom(playerID);
                     break;
                 case WebSocketObjects.WebSocketMessageType_PlayerMakeTrump:
                     this.PlayerMakeTrumpWS(playerID, content);
@@ -447,29 +449,8 @@ namespace TractorServer
         //玩家退出游戏
         public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
-            IAsyncResult iAsyncResult=new CompletedAsyncResult<string>("player not in hall, exit hall with no ops!");
-            
-            //如果玩家处于离线状态，则不要将其退出
-            if (this.SessionIDGameRoom.ContainsKey(playerID))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                if (gameRoom.CurrentRoomState.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == playerID))
-                {
-                    PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerID);
-                    if (player.IsOffline && (DateTime.Now - player.OfflineSince).TotalSeconds <= gameRoom.CurrentRoomState.roomSetting.secondsToWaitForReenter) return iAsyncResult;
-                }
-            }
-
-            if (PlayerToIP.ContainsKey(playerID) && !this.PlayerToIP.ContainsValue(PlayerToIP[playerID]))
-            {
-                return iAsyncResult;
-            }
-
-            PlayerExitRoom(playerID);
-
-            string result = PlayerExitHall(playerID);
-
-            return new CompletedAsyncResult<string>(result);
+            if (!this.handlePlayerDisconnect(playerID)) return new CompletedAsyncResult<string>(string.Format("BeginPlayerQuit: player {0} marked offline and return", playerID));
+            return new CompletedAsyncResult<string>(string.Format("BeginPlayerQuit: player {0} quit and return", playerID));
         }
 
         private string PlayerExitHall(string playerID)

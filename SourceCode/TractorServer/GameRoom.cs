@@ -932,7 +932,9 @@ namespace TractorServer
             foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
             {
                 if (player == null || !player.IsOffline) continue;
-                if ((DateTime.Now - player.OfflineSince).TotalSeconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
+                // 如果是最后一圈，直接托管
+                bool isLastTrick = this.CurrentRoomState.CurrentHandState.PlayerHoldingCards[this.CurrentRoomState.CurrentTrickState.Learder].Count <= 1;
+                if (!isLastTrick && (DateTime.Now - player.OfflineSince).TotalSeconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
                 if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
                     CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
                 {

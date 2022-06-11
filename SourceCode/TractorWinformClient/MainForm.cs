@@ -49,6 +49,7 @@ namespace Duan.Xiugang.Tractor
         internal MciSoundPlayer soundPlayerDraw;
         internal MciSoundPlayer soundPlayerDrawx;
         internal MciSoundPlayer soundPlayerDumpFailure;
+        internal MciSoundPlayer soundPlayerRecover;
 
         internal CurrentPoker[] currentAllSendPokers =
         {
@@ -294,6 +295,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerDraw = new MciSoundPlayer(Path.Combine(fullFolder, "music\\draw.mp3"), "draw");
             soundPlayerDrawx = new MciSoundPlayer(Path.Combine(fullFolder, "music\\drawx.mp3"), "drawx");
             soundPlayerDumpFailure = new MciSoundPlayer(Path.Combine(fullFolder, "music\\fankui2.mp3"), "fankui2");
+            soundPlayerRecover = new MciSoundPlayer(Path.Combine(fullFolder, "music\\recover.mp3"), "recover");
 
             foreach (MciSoundPlayer sp in soundPlayersShowCard)
             {
@@ -305,6 +307,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerDraw.LoadMediaFiles();
             soundPlayerDrawx.LoadMediaFiles();
             soundPlayerDumpFailure.LoadMediaFiles();
+            soundPlayerRecover.LoadMediaFiles();
         }
 
         private void setGameSoundVolume()
@@ -319,6 +322,7 @@ namespace Duan.Xiugang.Tractor
             soundPlayerDraw.SetVolume(Int32.Parse(soundVolume)); ;
             soundPlayerDrawx.SetVolume(Int32.Parse(soundVolume));
             soundPlayerDumpFailure.SetVolume(Int32.Parse(soundVolume));
+            soundPlayerRecover.SetVolume(Int32.Parse(soundVolume));
         }
 
         private void CreateOverridingLabels()
@@ -1434,6 +1438,7 @@ namespace Duan.Xiugang.Tractor
             this.btnReady.Enabled = ThisPlayer.CurrentGameState.Players.Where(p => p != null && p.IsReadyToStart).Count() < 4;
             this.btnReady.Text = readyToStart ? "取消" : "就绪";
             this.ToolStripMenuItemGetReady.Checked = readyToStart;
+            bool newReady = false;
 
             //看看谁不点就绪
             System.Windows.Forms.Label[] readyLabels = new System.Windows.Forms.Label[] { this.lblSouthStarter, this.lblEastStarter, this.lblNorthStarter, this.lblWestStarter };
@@ -1449,6 +1454,7 @@ namespace Duan.Xiugang.Tractor
             }
             for (int i = 0; i < 4; i++)
             {
+                string oldStatus = readyLabels[i].Text;
                 var curPlayer = ThisPlayer.CurrentGameState.Players[curIndex];
                 if (curPlayer != null && curPlayer.IsOffline)
                 {
@@ -1470,8 +1476,24 @@ namespace Duan.Xiugang.Tractor
                 {
                     readyLabels[i].Text = (curIndex + 1).ToString();
                 }
+                string newStatus = readyLabels[i].Text;
+                string readyStatus = (curIndex + 1).ToString();
+                if (curPlayer != null && playerBecomeReady(oldStatus, newStatus, readyStatus))
+                {
+                    newReady = true;
+                }
                 curIndex = (curIndex + 1) % 4;
             }
+            if (newReady)
+            {
+                if (AllReady()) soundPlayerDiscardingLast8CardsFinished.Play(this.enableSound);
+                else soundPlayerRecover.Play(this.enableSound);
+            }
+        }
+
+        private bool playerBecomeReady(string oldStatus, string newStatus, string readyStatus)
+        {
+            return oldStatus != readyStatus && newStatus == readyStatus;
         }
 
         private void ThisPlayer_PlayerToggleIsRobot(bool isRobot)
@@ -2607,6 +2629,15 @@ namespace Duan.Xiugang.Tractor
             foreach (PlayerEntity player in ThisPlayer.CurrentGameState.Players)
             {
                 if (player == null || player.IsOffline) return false;
+            }
+            return true;
+        }
+
+        private bool AllReady()
+        {
+            foreach (PlayerEntity player in ThisPlayer.CurrentGameState.Players)
+            {
+                if (player == null || !player.IsReadyToStart) return false;
             }
             return true;
         }
