@@ -411,6 +411,22 @@ namespace Duan.Xiugang.Tractor.Objects
             return true;
         }
 
+        public static bool AllReady(List<PlayerEntity> Players)
+        {
+            foreach (PlayerEntity player in Players)
+            {
+                if (player == null || !player.IsReadyToStart) return false;
+            }
+            return true;
+        }
 
+        public static bool SomeoneBecomesReady(List<PlayerEntity> oldOnes, List<PlayerEntity> newOnes)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if ((oldOnes[i] == null || !oldOnes[i].IsReadyToStart) && (newOnes[i] != null && newOnes[i].IsReadyToStart)) return true;
+            }
+            return false;
+        }
     }
 }

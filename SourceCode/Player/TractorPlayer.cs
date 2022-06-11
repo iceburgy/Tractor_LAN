@@ -14,7 +14,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void ShowAllHandCardsEventHandler();
     public delegate void NewPlayerJoinedEventHandler(bool meJoined);
     public delegate void ReplayStateReceivedEventHandler(ReplayEntity replayState);
-    public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart);
+    public delegate void NewPlayerReadyToStartEventHandler(bool readyToStart, bool anyBecomesReady);
     public delegate void PlayerToggleIsRobotEventHandler(bool isRobot);
     public delegate void PlayersTeamMadeEventHandler();
     public delegate void GameStartedEventHandler();
@@ -507,6 +507,7 @@ namespace Duan.Xiugang.Tractor.Player
                 }
             }
             bool meJoined = !this.CurrentGameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId) && gameState.Players.Exists(p => p != null && p.PlayerId == this.MyOwnId);
+            var anyBecomesReady = CommonMethods.SomeoneBecomesReady(this.CurrentGameState.Players, gameState.Players);
 
             this.CurrentGameState = gameState;
 
@@ -517,7 +518,7 @@ namespace Duan.Xiugang.Tractor.Player
                 {
                     if (NewPlayerReadyToStart != null)
                     {
-                        NewPlayerReadyToStart(p.IsReadyToStart);
+                        NewPlayerReadyToStart(p.IsReadyToStart, anyBecomesReady);
                     }
                     if (PlayerToggleIsRobot != null)
                     {
