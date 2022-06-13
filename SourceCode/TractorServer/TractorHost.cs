@@ -214,6 +214,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_ResumeGameFromFile:
                     this.ResumeGameFromFile(playerID);
                     break;
+                case WebSocketObjects.WebSocketMessageType_RandomSeat:
+                    this.TeamUp(playerID);
+                    break;
                 default:
                     break;
             }

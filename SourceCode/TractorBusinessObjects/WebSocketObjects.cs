@@ -21,6 +21,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_ValidateDumpingCards = "ValidateDumpingCards";
         public const string WebSocketMessageType_CardsReady = "CardsReady";
         public const string WebSocketMessageType_ResumeGameFromFile = "ResumeGameFromFile";
+        public const string WebSocketMessageType_RandomSeat = "RandomSeat";
         
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
