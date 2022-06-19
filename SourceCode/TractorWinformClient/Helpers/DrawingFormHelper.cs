@@ -1640,6 +1640,7 @@ namespace Duan.Xiugang.Tractor
 
         internal void DrawMessages(string[] msgs)
         {
+            if (msgs == null || msgs.Length == 0 || msgs.Length == 1 && string.IsNullOrEmpty(msgs[0])) return;
             Graphics g = Graphics.FromImage(mainForm.bmp);
 
             int x = 300, y = 496, width = 350, height = (msgs.Length) * 21 + 8;
@@ -1648,15 +1649,12 @@ namespace Duan.Xiugang.Tractor
             Rectangle rect = new Rectangle(x, y, width, height);
             g.DrawImage(mainForm.image, rect, rectsrc, GraphicsUnit.Pixel);
 
-            if (msgs != null)
+            y += 4;
+            int fontSize = 16;
+            Font font = new Font("ËÎÌו", fontSize, FontStyle.Bold);
+            for (int i = 0; i < msgs.Length; i++)
             {
-                y += 4;
-                int fontSize = 16;
-                Font font = new Font("ËÎÌו", fontSize, FontStyle.Bold);
-                for (int i = 0; i < msgs.Length; i++)
-                {
-                    g.DrawString(msgs[i], font, Brushes.Yellow, x, y + i * (fontSize + 5));
-                }
+                g.DrawString(msgs[i], font, Brushes.Yellow, x, y + i * (fontSize + 5));
             }
             mainForm.Refresh();
             g.Dispose();

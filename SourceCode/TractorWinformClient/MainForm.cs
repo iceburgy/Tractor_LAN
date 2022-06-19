@@ -2115,8 +2115,13 @@ namespace Duan.Xiugang.Tractor
             this.drawingFormHelper.DrawMessages(msgs);
         }
 
-        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter)
+        private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
+            if(!string.IsNullOrEmpty(msgString))
+            {
+                this.drawingFormHelper.DrawMessages(new string[] { string.Format("¡¾{0}¡¿Ëµ£º", playerID), msgString });
+            }
+            if (emojiType < 0 || emojiType >= this.drawingFormHelper.emojiDict.Count) return;
             var threadDrawEmoji = new Thread(() =>
             {
                 PictureBox pic;

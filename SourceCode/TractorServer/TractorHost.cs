@@ -217,6 +217,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_RandomSeat:
                     this.TeamUp(playerID);
                     break;
+                case WebSocketObjects.WebSocketMessageType_SendEmoji:
+                    this.PlayerSendEmojiWS(playerID, content);
+                    break;
                 default:
                     break;
             }
@@ -541,10 +544,25 @@ namespace TractorServer
 
         public void PlayerSendEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
         {
+            PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, "");
+        }
+
+        public void PlayerSendEmojiWS(string playerID, string content)
+        {
+            List<object> args = CommonMethods.ReadObjectFromString<List<object>>(content);
+
+            int emojiType = (int)(long)args[0];
+            int emojiIndex = (int)(long)args[1];
+            string emojiString = (string)args[2];
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, false, emojiString);
+        }
+
+        public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
+        {
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter);
+                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString);
             }
         }
 

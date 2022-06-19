@@ -32,7 +32,7 @@ namespace Duan.Xiugang.Tractor.Player
     public delegate void ObservePlayerByIDEventHandler();
     public delegate string CutCardShoeCardsEventHandler();
     public delegate void SpecialEndGameShouldAgreeEventHandler();
-    public delegate void NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter);
+    public delegate void NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString);
     public delegate void NotifyTryToDumpResultEventHandler(ShowingCardsValidationResult result);
 
     public delegate void DistributingLast8CardsEventHandler();
@@ -299,10 +299,10 @@ namespace Duan.Xiugang.Tractor.Player
                 NotifyMessageEvent(msg);
         }
 
-        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
+        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
             if (NotifyEmojiEvent != null)
-                NotifyEmojiEvent(playerID, emojiType, emojiIndex, isCenter);
+                NotifyEmojiEvent(playerID, emojiType, emojiIndex, isCenter, msgString);
         }
 
         public void NotifyStartTimer(int timerLength)

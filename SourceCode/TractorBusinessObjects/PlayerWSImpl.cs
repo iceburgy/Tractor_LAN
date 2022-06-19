@@ -77,8 +77,10 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyDumpingValidationResult, "", args);
         }
 
-        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
+        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
+            var args = new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyEmoji, "", args);
         }
 
         public void NotifyGameHall(List<RoomState> roomStates, List<string> names)
