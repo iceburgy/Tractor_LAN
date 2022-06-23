@@ -1908,7 +1908,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
             }
 
-            if (result.Count < 1)
+            if (result.Count <= 1)
                 result.Clear();
 
             return result;
