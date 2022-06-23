@@ -2117,7 +2117,7 @@ namespace Duan.Xiugang.Tractor
 
         private void ThisPlayer_NotifyEmojiEventHandler(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
-            if(!string.IsNullOrEmpty(msgString))
+            if (!isCenter && !string.IsNullOrEmpty(msgString))
             {
                 this.drawingFormHelper.DrawMessages(new string[] { string.Format("¡¾{0}¡¿Ëµ£º", playerID), msgString });
             }

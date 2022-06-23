@@ -554,7 +554,9 @@ namespace TractorServer
             int emojiType = (int)(long)args[0];
             int emojiIndex = (int)(long)args[1];
             string emojiString = (string)args[2];
-            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, false, emojiString);
+            bool isCenter = false;
+            if (args.Count >= 4) isCenter = (bool)args[3];
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString);
         }
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
