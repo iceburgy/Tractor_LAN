@@ -220,6 +220,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_SendEmoji:
                     this.PlayerSendEmojiWS(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
+                    this.PlayerHasCutCards(playerID, content);
+                    break;
                 default:
                     break;
             }
@@ -530,6 +533,15 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerIsReadyToStart(playerID);
+            }
+        }
+
+        public void PlayerHasCutCards(string playerID, string cutInfo)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.PlayerHasCutCards(cutInfo);
             }
         }
 

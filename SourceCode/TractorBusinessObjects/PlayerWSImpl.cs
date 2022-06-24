@@ -34,9 +34,10 @@ namespace Duan.Xiugang.Tractor.Objects
         {
         }
 
-        public string CutCardShoeCards()
+        public void CutCardShoeCards()
         {
-            return "";
+            var args = new List<object>() { "dummy" };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_CutCardShoeCards, "", args);
         }
 
         public void ExitRoom(string playerID)

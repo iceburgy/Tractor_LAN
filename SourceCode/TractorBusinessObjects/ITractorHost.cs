@@ -94,5 +94,9 @@ namespace Duan.Xiugang.Tractor.Objects
         //甩牌检查
         [OperationContract(IsOneWay = true)]
         void ValidateDumpingCards(List<int> selectedCards, string playerId);
+
+        //切牌
+        [OperationContract(IsOneWay = true)]
+        void PlayerHasCutCards(string playerID, string cutInfo);
     }
 }

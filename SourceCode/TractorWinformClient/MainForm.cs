@@ -2182,19 +2182,23 @@ namespace Duan.Xiugang.Tractor
             Refresh();
         }
 
-        private string ThisPlayer_CutCardShoeCardsEventHandler()
+        private void ThisPlayer_CutCardShoeCardsEventHandler()
         {
-            if (gameConfig.IsDebug || !enableCutCards) return "È¡Ïû,0";
-            FormCutCards frmCutCards = new FormCutCards();
-            frmCutCards.StartPosition = FormStartPosition.CenterParent;
-            frmCutCards.TopMost = true;
-            frmCutCards.ShowDialog();
-            if (frmCutCards.noMoreCut)
+            string cutInfo = string.Empty;
+            if (!gameConfig.IsDebug && enableCutCards)
             {
-                FormSettings.SetSetting(FormSettings.KeyEnableCutCards, "false");
-                this.LoadSettings();
+                FormCutCards frmCutCards = new FormCutCards();
+                frmCutCards.StartPosition = FormStartPosition.CenterParent;
+                frmCutCards.TopMost = true;
+                frmCutCards.ShowDialog();
+                if (frmCutCards.noMoreCut)
+                {
+                    FormSettings.SetSetting(FormSettings.KeyEnableCutCards, "false");
+                    this.LoadSettings();
+                }
+                cutInfo = string.Format("{0},{1}", frmCutCards.cutType, frmCutCards.cutPoint);
             }
-            return string.Format("{0},{1}", frmCutCards.cutType, frmCutCards.cutPoint);
+            ThisPlayer.PlayerHasCutCards(ThisPlayer.PlayerId, cutInfo);
         }
 
         private void ThisPlayer_ObservePlayerByIDEventHandler()

@@ -103,7 +103,7 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <summary>
         ///     切牌
         /// </summary>
-        [OperationContract()]
-        string CutCardShoeCards();
+        [OperationContract(IsOneWay = true)]
+        void CutCardShoeCards();
     }
 }

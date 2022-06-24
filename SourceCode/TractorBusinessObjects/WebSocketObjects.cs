@@ -23,7 +23,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_ResumeGameFromFile = "ResumeGameFromFile";
         public const string WebSocketMessageType_RandomSeat = "RandomSeat";
         public const string WebSocketMessageType_SendEmoji = "SendEmoji";
-        
+        public const string WebSocketMessageType_PlayerHasCutCards = "PlayerHasCutCards";
+
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
         public const string WebSocketMessageType_NotifyRoomSetting = "NotifyRoomSetting";
@@ -37,6 +38,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_NotifyTryToDumpResult = "NotifyTryToDumpResult";
         public const string WebSocketMessageType_NotifyStartTimer = "NotifyStartTimer";
         public const string WebSocketMessageType_NotifyEmoji = "NotifyEmoji";
+        public const string WebSocketMessageType_CutCardShoeCards = "CutCardShoeCards";
 
         [Serializable]
         public class WebSocketMessage
