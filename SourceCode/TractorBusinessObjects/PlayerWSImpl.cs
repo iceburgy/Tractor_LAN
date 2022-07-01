@@ -104,6 +104,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public void NotifyReplayState(ReplayEntity replayState)
         {
+            var args = new List<object>() { replayState };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyReplayState, "", args);
         }
 
         public void NotifyRoomSetting(RoomSetting roomSetting, bool showMessage)

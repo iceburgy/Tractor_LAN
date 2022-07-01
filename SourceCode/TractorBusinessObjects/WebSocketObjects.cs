@@ -40,6 +40,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_NotifyStartTimer = "NotifyStartTimer";
         public const string WebSocketMessageType_NotifyEmoji = "NotifyEmoji";
         public const string WebSocketMessageType_CutCardShoeCards = "CutCardShoeCards";
+        public const string WebSocketMessageType_NotifyReplayState = "NotifyReplayState";
 
         [Serializable]
         public class WebSocketMessage

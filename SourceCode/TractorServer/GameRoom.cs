@@ -667,7 +667,6 @@ namespace TractorServer
 
             //等待5秒，让玩家反底
             var trump = CurrentRoomState.CurrentHandState.Trump;
-            Thread.Sleep(2000);
             if (trump == CurrentRoomState.CurrentHandState.Trump) //没有玩家反
             {
                 //log trump and rank before a new game starts
