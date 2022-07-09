@@ -2025,7 +2025,6 @@ namespace TractorServer
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             CurrentRoomState.CurrentHandState.IsFirstHand = true;
-            UpdatePlayersCurrentHandState();
             foreach (var p in CurrentRoomState.CurrentGameState.Players)
             {
                 if (p == null) continue;
@@ -2034,6 +2033,7 @@ namespace TractorServer
                 p.IsRobot = false;
             }
             UpdateGameState();
+            UpdatePlayersCurrentHandState();
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
         }
 
