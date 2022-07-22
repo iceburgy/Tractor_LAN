@@ -43,6 +43,7 @@ namespace TractorServer
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
         private ServerLocalCache serverLocalCache;
         private bool isGameOver;
+        private bool isGameRestarted;
 
         public GameRoom(int roomID, string roomName, TractorHost host)
         {
@@ -498,6 +499,7 @@ namespace TractorServer
 
                 if (isReadyToStart == 4)
                 {
+                    this.isGameRestarted = false;
                     switch (CurrentRoomState.CurrentGameState.nextRestartID)
                     {
                         case GameState.RESTART_GAME:
@@ -1647,7 +1649,7 @@ namespace TractorServer
             PublishStartTimer(2);
             //加一秒缓冲时间，让客户端倒计时完成
             Thread.Sleep(2000 + 1000);
-            if (!IsAllOnline()) return;
+            if (!IsAllOnline() || this.isGameRestarted) return;
 
             if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
             {
@@ -2021,6 +2023,7 @@ namespace TractorServer
         private void ResetAndRestartGame()
         {
             log.Debug("restart game");
+            this.isGameRestarted = true;
             CleanupCaches();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
