@@ -99,7 +99,12 @@ namespace Duan.Xiugang.Tractor.Objects
         public void NotifyMessage(string[] msg)
         {
             var args = new List<object>() { msg };
-            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyMessage, "", args);
+            string messageType = WebSocketObjects.WebSocketMessageType_NotifyMessage;
+            if (msg != null && msg.Length == 0)
+            {
+                messageType = WebSocketObjects.WebSocketMessageType_NotifyPing;
+            }
+            NotifyFinalHandler(messageType, "", args);
         }
 
         public void NotifyReplayState(ReplayEntity replayState)

@@ -103,8 +103,12 @@ namespace TractorServer
                         timersPerClient[i].Enabled = true;
                         try
                         {
-                            PlayersProxy[player.PlayerId].NotifyMessage(new string[] { });
-                            timersPerClient[i].Enabled = false;
+                            IPlayer iplayer = PlayersProxy[player.PlayerId];
+                            iplayer.NotifyMessage(new string[] { });
+                            if (!(iplayer is PlayerWSImpl))
+                            {
+                                timersPerClient[i].Enabled = false;
+                            }
                         }
                         catch (Exception)
                         {
@@ -123,6 +127,19 @@ namespace TractorServer
                 if (timersPerClient[i].Equals(source) && player != null && !player.IsOffline)
                 {
                     PerformProxyCleanupRestart(new List<string> { player.PlayerId });
+                    break;
+                }
+            }
+        }
+
+        public void PlayerPong(string playerID)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                PlayerEntity p = CurrentRoomState.CurrentGameState.Players[i];
+                if (p != null && p.PlayerId == playerID)
+                {
+                    timersPerClient[i].Enabled = false;
                     break;
                 }
             }

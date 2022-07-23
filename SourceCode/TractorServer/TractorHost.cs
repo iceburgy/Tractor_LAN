@@ -286,6 +286,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
                     this.PlayerHasCutCards(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_NotifyPong:
+                    this.PlayerPong(playerID);
+                    break;
                 default:
                     break;
             }
@@ -605,6 +608,15 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerHasCutCards(cutInfo);
+            }
+        }
+
+        public void PlayerPong(string playerID)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.PlayerPong(playerID);
             }
         }
 

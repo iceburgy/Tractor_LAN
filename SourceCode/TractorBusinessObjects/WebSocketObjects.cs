@@ -28,6 +28,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
+        public const string WebSocketMessageType_NotifyPing = "NotifyPing";
+        public const string WebSocketMessageType_NotifyPong = "NotifyPong";
         public const string WebSocketMessageType_NotifyRoomSetting = "NotifyRoomSetting";
         public const string WebSocketMessageType_NotifyGameState = "NotifyGameState";
         public const string WebSocketMessageType_NotifyCurrentHandState = "NotifyCurrentHandState";
