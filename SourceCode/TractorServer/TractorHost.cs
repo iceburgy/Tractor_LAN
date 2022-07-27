@@ -648,11 +648,47 @@ namespace TractorServer
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
-            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            bool isPlayerInGameHall = this.IsInGameHall(playerID);
+            if (isPlayerInGameHall)
+            {
+                isCenter = false;
+                List<string> playersInGameHall = this.getPlayersInGameHall();
+                IPlayerInvokeForAll(PlayersProxy, playersInGameHall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
+            }
+            else if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString);
             }
+        }
+
+        private List<string> getPlayersInGameHall()
+        {
+            List<string> playersInGameHall = new List<string>();
+            lock (PlayersProxy)
+            {
+                List<string> names = PlayersProxy.Keys.ToList<string>();
+                foreach (var name in names)
+                {
+                    bool isInRoom = false;
+                    foreach (GameRoom room in this.GameRooms)
+                    {
+                        if (!PlayersProxy.ContainsKey(name)) continue;
+                        if (room.PlayersProxy.ContainsValue(PlayersProxy[name]) ||
+                            room.ObserversProxy.ContainsValue(PlayersProxy[name]))
+                        {
+                            isInRoom = true;
+                            break;
+                        }
+                    }
+
+                    if (!isInRoom)
+                    {
+                        playersInGameHall.Add(name);
+                    }
+                }
+            }
+            return playersInGameHall;
         }
 
         //player discard last 8 cards
@@ -852,6 +888,24 @@ namespace TractorServer
         }
 
         #endregion
+
+        public bool IsInGameHall(string playerID)
+        {
+            bool isInRoom = false;
+            foreach (GameRoom room in this.GameRooms)
+            {
+                if (!PlayersProxy.ContainsKey(playerID)) continue;
+                if (room.PlayersProxy.ContainsValue(PlayersProxy[playerID]) ||
+                    room.ObserversProxy.ContainsValue(PlayersProxy[playerID]))
+                {
+                    isInRoom = true;
+                    break;
+                }
+            }
+            return !isInRoom;
+        }
+
+
         public void IPlayerInvokeForAll(Dictionary<string, IPlayer> PlayersProxyToCall, List<string> playerIDs, string methodName, List<object> args)
         {
             List<string> badPlayerIDs = new List<string>();
