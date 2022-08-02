@@ -42,6 +42,7 @@ namespace TractorServer
         public List<GameRoom> GameRooms { get; set; }
         public List<RoomState> RoomStates { get; set; }
         public Dictionary<string, GameRoom> SessionIDGameRoom { get; set; }
+        public HashSet<string> playerIdListTaken;
         string[] knownErrors = new string[] {
             "An existing connection was forcibly closed by the remote host",
             "The socket connection was aborted",
@@ -50,6 +51,7 @@ namespace TractorServer
 
         public TractorHost()
         {
+            LoadTakenPlayerIDs();
             gameConfig = new GameConfig();
             var myreader = new AppSettingsReader();
             try
@@ -165,12 +167,19 @@ namespace TractorServer
                         }
 
                         var playerProxy = new PlayerWSImpl(socket);
+                        string clientIP = socket.ConnectionInfo.ClientIpAddress;
+
+                        string[] validationResult = ValidateClientInfo(clientIP, messageObj.playerID);
+                        if (validationResult.Length > 0)
+                        {
+                            playerProxy.NotifyMessage(validationResult);
+                            return;
+                        }
 
                         if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
                         {
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
                             {
-                                string clientIP = socket.ConnectionInfo.ClientIpAddress;
                                 if (this.PlayerToIP.ContainsValue(clientIP))
                                 {
                                     playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
@@ -321,8 +330,18 @@ namespace TractorServer
         public void PlayerEnterHall(string playerID)
         {
             string clientIP = GetClientIP();
-            LogClientInfo(clientIP, playerID, false);
             IPlayer player = OperationContext.Current.GetCallbackChannel<IPlayer>();
+            player.NotifyMessage(new string[] { "感谢您对本游戏的支持！", "Windows版客户端现已下架", "请转至web版客户端加入游戏" });
+            return;
+            /*
+            string[] validationResult = ValidateClientInfo(clientIP, playerID);
+            if (validationResult.Length > 0)
+            {
+                player.NotifyMessage(validationResult);
+                return;
+            }
+
+            LogClientInfo(clientIP, playerID, false);
             if (!PlayersProxy.Keys.Contains(playerID))
             {
                 this.PlayerToIP.Add(playerID, clientIP);
@@ -360,6 +379,7 @@ namespace TractorServer
             {
                 player.NotifyMessage(new string[] { "玩家昵称重名", "请更改昵称后重试" });
             }
+            */
         }
 
         public void PlayerEnterHallWS(string playerID)
@@ -980,10 +1000,62 @@ namespace TractorServer
                 }
                 if (!clientInfoDict.ContainsKey(clientIP))
                 {
-                    clientInfoDict[clientIP] = new ClientInfo(clientIP, playerID);
+                    clientInfoDict[clientIP] = new ClientInfo(clientIP);
                 }
                 clientInfoDict[clientIP].logLogin(playerID, isCheating);
                 CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+            }
+        }
+
+        public string[] ValidateClientInfo(string clientIP, string playerID)
+        {
+            lock (this)
+            {
+                string[] validationResult = new string[] { };
+                Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
+                string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                if (File.Exists(fileName))
+                {
+                    clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
+                    if (clientInfoDict.ContainsKey(clientIP))
+                    {
+                        var clientInfo = clientInfoDict[clientIP];
+                        if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Contains(playerID, StringComparer.OrdinalIgnoreCase))
+                        {
+                            return new string[] { "检测到仅字母大小写不同的重复昵称", "请正确输入上次登录时所使用的昵称", "（包括正确的字母大小写）" };
+                        }
+                        if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Count + 1 > clientInfo.maxIDsAllowed)
+                        {
+                            return new string[] { "玩家昵称与历史记录不匹配", "请使用上次登录时所使用的昵称" };
+                        }
+                    }
+                    else
+                    {
+                        if (playerIdListTaken.Contains(playerID, StringComparer.OrdinalIgnoreCase))
+                        {
+                            return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
+                        }
+                    }
+                }
+                return validationResult;
+            }
+        }
+
+        public void LoadTakenPlayerIDs()
+        {
+            playerIdListTaken = new HashSet<string>();
+
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+            if (File.Exists(fileName))
+            {
+                Dictionary<string, ClientInfo> clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
+                foreach (KeyValuePair<string, ClientInfo> entry in clientInfoDict)
+                {
+                    foreach (string idTaken in entry.Value.playerIdList)
+                    {
+                        playerIdListTaken.Add(idTaken);
+                    }
+                }
             }
         }
     }

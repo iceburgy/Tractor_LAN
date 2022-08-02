@@ -16,12 +16,14 @@ namespace Duan.Xiugang.Tractor.Objects
         public List<string> cheatHistory;
         [DataMember]
         public string lastLogin;
+        [DataMember]
+        public int maxIDsAllowed = 1;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
 
-        public ClientInfo(string ip, string playerId)
+        public ClientInfo(string clientIP)
         {
-            IP = ip;
+            IP = clientIP;
             playerIdList = new HashSet<string>();
             cheatHistory = new List<string>();
         }

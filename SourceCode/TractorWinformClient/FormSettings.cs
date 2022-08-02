@@ -184,10 +184,10 @@ namespace Duan.Xiugang.Tractor
         private void btnOK_Click(object sender, EventArgs e)
         {
             bool hostNameChanged = !string.IsNullOrEmpty(hostName) && !hostName.Equals(this.tbxHostName.Text, StringComparison.InvariantCultureIgnoreCase);
-            bool nicknameChanged = !string.IsNullOrEmpty(nickName) && !nickName.Equals(this.tbxNickName.Text, StringComparison.InvariantCultureIgnoreCase);
+            bool nicknameChanged = !string.IsNullOrEmpty(nickName) && !nickName.Equals(this.tbxNickName.Text);
             bool needRestart = hostNameChanged || nicknameChanged;
             SaveHostName(string.Format("net.tcp://{0}/TractorHost", this.tbxHostName.Text));
-            SetSetting(KeyNickName, tbxNickName.Text);
+            SetSetting(KeyNickName, tbxNickName.Text.Trim());
             SetSetting(KeyVideoCallUrl, tbxVideoCallUrl.Text);
             SetSetting(KeyUpdateOnLoad, cbxUpdateOnLoad.Checked.ToString().ToLower());
             SetSetting(KeyEnableSound, cbxEnableSound.Checked.ToString().ToLower());

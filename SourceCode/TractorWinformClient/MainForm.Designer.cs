@@ -131,6 +131,7 @@ namespace Duan.Xiugang.Tractor
             // 
             // menuStrip
             // 
+            this.menuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.GameToolStripMenuItem,
             this.ToolStripMenuItemInRoom,
@@ -139,7 +140,7 @@ namespace Duan.Xiugang.Tractor
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
-            this.menuStrip.Size = new System.Drawing.Size(820, 25);
+            this.menuStrip.Size = new System.Drawing.Size(820, 30);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -152,14 +153,14 @@ namespace Duan.Xiugang.Tractor
             this.RebootToolStripMenuItem,
             this.ExitToolStripMenuItem});
             this.GameToolStripMenuItem.Name = "GameToolStripMenuItem";
-            this.GameToolStripMenuItem.Size = new System.Drawing.Size(45, 19);
+            this.GameToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
             this.GameToolStripMenuItem.Text = "游戏";
             // 
             // ToolStripMenuItemEnterHall
             // 
             this.ToolStripMenuItemEnterHall.Name = "ToolStripMenuItemEnterHall";
             this.ToolStripMenuItemEnterHall.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(145, 22);
+            this.ToolStripMenuItemEnterHall.Size = new System.Drawing.Size(172, 26);
             this.ToolStripMenuItemEnterHall.Text = "进入大厅";
             this.ToolStripMenuItemEnterHall.Click += new System.EventHandler(this.ToolStripMenuItemEnterHall_Click);
             // 
@@ -168,28 +169,28 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemEnterRoom0.Enabled = false;
             this.ToolStripMenuItemEnterRoom0.Name = "ToolStripMenuItemEnterRoom0";
             this.ToolStripMenuItemEnterRoom0.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.ToolStripMenuItemEnterRoom0.Size = new System.Drawing.Size(145, 22);
+            this.ToolStripMenuItemEnterRoom0.Size = new System.Drawing.Size(172, 26);
             this.ToolStripMenuItemEnterRoom0.Text = "进入房间";
             this.ToolStripMenuItemEnterRoom0.Click += new System.EventHandler(this.ToolStripMenuItemEnterRoom0_Click);
             // 
             // SettingToolStripMenuItem
             // 
             this.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem";
-            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.SettingToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.SettingToolStripMenuItem.Text = "设置";
             this.SettingToolStripMenuItem.Click += new System.EventHandler(this.SettingToolStripMenuItem_Click);
             // 
             // RebootToolStripMenuItem
             // 
             this.RebootToolStripMenuItem.Name = "RebootToolStripMenuItem";
-            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.RebootToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.RebootToolStripMenuItem.Text = "重启游戏";
             this.RebootToolStripMenuItem.Click += new System.EventHandler(this.RebootToolStripMenuItem_Click);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.ExitToolStripMenuItem.Text = "退出";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.MenuItem_Click);
             // 
@@ -203,7 +204,7 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemGetReady,
             this.ToolStripMenuItemRobot});
             this.ToolStripMenuItemInRoom.Name = "ToolStripMenuItemInRoom";
-            this.ToolStripMenuItemInRoom.Size = new System.Drawing.Size(45, 19);
+            this.ToolStripMenuItemInRoom.Size = new System.Drawing.Size(53, 24);
             this.ToolStripMenuItemInRoom.Text = "牌局";
             this.ToolStripMenuItemInRoom.Visible = false;
             // 
@@ -224,112 +225,112 @@ namespace Duan.Xiugang.Tractor
             this.toolStripMenuItemBeginRankK,
             this.toolStripMenuItemBeginRankA});
             this.BeginRankToolStripMenuItem.Name = "BeginRankToolStripMenuItem";
-            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.BeginRankToolStripMenuItem.Size = new System.Drawing.Size(180, 26);
             this.BeginRankToolStripMenuItem.Text = "从几打起";
             this.BeginRankToolStripMenuItem.Visible = false;
             // 
             // toolStripMenuItemBeginRank2
             // 
             this.toolStripMenuItemBeginRank2.Name = "toolStripMenuItemBeginRank2";
-            this.toolStripMenuItemBeginRank2.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank2.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank2.Text = "2";
             this.toolStripMenuItemBeginRank2.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank3
             // 
             this.toolStripMenuItemBeginRank3.Name = "toolStripMenuItemBeginRank3";
-            this.toolStripMenuItemBeginRank3.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank3.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank3.Text = "3";
             this.toolStripMenuItemBeginRank3.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank4
             // 
             this.toolStripMenuItemBeginRank4.Name = "toolStripMenuItemBeginRank4";
-            this.toolStripMenuItemBeginRank4.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank4.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank4.Text = "4";
             this.toolStripMenuItemBeginRank4.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank5
             // 
             this.toolStripMenuItemBeginRank5.Name = "toolStripMenuItemBeginRank5";
-            this.toolStripMenuItemBeginRank5.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank5.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank5.Text = "5";
             this.toolStripMenuItemBeginRank5.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank6
             // 
             this.toolStripMenuItemBeginRank6.Name = "toolStripMenuItemBeginRank6";
-            this.toolStripMenuItemBeginRank6.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank6.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank6.Text = "6";
             this.toolStripMenuItemBeginRank6.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank7
             // 
             this.toolStripMenuItemBeginRank7.Name = "toolStripMenuItemBeginRank7";
-            this.toolStripMenuItemBeginRank7.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank7.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank7.Text = "7";
             this.toolStripMenuItemBeginRank7.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank8
             // 
             this.toolStripMenuItemBeginRank8.Name = "toolStripMenuItemBeginRank8";
-            this.toolStripMenuItemBeginRank8.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank8.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank8.Text = "8";
             this.toolStripMenuItemBeginRank8.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank9
             // 
             this.toolStripMenuItemBeginRank9.Name = "toolStripMenuItemBeginRank9";
-            this.toolStripMenuItemBeginRank9.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank9.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank9.Text = "9";
             this.toolStripMenuItemBeginRank9.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRank10
             // 
             this.toolStripMenuItemBeginRank10.Name = "toolStripMenuItemBeginRank10";
-            this.toolStripMenuItemBeginRank10.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRank10.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRank10.Text = "10";
             this.toolStripMenuItemBeginRank10.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRankJ
             // 
             this.toolStripMenuItemBeginRankJ.Name = "toolStripMenuItemBeginRankJ";
-            this.toolStripMenuItemBeginRankJ.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRankJ.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRankJ.Text = "J";
             this.toolStripMenuItemBeginRankJ.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRankQ
             // 
             this.toolStripMenuItemBeginRankQ.Name = "toolStripMenuItemBeginRankQ";
-            this.toolStripMenuItemBeginRankQ.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRankQ.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRankQ.Text = "Q";
             this.toolStripMenuItemBeginRankQ.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRankK
             // 
             this.toolStripMenuItemBeginRankK.Name = "toolStripMenuItemBeginRankK";
-            this.toolStripMenuItemBeginRankK.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRankK.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRankK.Text = "K";
             this.toolStripMenuItemBeginRankK.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // toolStripMenuItemBeginRankA
             // 
             this.toolStripMenuItemBeginRankA.Name = "toolStripMenuItemBeginRankA";
-            this.toolStripMenuItemBeginRankA.Size = new System.Drawing.Size(86, 22);
+            this.toolStripMenuItemBeginRankA.Size = new System.Drawing.Size(100, 26);
             this.toolStripMenuItemBeginRankA.Text = "A";
             this.toolStripMenuItemBeginRankA.Click += new System.EventHandler(this.MenuItem_Click);
             // 
             // ResumeGameToolStripMenuItem
             // 
             this.ResumeGameToolStripMenuItem.Name = "ResumeGameToolStripMenuItem";
-            this.ResumeGameToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ResumeGameToolStripMenuItem.Size = new System.Drawing.Size(180, 26);
             this.ResumeGameToolStripMenuItem.Text = "继续上盘牌局";
             this.ResumeGameToolStripMenuItem.Click += new System.EventHandler(this.ResumeGameToolStripMenuItem_Click);
             // 
             // TeamUpToolStripMenuItem
             // 
             this.TeamUpToolStripMenuItem.Name = "TeamUpToolStripMenuItem";
-            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.TeamUpToolStripMenuItem.Size = new System.Drawing.Size(180, 26);
             this.TeamUpToolStripMenuItem.Text = "随机组队";
             this.TeamUpToolStripMenuItem.Visible = false;
             this.TeamUpToolStripMenuItem.Click += new System.EventHandler(this.TeamUpToolStripMenuItem_Click);
@@ -341,28 +342,28 @@ namespace Duan.Xiugang.Tractor
             this.SwapSeatWithNextPlayerToolStripMenuItem,
             this.SwapSeatWithFriendPlayerToolStripMenuItem1});
             this.SwapSeatToolStripMenuItem.Name = "SwapSeatToolStripMenuItem";
-            this.SwapSeatToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SwapSeatToolStripMenuItem.Size = new System.Drawing.Size(180, 26);
             this.SwapSeatToolStripMenuItem.Text = "换座";
             this.SwapSeatToolStripMenuItem.Visible = false;
             // 
             // SwapSeatWithPreviousPlayerToolStripMenuItem
             // 
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Name = "SwapSeatWithPreviousPlayerToolStripMenuItem";
-            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.SwapSeatWithPreviousPlayerToolStripMenuItem.Size = new System.Drawing.Size(116, 26);
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Text = "上家";
             this.SwapSeatWithPreviousPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
             // SwapSeatWithNextPlayerToolStripMenuItem
             // 
             this.SwapSeatWithNextPlayerToolStripMenuItem.Name = "SwapSeatWithNextPlayerToolStripMenuItem";
-            this.SwapSeatWithNextPlayerToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.SwapSeatWithNextPlayerToolStripMenuItem.Size = new System.Drawing.Size(116, 26);
             this.SwapSeatWithNextPlayerToolStripMenuItem.Text = "下家";
             this.SwapSeatWithNextPlayerToolStripMenuItem.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
             // SwapSeatWithFriendPlayerToolStripMenuItem1
             // 
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Name = "SwapSeatWithFriendPlayerToolStripMenuItem1";
-            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Size = new System.Drawing.Size(100, 22);
+            this.SwapSeatWithFriendPlayerToolStripMenuItem1.Size = new System.Drawing.Size(116, 26);
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Text = "对家";
             this.SwapSeatWithFriendPlayerToolStripMenuItem1.Click += new System.EventHandler(this.SwapSeatToolStripMenuItem_Click);
             // 
@@ -370,7 +371,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemGetReady.Name = "ToolStripMenuItemGetReady";
             this.ToolStripMenuItemGetReady.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(152, 22);
+            this.ToolStripMenuItemGetReady.Size = new System.Drawing.Size(180, 26);
             this.ToolStripMenuItemGetReady.Text = "就绪";
             this.ToolStripMenuItemGetReady.Click += new System.EventHandler(this.ToolStripMenuItemGetReady_Click);
             // 
@@ -378,7 +379,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemRobot.Name = "ToolStripMenuItemRobot";
             this.ToolStripMenuItemRobot.ShortcutKeys = System.Windows.Forms.Keys.F4;
-            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(152, 22);
+            this.ToolStripMenuItemRobot.Size = new System.Drawing.Size(180, 26);
             this.ToolStripMenuItemRobot.Text = "托管代打";
             this.ToolStripMenuItemRobot.Click += new System.EventHandler(this.ToolStripMenuItemRobot_Click);
             // 
@@ -387,7 +388,7 @@ namespace Duan.Xiugang.Tractor
             this.ToolStripMenuItemObserve.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolStripMenuItemObserverNextPlayer});
             this.ToolStripMenuItemObserve.Name = "ToolStripMenuItemObserve";
-            this.ToolStripMenuItemObserve.Size = new System.Drawing.Size(45, 19);
+            this.ToolStripMenuItemObserve.Size = new System.Drawing.Size(53, 24);
             this.ToolStripMenuItemObserve.Text = "旁观";
             this.ToolStripMenuItemObserve.Visible = false;
             // 
@@ -395,7 +396,7 @@ namespace Duan.Xiugang.Tractor
             // 
             this.ToolStripMenuItemObserverNextPlayer.Name = "ToolStripMenuItemObserverNextPlayer";
             this.ToolStripMenuItemObserverNextPlayer.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(145, 22);
+            this.ToolStripMenuItemObserverNextPlayer.Size = new System.Drawing.Size(172, 26);
             this.ToolStripMenuItemObserverNextPlayer.Text = "旁观下家";
             this.ToolStripMenuItemObserverNextPlayer.Click += new System.EventHandler(this.ToolStripMenuItemObserverNextPlayer_Click);
             // 
@@ -408,39 +409,39 @@ namespace Duan.Xiugang.Tractor
             this.AutoUpdaterToolStripMenuItem,
             this.FeatureOverviewToolStripMenuItem});
             this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
-            this.HelpToolStripMenuItem.Size = new System.Drawing.Size(45, 19);
+            this.HelpToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
             this.HelpToolStripMenuItem.Text = "帮助";
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(123, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(145, 6);
             // 
             // ToolStripMenuItemUserManual
             // 
             this.ToolStripMenuItemUserManual.Name = "ToolStripMenuItemUserManual";
-            this.ToolStripMenuItemUserManual.Size = new System.Drawing.Size(126, 22);
+            this.ToolStripMenuItemUserManual.Size = new System.Drawing.Size(148, 26);
             this.ToolStripMenuItemUserManual.Text = "使用说明";
             this.ToolStripMenuItemUserManual.Click += new System.EventHandler(this.ToolStripMenuItemUserManual_Click);
             // 
             // ToolStripMenuItemShowVersion
             // 
             this.ToolStripMenuItemShowVersion.Name = "ToolStripMenuItemShowVersion";
-            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(126, 22);
+            this.ToolStripMenuItemShowVersion.Size = new System.Drawing.Size(148, 26);
             this.ToolStripMenuItemShowVersion.Text = "当前版本";
             this.ToolStripMenuItemShowVersion.Click += new System.EventHandler(this.ToolStripMenuItemShowVersion_Click);
             // 
             // AutoUpdaterToolStripMenuItem
             // 
             this.AutoUpdaterToolStripMenuItem.Name = "AutoUpdaterToolStripMenuItem";
-            this.AutoUpdaterToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.AutoUpdaterToolStripMenuItem.Size = new System.Drawing.Size(148, 26);
             this.AutoUpdaterToolStripMenuItem.Text = "检查更新";
             this.AutoUpdaterToolStripMenuItem.Click += new System.EventHandler(this.AutoUpdaterToolStripMenuItem_Click);
             // 
             // FeatureOverviewToolStripMenuItem
             // 
             this.FeatureOverviewToolStripMenuItem.Name = "FeatureOverviewToolStripMenuItem";
-            this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
+            this.FeatureOverviewToolStripMenuItem.Size = new System.Drawing.Size(148, 26);
             this.FeatureOverviewToolStripMenuItem.Text = "功能一览";
             this.FeatureOverviewToolStripMenuItem.Click += new System.EventHandler(this.FeatureOverviewToolStripMenuItem_Click);
             // 
@@ -464,7 +465,7 @@ namespace Duan.Xiugang.Tractor
             this.lblSouthNickName.ForeColor = System.Drawing.SystemColors.Control;
             this.lblSouthNickName.Location = new System.Drawing.Point(372, 784);
             this.lblSouthNickName.Name = "lblSouthNickName";
-            this.lblSouthNickName.Size = new System.Drawing.Size(0, 26);
+            this.lblSouthNickName.Size = new System.Drawing.Size(0, 31);
             this.lblSouthNickName.TabIndex = 5;
             this.lblSouthNickName.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
@@ -477,7 +478,7 @@ namespace Duan.Xiugang.Tractor
             this.lblEastNickName.ForeColor = System.Drawing.SystemColors.Control;
             this.lblEastNickName.Location = new System.Drawing.Point(4, 0);
             this.lblEastNickName.Name = "lblEastNickName";
-            this.lblEastNickName.Size = new System.Drawing.Size(0, 26);
+            this.lblEastNickName.Size = new System.Drawing.Size(0, 31);
             this.lblEastNickName.TabIndex = 6;
             this.lblEastNickName.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -490,7 +491,7 @@ namespace Duan.Xiugang.Tractor
             this.lblNorthNickName.ForeColor = System.Drawing.SystemColors.Control;
             this.lblNorthNickName.Location = new System.Drawing.Point(372, 44);
             this.lblNorthNickName.Name = "lblNorthNickName";
-            this.lblNorthNickName.Size = new System.Drawing.Size(0, 26);
+            this.lblNorthNickName.Size = new System.Drawing.Size(0, 31);
             this.lblNorthNickName.TabIndex = 7;
             // 
             // lblWestNickName
@@ -502,7 +503,7 @@ namespace Duan.Xiugang.Tractor
             this.lblWestNickName.ForeColor = System.Drawing.SystemColors.Control;
             this.lblWestNickName.Location = new System.Drawing.Point(9, 401);
             this.lblWestNickName.Name = "lblWestNickName";
-            this.lblWestNickName.Size = new System.Drawing.Size(0, 26);
+            this.lblWestNickName.Size = new System.Drawing.Size(0, 31);
             this.lblWestNickName.TabIndex = 8;
             this.lblWestNickName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -589,13 +590,13 @@ namespace Duan.Xiugang.Tractor
             this.tableLayoutPanel1.RowCount = 1;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(6, 26);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(6, 31);
             this.tableLayoutPanel1.TabIndex = 16;
             // 
             // btnEnterHall
             // 
             this.btnEnterHall.BackColor = System.Drawing.Color.Plum;
-            this.btnEnterHall.Location = new System.Drawing.Point(288, 366);
+            this.btnEnterHall.Location = new System.Drawing.Point(345, 366);
             this.btnEnterHall.Name = "btnEnterHall";
             this.btnEnterHall.Size = new System.Drawing.Size(109, 55);
             this.btnEnterHall.TabIndex = 21;
@@ -843,7 +844,7 @@ namespace Duan.Xiugang.Tractor
             this.cbbReplayDate.FormattingEnabled = true;
             this.cbbReplayDate.Location = new System.Drawing.Point(560, 36);
             this.cbbReplayDate.Name = "cbbReplayDate";
-            this.cbbReplayDate.Size = new System.Drawing.Size(158, 21);
+            this.cbbReplayDate.Size = new System.Drawing.Size(158, 24);
             this.cbbReplayDate.TabIndex = 40;
             this.cbbReplayDate.Visible = false;
             this.cbbReplayDate.SelectedIndexChanged += new System.EventHandler(this.cbbReplayDate_SelectedIndexChanged);
@@ -855,7 +856,7 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayDate.ForeColor = System.Drawing.Color.White;
             this.lblReplayDate.Location = new System.Drawing.Point(496, 42);
             this.lblReplayDate.Name = "lblReplayDate";
-            this.lblReplayDate.Size = new System.Drawing.Size(55, 13);
+            this.lblReplayDate.Size = new System.Drawing.Size(64, 17);
             this.lblReplayDate.TabIndex = 39;
             this.lblReplayDate.Text = "录像日期";
             this.lblReplayDate.Visible = false;
@@ -865,7 +866,7 @@ namespace Duan.Xiugang.Tractor
             this.cbbReplayFile.FormattingEnabled = true;
             this.cbbReplayFile.Location = new System.Drawing.Point(560, 62);
             this.cbbReplayFile.Name = "cbbReplayFile";
-            this.cbbReplayFile.Size = new System.Drawing.Size(158, 21);
+            this.cbbReplayFile.Size = new System.Drawing.Size(158, 24);
             this.cbbReplayFile.TabIndex = 42;
             this.cbbReplayFile.Visible = false;
             // 
@@ -876,7 +877,7 @@ namespace Duan.Xiugang.Tractor
             this.lblReplayFile.ForeColor = System.Drawing.Color.White;
             this.lblReplayFile.Location = new System.Drawing.Point(496, 68);
             this.lblReplayFile.Name = "lblReplayFile";
-            this.lblReplayFile.Size = new System.Drawing.Size(55, 13);
+            this.lblReplayFile.Size = new System.Drawing.Size(64, 17);
             this.lblReplayFile.TabIndex = 41;
             this.lblReplayFile.Text = "录像文件";
             this.lblReplayFile.Visible = false;
@@ -899,7 +900,7 @@ namespace Duan.Xiugang.Tractor
             this.cbbEmoji.FormattingEnabled = true;
             this.cbbEmoji.Location = new System.Drawing.Point(575, 776);
             this.cbbEmoji.Name = "cbbEmoji";
-            this.cbbEmoji.Size = new System.Drawing.Size(80, 21);
+            this.cbbEmoji.Size = new System.Drawing.Size(80, 24);
             this.cbbEmoji.TabIndex = 48;
             this.ttpReplayUI.SetToolTip(this.cbbEmoji, "快捷键：表情包所对应的数字");
             this.cbbEmoji.Visible = false;
@@ -991,7 +992,7 @@ namespace Duan.Xiugang.Tractor
             // btnShengjiweb
             // 
             this.btnShengjiweb.BackColor = System.Drawing.Color.Plum;
-            this.btnShengjiweb.Location = new System.Drawing.Point(288, 448);
+            this.btnShengjiweb.Location = new System.Drawing.Point(230, 366);
             this.btnShengjiweb.Name = "btnShengjiweb";
             this.btnShengjiweb.Size = new System.Drawing.Size(109, 55);
             this.btnShengjiweb.TabIndex = 51;
