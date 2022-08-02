@@ -20,8 +20,16 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string resumeGameSignal = "牌局加载中,请稍后...";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
         public static int winEmojiLength = 4;
+        public static int nickNameOverridePassLength = 5;
+        public static int nickNameOverridePassMaxGetAttempts = 10;
 
         public static Random random = new Random();
+        public static string RandomString(int length)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
         private static RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider();
 
         /// <summary>

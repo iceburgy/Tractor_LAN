@@ -42,7 +42,6 @@ namespace TractorServer
         public List<GameRoom> GameRooms { get; set; }
         public List<RoomState> RoomStates { get; set; }
         public Dictionary<string, GameRoom> SessionIDGameRoom { get; set; }
-        public HashSet<string> playerIdListTaken;
         string[] knownErrors = new string[] {
             "An existing connection was forcibly closed by the remote host",
             "The socket connection was aborted",
@@ -166,18 +165,24 @@ namespace TractorServer
                             return;
                         }
 
-                        var playerProxy = new PlayerWSImpl(socket);
-                        string clientIP = socket.ConnectionInfo.ClientIpAddress;
-
-                        string[] validationResult = ValidateClientInfo(clientIP, messageObj.playerID);
-                        if (validationResult.Length > 0)
-                        {
-                            playerProxy.NotifyMessage(validationResult);
-                            return;
-                        }
-
                         if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
                         {
+                            var playerProxy = new PlayerWSImpl(socket);
+                            string clientIP = socket.ConnectionInfo.ClientIpAddress;
+
+                            string[] validationResult = ValidateClientInfo(clientIP, messageObj.playerID, messageObj.content);
+                            // 验证失败，返回错误信息
+                            if (validationResult.Length > 1)
+                            {
+                                playerProxy.NotifyMessage(validationResult);
+                                return;
+                            }
+                            // 首次登录，返回验证码
+                            if (validationResult.Length == 1)
+                            {
+                                playerProxy.NotifyMessage(new string[] { string.Format("【{0}】", validationResult[0]), "括号内是您的昵称验证码", "请妥善保存", "当您更换IP时将使用它来声名昵称所有权", "可在设置页面中再次查看" });
+                            }
+
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
                             {
                                 if (this.PlayerToIP.ContainsValue(clientIP))
@@ -187,7 +192,7 @@ namespace TractorServer
                                 }
                                 else
                                 {
-                                    playerProxy.NotifyMessage(new string[] { "玩家昵称重名", "请更改昵称后重试" });
+                                    playerProxy.NotifyMessage(new string[] { "该玩家已在别处登录", "请不要同时在多处登录" });
                                 }
                                 return;
                             }
@@ -1000,58 +1005,109 @@ namespace TractorServer
                 }
                 if (!clientInfoDict.ContainsKey(clientIP))
                 {
-                    clientInfoDict[clientIP] = new ClientInfo(clientIP);
+                    log.Debug(string.Format("fail to find clientIP {0} for client info logging!", clientIP));
+                    return;
                 }
                 clientInfoDict[clientIP].logLogin(playerID, isCheating);
                 CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
             }
         }
 
-        public string[] ValidateClientInfo(string clientIP, string playerID)
+        public string[] ValidateClientInfo(string clientIP, string playerID, string overridePass)
         {
             lock (this)
             {
                 string[] validationResult = new string[] { };
                 Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
                 string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-                if (File.Exists(fileName))
+                bool fileExists = File.Exists(fileName);
+                bool isNewClientIP = true;
+                if (fileExists)
                 {
-                    var clientInfo = new ClientInfo(clientIP);
                     clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
-                    if (clientInfoDict.ContainsKey(clientIP))
-                    {
-                        clientInfo = clientInfoDict[clientIP];
-                        if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Contains(playerID, StringComparer.OrdinalIgnoreCase))
-                        {
-                            clientInfo.logLoginAttempted(playerID);
-                            CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-                            return new string[] { "检测到仅字母大小写不同的重复昵称", "请正确输入上次登录时所使用的昵称", "（包括正确的字母大小写）" };
-                        }
-                        if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Count + 1 > clientInfo.maxIDsAllowed)
-                        {
-                            clientInfo.logLoginAttempted(playerID);
-                            CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-                            return new string[] { "玩家昵称与历史记录不匹配", "请使用上次登录时所使用的昵称" };
-                        }
-                    }
-                    else
-                    {
-                        clientInfoDict[clientIP] = clientInfo;
-                    }
-                    if (clientInfo.playerIdList.Count == 0 && playerIdListTaken.Contains(playerID, StringComparer.OrdinalIgnoreCase))
+                }
+                var clientInfo = new ClientInfo(clientIP, overridePass);
+                if (clientInfoDict.ContainsKey(clientIP))
+                {
+                    clientInfo = clientInfoDict[clientIP];
+                }
+                else
+                {
+                    clientInfoDict[clientIP] = clientInfo;
+                }
+                isNewClientIP = clientInfo.playerIdList.Count == 0;
+                if (!isNewClientIP)
+                {
+                    if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Contains(playerID, StringComparer.OrdinalIgnoreCase))
                     {
                         clientInfo.logLoginAttempted(playerID);
                         CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-                        return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
+                        return new string[] { "检测到仅字母大小写不同的重复昵称", "请正确输入上次登录时所使用的昵称", "（包括正确的字母大小写）" };
                     }
+                    if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Count + 1 > clientInfo.maxIDsAllowed)
+                    {
+                        clientInfo.logLoginAttempted(playerID);
+                        CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                        return new string[] { "玩家昵称与历史记录不匹配", "请使用上次登录时所使用的昵称" };
+                    }
+                }
+
+                Dictionary<string, string> playerIdTakenToIP = LoadTakenPlayerIDs();
+                if (isNewClientIP && playerIdTakenToIP.ContainsKey(playerID.ToLower()))
+                {
+                    string oldIP = playerIdTakenToIP[playerID.ToLower()];
+                    if (clientInfoDict.ContainsKey(oldIP) && (string.IsNullOrEmpty(clientInfoDict[oldIP].overridePass) || overridePass != clientInfoDict[oldIP].overridePass))
+                    {
+                        clientInfo.logLoginAttempted(playerID);
+                        CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                        return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称", "如果您的确拥有此昵称", "请尝试输入昵称验证码再次登录" };
+                    }
+                    if (!clientInfoDict[oldIP].playerIdList.Contains(playerID))
+                    {
+                        clientInfo.logLoginAttempted(playerID);
+                        CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                        return new string[] { "昵称验证码正确", "但检测到仅字母大小写不同的重复昵称", "请正确输入上次登录时所使用的昵称", "（包括正确的字母大小写）" };
+                    }
+                    if (this.PlayersProxy.ContainsKey(playerID))
+                    {
+                        return new string[] { "该玩家已在别处登录", "请不要同时在多处登录" };
+                    }
+
+                    clientInfoDict[oldIP].playerIdListAttempted.UnionWith(clientInfoDict[clientIP].playerIdListAttempted);
+                    clientInfoDict[clientIP] = clientInfoDict[oldIP];
+                    clientInfoDict[clientIP].IP = clientIP;
+                    clientInfoDict.Remove(oldIP);
+                    CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                    return new string[] { overridePass };
+                }
+                if (isNewClientIP)
+                {
+                    HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
+                    string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                    int attempts = 1;
+                    while (allPasses.Contains(temp) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
+                    {
+                        temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                        attempts++;
+                    }
+                    if (allPasses.Contains(temp))
+                    {
+                        return new string[] { "尝试生成昵称验证码失败", "请稍后再试" };
+                    }
+                    validationResult = new string[] { temp };
+                    clientInfo.overridePass = temp;
+                }
+                if (!fileExists || isNewClientIP)
+                {
+                    CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                 }
                 return validationResult;
             }
         }
 
-        public void LoadTakenPlayerIDs()
+        public Dictionary<string, string> LoadTakenPlayerIDs()
         {
-            playerIdListTaken = new HashSet<string>();
+            Dictionary<string, string> playerIdTakenToIP = new Dictionary<string, string>();
 
             string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
             if (File.Exists(fileName))
@@ -1061,10 +1117,22 @@ namespace TractorServer
                 {
                     foreach (string idTaken in entry.Value.playerIdList)
                     {
-                        playerIdListTaken.Add(idTaken);
+                        playerIdTakenToIP.Add(idTaken.ToLower(), entry.Key);
                     }
                 }
             }
+            return playerIdTakenToIP;
+        }
+
+        public HashSet<string> GetAllNickNameOverridePass(Dictionary<string, ClientInfo> clientInfoDict)
+        {
+            HashSet<string> allPasses = new HashSet<string>();
+
+            foreach (KeyValuePair<string, ClientInfo> entry in clientInfoDict)
+            {
+                allPasses.Add(entry.Value.overridePass);
+            }
+            return allPasses;
         }
     }
 

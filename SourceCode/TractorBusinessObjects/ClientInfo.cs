@@ -11,6 +11,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public string IP;
         [DataMember]
+        public string overridePass;
+        [DataMember]
         public HashSet<string> playerIdList;
         [DataMember]
         public HashSet<string> playerIdListAttempted;
@@ -23,9 +25,10 @@ namespace Duan.Xiugang.Tractor.Objects
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
 
-        public ClientInfo(string clientIP)
+        public ClientInfo(string clientIP, string orp)
         {
             IP = clientIP;
+            overridePass = orp;
             playerIdList = new HashSet<string>();
             playerIdListAttempted = new HashSet<string>();
             cheatHistory = new List<string>();
