@@ -1037,12 +1037,12 @@ namespace TractorServer
                     else
                     {
                         clientInfoDict[clientIP] = clientInfo;
-                        if (playerIdListTaken.Contains(playerID, StringComparer.OrdinalIgnoreCase))
-                        {
-                            clientInfo.logLoginAttempted(playerID);
-                            CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-                            return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
-                        }
+                    }
+                    if (clientInfo.playerIdList.Count == 0 && playerIdListTaken.Contains(playerID, StringComparer.OrdinalIgnoreCase))
+                    {
+                        clientInfo.logLoginAttempted(playerID);
+                        CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
+                        return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
                     }
                 }
                 return validationResult;
