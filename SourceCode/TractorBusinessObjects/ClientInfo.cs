@@ -13,6 +13,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public HashSet<string> playerIdList;
         [DataMember]
+        public HashSet<string> playerIdListAttempted;
+        [DataMember]
         public List<string> cheatHistory;
         [DataMember]
         public string lastLogin;
@@ -25,6 +27,7 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             IP = clientIP;
             playerIdList = new HashSet<string>();
+            playerIdListAttempted = new HashSet<string>();
             cheatHistory = new List<string>();
         }
 
@@ -37,6 +40,11 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 cheatHistory.Add(string.Format("player {0} attempted double observing at {1}", playerId, lastLogin));
             }
+        }
+
+        public void logLoginAttempted(string playerId)
+        {
+            playerIdListAttempted.Add(playerId);
         }
     }
 }
