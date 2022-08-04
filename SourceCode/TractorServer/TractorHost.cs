@@ -1109,7 +1109,7 @@ namespace TractorServer
                 Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
                 string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                 bool fileExists = File.Exists(fileName);
-                bool isNewClientIP = true;
+                bool isNewClientID = true;
                 if (fileExists)
                 {
                     clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
@@ -1123,8 +1123,8 @@ namespace TractorServer
                 {
                     clientInfoDict[clientIP] = clientInfo;
                 }
-                isNewClientIP = clientInfo.playerIdList.Count == 0;
-                if (!isNewClientIP)
+                isNewClientID = !clientInfo.playerIdList.Contains(playerID);
+                if (!isNewClientID)
                 {
                     if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Contains(playerID, StringComparer.OrdinalIgnoreCase))
                     {
@@ -1141,7 +1141,7 @@ namespace TractorServer
                 }
 
                 Dictionary<string, string> playerIdTakenToIP = LoadTakenPlayerIDs();
-                if (isNewClientIP && playerIdTakenToIP.ContainsKey(playerID.ToLower()))
+                if (isNewClientID && playerIdTakenToIP.ContainsKey(playerID.ToLower()))
                 {
                     string oldIP = playerIdTakenToIP[playerID.ToLower()];
                     if (clientInfoDict.ContainsKey(oldIP) && (string.IsNullOrEmpty(clientInfoDict[oldIP].overridePass) || overridePass != clientInfoDict[oldIP].overridePass))
@@ -1161,6 +1161,7 @@ namespace TractorServer
                         return new string[] { "该玩家已在别处登录", "请不要同时在多处登录" };
                     }
 
+                    clientInfoDict[oldIP].playerIdList.UnionWith(clientInfoDict[clientIP].playerIdList);
                     clientInfoDict[oldIP].playerIdListAttempted.UnionWith(clientInfoDict[clientIP].playerIdListAttempted);
                     clientInfoDict[clientIP] = clientInfoDict[oldIP];
                     clientInfoDict[clientIP].IP = clientIP;
@@ -1168,7 +1169,7 @@ namespace TractorServer
                     CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                     return new string[] { overridePass };
                 }
-                if (isNewClientIP)
+                if (isNewClientID)
                 {
                     HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
                     string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
@@ -1185,7 +1186,7 @@ namespace TractorServer
                     validationResult = new string[] { temp };
                     clientInfo.overridePass = temp;
                 }
-                if (!fileExists || isNewClientIP)
+                if (!fileExists || isNewClientID)
                 {
                     CommonMethods.WriteObjectToFile(clientInfoDict, GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                 }
