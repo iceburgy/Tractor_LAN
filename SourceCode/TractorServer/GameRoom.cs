@@ -1,15 +1,12 @@
 ﻿﻿using Duan.Xiugang.Tractor.Objects;
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
-using System.Timers;
 
 namespace TractorServer
 {
@@ -25,14 +22,6 @@ namespace TractorServer
         public string BackupRoomSettingFileName = "backup_RoomSetting.json";
         public string LogsByRoomFullFolder;
         public string ReplaysByRoomFullFolder;
-        public System.Timers.Timer timerPingClients;
-        public System.Timers.Timer[] timersPerClient;
-
-        // in milliseconds, allow for 1 second to perform clean up before ping again next time
-        // timeout configuration NetTcpBinding_ITractorHost sendTimeout only works for non-oneway methods
-        // for oneway methods, timeout is defaulted to 20 seconds
-        public int PingInterval = 6000;
-        public int PingTimeout = 5000;
 
         TractorHost tractorHost;
         public RoomState CurrentRoomState;
@@ -64,87 +53,7 @@ namespace TractorServer
 
             string fullLogFilePath = string.Format("{0}\\myroom_{1}_logfile.txt", LogsByRoomFullFolder, roomID);
             log = LoggerUtil.Setup(string.Format("myroom_{0}_logfile", roomID), fullLogFilePath);
-
-            SetTimer();
         }
-
-
-        #region timer to ping clients
-        private void SetTimer()
-        {
-            timerPingClients = new System.Timers.Timer(PingInterval);
-            timerPingClients.Elapsed += OnTimedEvent;
-            timerPingClients.AutoReset = true;
-
-            timersPerClient = new System.Timers.Timer[4];
-            for (int i = 0; i < 4; i++)
-            {
-                timersPerClient[i] = new System.Timers.Timer(PingTimeout);
-                timersPerClient[i].Elapsed += OnPingTimeoutEvent;
-                timersPerClient[i].AutoReset = true;
-            }
-        }
-
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            if (TractorHost.gameConfig.IsFullDebug || !IsGameOnGoing())
-            {
-                timerPingClients.Enabled = false;
-                return;
-            }
-            lock (CurrentRoomState.CurrentGameState)
-            {
-                List<string> playersToPing = new List<string>();
-                for (int i = 0; i < 4; i++)
-                {
-                    PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
-                    if (player != null && !player.IsOffline)
-                    {
-                        timersPerClient[i].Enabled = true;
-                        try
-                        {
-                            IPlayer iplayer = PlayersProxy[player.PlayerId];
-                            iplayer.NotifyMessage(new string[] { });
-                            if (!(iplayer is PlayerWSImpl))
-                            {
-                                timersPerClient[i].Enabled = false;
-                            }
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
-                }
-            }
-        }
-
-        private void OnPingTimeoutEvent(Object source, ElapsedEventArgs e)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                timersPerClient[i].Enabled = false;
-                PlayerEntity player = CurrentRoomState.CurrentGameState.Players[i];
-                if (timersPerClient[i].Equals(source) && player != null && !player.IsOffline)
-                {
-                    PerformProxyCleanupRestart(new List<string> { player.PlayerId });
-                    break;
-                }
-            }
-        }
-
-        public void PlayerPong(string playerID)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                PlayerEntity p = CurrentRoomState.CurrentGameState.Players[i];
-                if (p != null && p.PlayerId == playerID)
-                {
-                    timersPerClient[i].Enabled = false;
-                    break;
-                }
-            }
-        }
-        #endregion timer to ping clients
 
         #region implement interface ITractorHost
         public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
@@ -415,8 +324,7 @@ namespace TractorServer
                     RemoveObserver(badObs);
 
                     this.tractorHost.SessionIDGameRoom.Remove(playerID);
-                    this.tractorHost.PlayerToIP.Remove(playerID);
-                    this.tractorHost.PlayersProxy.Remove(playerID);
+                    this.tractorHost.CleanupIPlayer(playerID);
 
                     Thread.Sleep(500);
                     Thread thr = new Thread(new ThreadStart(this.tractorHost.UpdateGameHall));
@@ -427,9 +335,10 @@ namespace TractorServer
                 log.Debug(playerID + " is not responding.");
                 needsRestart = true;
                 CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
+
+                // perform clean up
                 PlayersProxy.Remove(playerID);
-                this.tractorHost.PlayerToIP.Remove(playerID);
-                this.tractorHost.PlayersProxy.Remove(playerID);
+                this.tractorHost.CleanupIPlayer(playerID);
             }
 
             if (IsGameOnGoing())
@@ -698,7 +607,6 @@ namespace TractorServer
                 BuildReplayEntity();
 
                 SaveGameStateToFile();
-                timerPingClients.Enabled = true;
             }
         }
 
@@ -1382,8 +1290,6 @@ namespace TractorServer
 
             restoredMsg.Add("继续牌局【成功】");
             PublishMessage(restoredMsg.ToArray());
-
-            timerPingClients.Enabled = true;
         }
 
         //读取房间游戏设置

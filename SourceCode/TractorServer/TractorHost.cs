@@ -10,6 +10,7 @@ using System.ServiceModel.Channels;
 using System.Configuration;
 using Fleck;
 using System.Security.Cryptography.X509Certificates;
+using System.Timers;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -47,6 +48,15 @@ namespace TractorServer
             "The socket connection was aborted",
             "The I/O operation has been aborted"
         };
+        // in milliseconds, allow for 1 second to perform clean up before ping again next time
+        // timeout configuration NetTcpBinding_ITractorHost sendTimeout only works for non-oneway methods
+        // for oneway methods, timeout is defaulted to 20 seconds
+        public int PingInterval = 6000;
+        public int PingTimeout = 5000;
+
+        public System.Timers.Timer timerPingClients;
+        public Dictionary<string, System.Timers.Timer> playerIDToTimer;
+        public Dictionary<System.Timers.Timer,string> timerToPlayerID;
 
         public TractorHost()
         {
@@ -84,6 +94,7 @@ namespace TractorServer
                 }
             }
             SessionIDGameRoom = new Dictionary<string, GameRoom>();
+            this.SetTimer();
 
             var threadStartHostWS = new Thread(() =>
             {
@@ -129,6 +140,7 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
+                            this.InitTimerForIPlayer(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -197,6 +209,7 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
+                            this.InitTimerForIPlayer(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -307,6 +320,67 @@ namespace TractorServer
                     break;
             }
         }
+
+        #region timer to ping clients
+        private void SetTimer()
+        {
+            timerPingClients = new System.Timers.Timer(PingInterval);
+            timerPingClients.Elapsed += OnTimedEvent;
+            timerPingClients.AutoReset = true;
+            timerPingClients.Enabled = true;
+
+            playerIDToTimer = new Dictionary<string, System.Timers.Timer>();
+            timerToPlayerID = new Dictionary<System.Timers.Timer, string>();
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            if (TractorHost.gameConfig.IsFullDebug)
+            {
+                timerPingClients.Enabled = false;
+                return;
+            }
+            foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
+            {
+                string playerID = entry.Key;
+                System.Timers.Timer timerPing = entry.Value;
+                timerPing.Enabled = true;
+                try
+                {
+                    IPlayer iplayer = PlayersProxy[playerID];
+                    iplayer.NotifyMessage(new string[] { });
+                    if (!(iplayer is PlayerWSImpl))
+                    {
+                        timerPing.Enabled = false;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+
+            }
+        }
+
+        private void OnPingTimeoutEvent(Object source, ElapsedEventArgs e)
+        {
+            System.Timers.Timer timerSource = (System.Timers.Timer)source;
+            timerSource.Enabled = false;
+            if (this.timerToPlayerID.ContainsKey(timerSource))
+            {
+                string playerID = timerToPlayerID[timerSource];
+                handlePlayerDisconnect(playerID);
+            }
+        }
+
+        public void PlayerPong(string playerID)
+        {
+            if (playerIDToTimer.ContainsKey(playerID))
+            {
+                System.Timers.Timer timer = playerIDToTimer[playerID];
+                timer.Enabled = false;
+            }
+        }
+        #endregion timer to ping clients
 
         private void GlobalFirstChanceExceptionHandler(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
@@ -555,8 +629,7 @@ namespace TractorServer
 
         private string PlayerExitHall(string playerID)
         {
-            PlayerToIP.Remove(playerID);
-            PlayersProxy.Remove(playerID);
+            CleanupIPlayer(playerID);
             string result = string.Format("player {0} quit.", playerID);
             log.Debug(result);
             Thread.Sleep(500);
@@ -564,6 +637,30 @@ namespace TractorServer
             thr.Start();
             return result;
         }
+
+        // perform timer init for IPlayer
+        private void InitTimerForIPlayer(string playerID)
+        {
+            System.Timers.Timer timer = new System.Timers.Timer(PingTimeout);
+            timer.Elapsed += OnPingTimeoutEvent;
+            timer.AutoReset = true;
+            playerIDToTimer[playerID] = timer;
+            timerToPlayerID[timer] = playerID;
+        }
+
+        // perform clean up IPlayer
+        public void CleanupIPlayer(string playerID)
+        {
+            if (playerIDToTimer.ContainsKey(playerID))
+            {
+                System.Timers.Timer timer = playerIDToTimer[playerID];
+                playerIDToTimer.Remove(playerID);
+                timerToPlayerID.Remove(timer);
+            }
+            PlayerToIP.Remove(playerID);
+            PlayersProxy.Remove(playerID);
+        }
+
         public string EndPlayerQuit(IAsyncResult ar)
         {
             CompletedAsyncResult<string> result = ar as CompletedAsyncResult<string>;
@@ -633,15 +730,6 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerHasCutCards(cutInfo);
-            }
-        }
-
-        public void PlayerPong(string playerID)
-        {
-            if (this.SessionIDGameRoom.ContainsKey(playerID))
-            {
-                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                gameRoom.PlayerPong(playerID);
             }
         }
 
