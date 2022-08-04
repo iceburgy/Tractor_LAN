@@ -311,7 +311,11 @@ namespace TractorServer
                     this.PlayerSendEmojiWS(playerID, content);
                     break;
                 case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
-                    this.PlayerHasCutCards(playerID, content);
+                    var threadPlayerHasCutCards = new Thread(() =>
+                    {
+                        this.PlayerHasCutCards(playerID, content);
+                    });
+                    threadPlayerHasCutCards.Start();
                     break;
                 case WebSocketObjects.WebSocketMessageType_NotifyPong:
                     this.PlayerPong(playerID);
