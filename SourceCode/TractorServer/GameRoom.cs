@@ -1224,6 +1224,15 @@ namespace TractorServer
                 }
             }
 
+            // 重置每个玩家的状态
+            foreach (PlayerEntity p in gs.Players)
+            {
+                p.IsOffline = false;
+                p.IsReadyToStart = true;
+                p.IsRobot = false;
+                p.Observers.Clear();
+            }
+
             string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
             CurrentHandState hs = CommonMethods.ReadObjectFromFile<CurrentHandState>(fileNameHandState);
             if (hs == null)
