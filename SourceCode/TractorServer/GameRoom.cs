@@ -325,10 +325,6 @@ namespace TractorServer
 
                     this.tractorHost.SessionIDGameRoom.Remove(playerID);
                     this.tractorHost.CleanupIPlayer(playerID);
-
-                    Thread.Sleep(500);
-                    Thread thr = new Thread(new ThreadStart(this.tractorHost.UpdateGameHall));
-                    thr.Start();
                     continue;
                 }
 
@@ -340,6 +336,12 @@ namespace TractorServer
                 PlayersProxy.Remove(playerID);
                 this.tractorHost.CleanupIPlayer(playerID);
             }
+
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(500);
+                this.tractorHost.UpdateGameHall();
+            })).Start();
 
             if (IsGameOnGoing())
             {

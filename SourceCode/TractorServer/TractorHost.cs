@@ -140,7 +140,6 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
-                            this.InitTimerForIPlayer(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -209,7 +208,6 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
-                            this.InitTimerForIPlayer(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -484,9 +482,11 @@ namespace TractorServer
                     bool entered = gameRoom.PlayerReenterRoom(playerID, clientIP, player, AllowSameIP);
                     if (entered)
                     {
-                        Thread.Sleep(500);
-                        Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                        thr.Start();
+                        new Thread(new ThreadStart(() =>
+                        {
+                            Thread.Sleep(500);
+                            this.UpdateGameHall();
+                        })).Start();
                     }
                 }
             }
@@ -495,10 +495,17 @@ namespace TractorServer
                 log.Debug(string.Format("player {0} entered hall - web client.", playerID));
                 UpdateGameHall();
             }
+
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(PingInterval);
+                this.InitTimerForIPlayer(playerID);
+            })).Start();
         }
 
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
+            if (!PlayersProxy.ContainsKey(playerID)) return;
             string clientIP = PlayerToIP[playerID];
             IPlayer player = PlayersProxy[playerID];
             if (player != null)
@@ -516,9 +523,11 @@ namespace TractorServer
                         if (entered)
                         {
                             SessionIDGameRoom[playerID] = gameRoom;
-                            Thread.Sleep(500);
-                            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                            thr.Start();
+                            new Thread(new ThreadStart(() =>
+                            {
+                                Thread.Sleep(500);
+                                this.UpdateGameHall();
+                            })).Start();
                         }
                     }
                 }
@@ -537,6 +546,7 @@ namespace TractorServer
                 log.Debug(string.Format("failed to unmarshal PlayerEnterRoomWSMessage: {0}", content));
                 return;
             }
+            if (!PlayersProxy.ContainsKey(playerID)) return;
             IPlayer player = PlayersProxy[playerID];
             if (player == null)
             {
@@ -557,9 +567,11 @@ namespace TractorServer
                 if (entered)
                 {
                     SessionIDGameRoom[playerID] = gameRoom;
-                    Thread.Sleep(500);
-                    Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                    thr.Start();
+                    new Thread(new ThreadStart(() =>
+                    {
+                        Thread.Sleep(500);
+                        this.UpdateGameHall();
+                    })).Start();
                 }
             }
         }
@@ -619,9 +631,11 @@ namespace TractorServer
             }
 
             log.Debug(string.Format("player {0} exited room.", playerID));
-            Thread.Sleep(500);
-            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-            thr.Start();
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(500);
+                this.UpdateGameHall();
+            })).Start();
         }
 
         //玩家退出游戏
@@ -636,9 +650,11 @@ namespace TractorServer
             CleanupIPlayer(playerID);
             string result = string.Format("player {0} quit.", playerID);
             log.Debug(result);
-            Thread.Sleep(500);
-            Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-            thr.Start();
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(500);
+                this.UpdateGameHall();
+            })).Start();
             return result;
         }
 
@@ -886,9 +902,11 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.TeamUp();
-                Thread.Sleep(500);
-                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                thr.Start();
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
             }
         }
 
@@ -899,9 +917,11 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.SwapSeat(playerId, offset);
-                Thread.Sleep(500);
-                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                thr.Start();
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
             }
         }
         public void SwapSeatWS(string playerId, string content)
@@ -954,9 +974,11 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[observerId];
                 gameRoom.ObservePlayerById(playerId, observerId);
-                Thread.Sleep(500);
-                Thread thr = new Thread(new ThreadStart(this.UpdateGameHall));
-                thr.Start();
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
             }
         }
 
