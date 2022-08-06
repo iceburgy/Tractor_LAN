@@ -11,6 +11,7 @@ using System.Configuration;
 using Fleck;
 using System.Security.Cryptography.X509Certificates;
 using System.Timers;
+using System.Collections.Concurrent;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -38,8 +39,8 @@ namespace TractorServer
 
         public CardsShoe CardsShoe { get; set; }
 
-        public Dictionary<string, string> PlayerToIP { get; set; }
-        public Dictionary<string, IPlayer> PlayersProxy { get; set; }
+        public Dictionary<string, string> PlayerToIP;
+        public Dictionary<string, IPlayer> PlayersProxy;
         public List<GameRoom> GameRooms { get; set; }
         public List<RoomState> RoomStates { get; set; }
         public Dictionary<string, GameRoom> SessionIDGameRoom { get; set; }
@@ -55,8 +56,8 @@ namespace TractorServer
         public int PingTimeout = 10000;
 
         public System.Timers.Timer timerPingClients;
-        public Dictionary<string, System.Timers.Timer> playerIDToTimer;
-        public Dictionary<System.Timers.Timer,string> timerToPlayerID;
+        public ConcurrentDictionary<string, System.Timers.Timer> playerIDToTimer;
+        public ConcurrentDictionary<System.Timers.Timer,string> timerToPlayerID;
 
         public TractorHost()
         {
@@ -297,7 +298,10 @@ namespace TractorServer
                     this.CardsReadyWS(playerID, content);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ResumeGameFromFile:
-                    this.ResumeGameFromFile(playerID);
+                    new Thread(() =>
+                    {
+                        this.ResumeGameFromFile(playerID);
+                    }).Start();
                     break;
                 case WebSocketObjects.WebSocketMessageType_RandomSeat:
                     this.TeamUp(playerID);
@@ -309,11 +313,10 @@ namespace TractorServer
                     this.PlayerSendEmojiWS(playerID, content);
                     break;
                 case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
-                    var threadPlayerHasCutCards = new Thread(() =>
+                    new Thread(() =>
                     {
                         this.PlayerHasCutCards(playerID, content);
-                    });
-                    threadPlayerHasCutCards.Start();
+                    }).Start();
                     break;
                 case WebSocketObjects.WebSocketMessageType_NotifyPong:
                     this.PlayerPong(playerID);
@@ -331,8 +334,8 @@ namespace TractorServer
             timerPingClients.AutoReset = true;
             timerPingClients.Enabled = true;
 
-            playerIDToTimer = new Dictionary<string, System.Timers.Timer>();
-            timerToPlayerID = new Dictionary<System.Timers.Timer, string>();
+            playerIDToTimer = new ConcurrentDictionary<string, System.Timers.Timer>();
+            timerToPlayerID = new ConcurrentDictionary<System.Timers.Timer, string>();
         }
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
@@ -370,6 +373,7 @@ namespace TractorServer
             if (this.timerToPlayerID.ContainsKey(timerSource))
             {
                 string playerID = timerToPlayerID[timerSource];
+                log.Debug("timed out: " + playerID);
                 handlePlayerDisconnect(playerID);
             }
         }
@@ -468,7 +472,7 @@ namespace TractorServer
             string clientIP = ((PlayerWSImpl)this.PlayersProxy[playerID]).Socket.ConnectionInfo.ClientIpAddress;
             LogClientInfo(clientIP, playerID, false);
             IPlayer player = this.PlayersProxy[playerID];
-            this.PlayerToIP.Add(playerID, clientIP);
+            this.PlayerToIP[playerID] = clientIP;
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 //断线重连
@@ -674,8 +678,12 @@ namespace TractorServer
             if (playerIDToTimer.ContainsKey(playerID))
             {
                 System.Timers.Timer timer = playerIDToTimer[playerID];
-                playerIDToTimer.Remove(playerID);
-                timerToPlayerID.Remove(timer);
+                if(!playerIDToTimer.TryRemove(playerID, out timer))
+                {
+                    log.Debug("concurrence removing playerIDToTimer failed with key: " + playerID);
+                }
+                string temp = "";
+                timerToPlayerID.TryRemove(timer, out temp);
             }
             PlayerToIP.Remove(playerID);
             PlayersProxy.Remove(playerID);

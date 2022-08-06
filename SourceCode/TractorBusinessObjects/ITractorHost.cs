@@ -8,9 +8,6 @@ namespace Duan.Xiugang.Tractor.Objects
     [ServiceContract(CallbackContract = typeof (IPlayer))]
     public interface ITractorHost
     {
-        CardsShoe CardsShoe { get; set; }
-        Dictionary<string, IPlayer> PlayersProxy { get; set; }
-
         [OperationContract(IsOneWay = true)]
         void PlayerEnterHall(string playerId);
 
