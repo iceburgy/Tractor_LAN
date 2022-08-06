@@ -665,6 +665,7 @@ namespace TractorServer
         // perform timer init for IPlayer
         private void InitTimerForIPlayer(string playerID)
         {
+            if (!PlayersProxy.ContainsKey(playerID)) return;
             System.Timers.Timer timer = new System.Timers.Timer(PingTimeout);
             timer.Elapsed += OnPingTimeoutEvent;
             timer.AutoReset = true;
@@ -1195,7 +1196,23 @@ namespace TractorServer
                         return new string[] { "该玩家已在别处登录", "请不要同时在多处登录" };
                     }
 
-                    clientInfoDict[oldIP].playerIdList.UnionWith(clientInfoDict[clientIP].playerIdList);
+                    HashSet<string> newIDList = new HashSet<string>();
+                    newIDList.Add(playerID);
+                    newIDList.UnionWith(clientInfoDict[oldIP].playerIdList);
+                    newIDList.UnionWith(clientInfoDict[clientIP].playerIdList);
+                    clientInfoDict[oldIP].playerIdList.Clear();
+                    clientInfoDict[oldIP].playerIdList.Add(playerID);
+                    foreach (string toAddID in newIDList)
+                    {
+                        if (clientInfoDict[oldIP].playerIdList.Count < clientInfoDict[oldIP].maxIDsAllowed)
+                        {
+                            clientInfoDict[oldIP].playerIdList.Add(toAddID);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                     clientInfoDict[oldIP].playerIdListAttempted.UnionWith(clientInfoDict[clientIP].playerIdListAttempted);
                     clientInfoDict[clientIP] = clientInfoDict[oldIP];
                     clientInfoDict[clientIP].IP = clientIP;
