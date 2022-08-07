@@ -1145,12 +1145,13 @@ namespace TractorServer
                 string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                 bool fileExists = File.Exists(fileName);
                 bool isNewClientID = true;
+                bool isKnownIP = !clientInfoDict.ContainsKey(clientIP);
                 if (fileExists)
                 {
                     clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
                 }
                 var clientInfo = new ClientInfo(clientIP, overridePass);
-                if (clientInfoDict.ContainsKey(clientIP))
+                if (isKnownIP)
                 {
                     clientInfo = clientInfoDict[clientIP];
                 }
@@ -1159,7 +1160,7 @@ namespace TractorServer
                     clientInfoDict[clientIP] = clientInfo;
                 }
                 isNewClientID = !clientInfo.playerIdList.Contains(playerID);
-                if (!isNewClientID)
+                if (isKnownIP)
                 {
                     if (!clientInfo.playerIdList.Contains(playerID) && clientInfo.playerIdList.Contains(playerID, StringComparer.OrdinalIgnoreCase))
                     {
