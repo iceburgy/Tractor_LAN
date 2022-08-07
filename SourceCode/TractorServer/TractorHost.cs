@@ -1145,11 +1145,11 @@ namespace TractorServer
                 string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
                 bool fileExists = File.Exists(fileName);
                 bool isNewClientID = true;
-                bool isKnownIP = !clientInfoDict.ContainsKey(clientIP);
                 if (fileExists)
                 {
                     clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
                 }
+                bool isKnownIP = clientInfoDict.ContainsKey(clientIP);
                 var clientInfo = new ClientInfo(clientIP, overridePass);
                 if (isKnownIP)
                 {
@@ -1223,20 +1223,23 @@ namespace TractorServer
                 }
                 if (isNewClientID)
                 {
-                    HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
-                    string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
-                    int attempts = 1;
-                    while (allPasses.Contains(temp) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
+                    if (string.IsNullOrEmpty(clientInfo.overridePass))
                     {
-                        temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
-                        attempts++;
+                        HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
+                        string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                        int attempts = 1;
+                        while (allPasses.Contains(temp) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
+                        {
+                            temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                            attempts++;
+                        }
+                        if (allPasses.Contains(temp))
+                        {
+                            return new string[] { "尝试生成昵称验证码失败", "请稍后再试" };
+                        }
+                        clientInfo.overridePass = temp;
                     }
-                    if (allPasses.Contains(temp))
-                    {
-                        return new string[] { "尝试生成昵称验证码失败", "请稍后再试" };
-                    }
-                    validationResult = new string[] { temp };
-                    clientInfo.overridePass = temp;
+                    validationResult = new string[] { clientInfo.overridePass };
                 }
                 if (!fileExists || isNewClientID)
                 {
