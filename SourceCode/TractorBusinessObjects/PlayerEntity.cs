@@ -15,9 +15,6 @@ namespace Duan.Xiugang.Tractor.Objects
         public string PlayerId { get; set; }
 
         [DataMember]
-        public string PlayerName { get; set; }
-
-        [DataMember]
         public int Rank { get; set; }
 
         [DataMember]
@@ -34,5 +31,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         [DataMember]
         public HashSet<string> Observers { get; set; }
+
+        [DataMember]
+        public string PlayingSG = string.Empty;
     }
 }

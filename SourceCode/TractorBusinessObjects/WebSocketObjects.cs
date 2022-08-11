@@ -52,6 +52,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_NotifyGrabStar = "NotifyGrabStar";
         public const string WebSocketMessageType_NotifyEndCollectStar = "NotifyEndCollectStar";
 
+        public const string SmallGameName_CollectStar = "CatchStar";
+
         [Serializable]
         public class WebSocketMessage
         {

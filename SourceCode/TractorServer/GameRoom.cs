@@ -482,6 +482,7 @@ namespace TractorServer
         // returns: true - created successfully, false - someone else is already playing
         public bool NotifyCreateCollectStar(WebSocketObjects.SGCSState state)
         {
+            bool needToUpdateGameState = false;
             if (state.Stage < 0)
             {
                 if (this.sgcsState != null && !this.sgcsState.IsGameOver) return false;
@@ -497,6 +498,8 @@ namespace TractorServer
                     {
                         dude.PlayerId = this.CurrentRoomState.CurrentGameState.Players[i].PlayerId;
                         dude.Enabled = true;
+                        p.PlayingSG = WebSocketObjects.SmallGameName_CollectStar;
+                        needToUpdateGameState = true;
                         dude.X = CommonMethods.random.Next(400);
                         dude.Y = 450;
                     }
@@ -533,6 +536,10 @@ namespace TractorServer
 
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyCreateCollectStar", new List<object>() { this.sgcsState });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyCreateCollectStar", new List<object>() { this.sgcsState });
+            if (needToUpdateGameState)
+            {
+                UpdateGameState();
+            }
             return true;
         }
 
@@ -555,6 +562,7 @@ namespace TractorServer
         {
             this.sgcsState.IsGameOver = true;
             this.sgcsState.Dudes[playerIndex].Enabled = false;
+            this.CurrentRoomState.CurrentGameState.Players[playerIndex].PlayingSG = string.Empty;
             foreach (var dude in this.sgcsState.Dudes)
             {
                 if (dude.Enabled == true)
@@ -566,6 +574,7 @@ namespace TractorServer
 
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
+            UpdateGameState();
         }
 
         public void SpecialEndGameRequest(string playerID)
