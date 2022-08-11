@@ -760,5 +760,10 @@ namespace Duan.Xiugang.Tractor.Player
             }
             return availableTrumps;
         }
+
+        public void NotifySgcsPlayerUpdated(string content) { }
+        public void NotifyCreateCollectStar(WebSocketObjects.SGCSState state) { }
+        public void NotifyEndCollectStar(WebSocketObjects.SGCSState state) { }
+        public void NotifyGrabStar(int playerIndex, int starIndex) { }
     }
 }

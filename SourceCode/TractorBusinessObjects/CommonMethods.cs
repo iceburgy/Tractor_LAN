@@ -22,6 +22,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int winEmojiLength = 4;
         public static int nickNameOverridePassLength = 5;
         public static int nickNameOverridePassMaxGetAttempts = 10;
+        public static string[] dudeTints = new string[] { "", "0x00ff00", "0xffa500", "0xffff00" }; // green, orange, yellow
 
         public static Random random = new Random();
         public static string RandomString(int length)
@@ -437,6 +438,19 @@ namespace Duan.Xiugang.Tractor.Objects
                 if ((oldOnes[i] == null || !oldOnes[i].IsReadyToStart) && (newOnes[i] != null && newOnes[i].IsReadyToStart)) return true;
             }
             return false;
+        }
+
+        public static int GetPlayerIndexByID(List<PlayerEntity> Players, string playerID)
+        {
+            for (int i = 0; i < Players.Count; i++)
+            {
+                var p = Players[i];
+                if (p != null && p.PlayerId == playerID)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }

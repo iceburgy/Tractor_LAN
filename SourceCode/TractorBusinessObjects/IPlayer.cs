@@ -105,5 +105,20 @@ namespace Duan.Xiugang.Tractor.Objects
         /// </summary>
         [OperationContract(IsOneWay = true)]
         void CutCardShoeCards();
+
+        /// <summary>
+        ///     更新collectstar游戏状态
+        /// </summary>
+        [OperationContract(IsOneWay = true)]
+        void NotifySgcsPlayerUpdated(string content);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyCreateCollectStar(WebSocketObjects.SGCSState state);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyEndCollectStar(WebSocketObjects.SGCSState state);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyGrabStar(int playerIndex, int starIndex);
     }
 }

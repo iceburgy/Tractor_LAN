@@ -321,6 +321,18 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_NotifyPong:
                     this.PlayerPong(playerID);
                     break;
+                case WebSocketObjects.WebSocketMessageType_SgcsPlayerUpdated:
+                    this.NotifySgcsPlayerUpdated(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_CreateCollectStar:
+                    this.NotifyCreateCollectStar(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_GrabStar:
+                    this.NotifyGrabStar(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_EndCollectStar:
+                    this.NotifyEndCollectStar(playerID, content);
+                    break;
                 default:
                     break;
             }
@@ -411,7 +423,6 @@ namespace TractorServer
         }
 
         #region implement interface ITractorHost
-
         public void PlayerEnterHall(string playerID)
         {
             string clientIP = GetClientIP();
@@ -578,6 +589,44 @@ namespace TractorServer
                     })).Start();
                 }
             }
+        }
+
+        public void NotifySgcsPlayerUpdated(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifySgcsPlayerUpdated(content);
+        }
+
+        public void NotifyCreateCollectStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+            WebSocketObjects.SGCSState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGCSState>(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            if (!gameRoom.NotifyCreateCollectStar(state))
+            {
+                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
+            }
+        }
+
+        public void NotifyGrabStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            int[] args = CommonMethods.ReadObjectFromString<int[]>(content);
+            int playerIndex = args[0];
+            int starIndex = args[1];
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifyGrabStar(playerIndex, starIndex);
+        }
+
+        public void NotifyEndCollectStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            int playerIndex = int.Parse(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifyEndCollectStar(playerIndex);
         }
 
         //玩家强退

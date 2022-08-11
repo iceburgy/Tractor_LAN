@@ -135,6 +135,30 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyTryToDumpResult, "", args);
         }
 
+        public void NotifySgcsPlayerUpdated(string content)
+        {
+            var args = new List<object>() { content };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifySgcsPlayerUpdated, "", args);
+        }
+
+        public void NotifyCreateCollectStar(WebSocketObjects.SGCSState state)
+        {
+            var args = new List<object>() { state };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyCreateCollectStar, "", args);
+        }
+
+        public void NotifyEndCollectStar(WebSocketObjects.SGCSState state)
+        {
+            var args = new List<object>() { state };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyEndCollectStar, "", args);
+        }
+
+        public void NotifyGrabStar(int playerIndex, int starIndex)
+        {
+            var args = new List<object>() { playerIndex, starIndex };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGrabStar, "", args);
+        }
+
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
         }

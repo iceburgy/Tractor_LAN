@@ -25,6 +25,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_SwapSeat = "SwapSeat";
         public const string WebSocketMessageType_SendEmoji = "SendEmoji";
         public const string WebSocketMessageType_PlayerHasCutCards = "PlayerHasCutCards";
+        public const string WebSocketMessageType_SgcsPlayerUpdated = "SgcsPlayerUpdated";
+        public const string WebSocketMessageType_CreateCollectStar = "CreateCollectStar";
+        public const string WebSocketMessageType_GrabStar = "GrabStar";
+        public const string WebSocketMessageType_EndCollectStar = "EndCollectStar";
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
@@ -43,6 +47,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_NotifyEmoji = "NotifyEmoji";
         public const string WebSocketMessageType_CutCardShoeCards = "CutCardShoeCards";
         public const string WebSocketMessageType_NotifyReplayState = "NotifyReplayState";
+        public const string WebSocketMessageType_NotifySgcsPlayerUpdated = "NotifySgcsPlayerUpdated";
+        public const string WebSocketMessageType_NotifyCreateCollectStar = "NotifyCreateCollectStar";
+        public const string WebSocketMessageType_NotifyGrabStar = "NotifyGrabStar";
+        public const string WebSocketMessageType_NotifyEndCollectStar = "NotifyEndCollectStar";
 
         [Serializable]
         public class WebSocketMessage
@@ -62,6 +70,74 @@ namespace Duan.Xiugang.Tractor.Objects
             public int roomID;
             [DataMember]
             public int posID;
+        }
+
+        [Serializable]
+        public class SGCSBomb
+        {
+            [DataMember]
+            public int X;
+            [DataMember]
+            public int Y;
+            [DataMember]
+            public int VelX;
+        }
+
+        [Serializable]
+        public class SGCSDude
+        {
+            [DataMember]
+            public string PlayerId = "";
+            [DataMember]
+            public int X = -1;
+            [DataMember]
+            public int Y = -1;
+            [DataMember]
+            public double Bounce;
+            [DataMember]
+            public int Score = 0;
+            [DataMember]
+            public string Tint = "";
+            [DataMember]
+            public bool Enabled = false;
+        }
+
+        [Serializable]
+        public class SGCSStar
+        {
+            [DataMember]
+            public int X;
+            [DataMember]
+            public int Y;
+            [DataMember]
+            public double Bounce;
+            [DataMember]
+            public bool Enabled;
+        }
+
+        [Serializable]
+        public class SGCSState
+        {
+            [DataMember]
+            public string PlayerId;
+            [DataMember]
+            public bool IsGameOver;
+            [DataMember]
+            public int Score;
+            [DataMember]
+            public int Stage;
+            [DataMember]
+            public int ScoreHigh;
+            [DataMember]
+            public int StageHigh;
+            [DataMember]
+            public string ScreenshotHigh;
+            [DataMember]
+            public List<SGCSDude> Dudes;
+            [DataMember]
+            public List<SGCSStar> Stars;
+            [DataMember]
+            public List<SGCSBomb> Bombs;
         }
     }
 }

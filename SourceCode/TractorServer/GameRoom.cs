@@ -27,13 +27,13 @@ namespace TractorServer
         public RoomState CurrentRoomState;
         public CardsShoe CardsShoe { get; set; }
         public ReplayEntity replayEntity;
+        public WebSocketObjects.SGCSState sgcsState;
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
         private ServerLocalCache serverLocalCache;
         private bool isGameOver;
         private bool isGameRestarted;
-
         public GameRoom(int roomID, string roomName, TractorHost host)
         {
             string rootFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -288,7 +288,12 @@ namespace TractorServer
 
             CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
             log.Debug(playerID + " quit.");
+            if (this.sgcsState != null && !this.sgcsState.IsGameOver)
+            {
+                this.NotifyEndCollectStar(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID));
+            }
             PlayersProxy.Remove(playerID);
+            if (PlayersProxy.Count == 0 && this.sgcsState != null) this.sgcsState.IsGameOver = true;
             for (int i = 0; i < 4; i++)
             {
                 if (CurrentRoomState.CurrentGameState.Players[i] != null)
@@ -333,7 +338,12 @@ namespace TractorServer
                 CurrentRoomState.CurrentGameState.PlayerToIP.Remove(playerID);
 
                 // perform clean up
+                if (this.sgcsState != null && !this.sgcsState.IsGameOver)
+                {
+                    this.NotifyEndCollectStar(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID));
+                }
                 PlayersProxy.Remove(playerID);
+                if (PlayersProxy.Count == 0 && this.sgcsState != null) this.sgcsState.IsGameOver = true;
                 this.tractorHost.CleanupIPlayer(playerID);
             }
 
@@ -460,6 +470,102 @@ namespace TractorServer
             }
             UpdateGameState();
             CheckOfflinePlayers();
+        }
+
+        public void NotifySgcsPlayerUpdated(string content)
+        {
+            if (this.sgcsState.IsGameOver) return;
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifySgcsPlayerUpdated", new List<object>() { content });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifySgcsPlayerUpdated", new List<object>() { content });
+        }
+
+        // returns: true - created successfully, false - someone else is already playing
+        public bool NotifyCreateCollectStar(WebSocketObjects.SGCSState state)
+        {
+            if (state.Stage < 0)
+            {
+                if (this.sgcsState != null && !this.sgcsState.IsGameOver) return false;
+                this.sgcsState = state;
+                this.sgcsState.Stage = 1;
+                for (int i = 0; i < this.CurrentRoomState.CurrentGameState.Players.Count; i++)
+                {
+                    WebSocketObjects.SGCSDude dude = new WebSocketObjects.SGCSDude();
+                    this.sgcsState.Dudes.Add(dude);
+                    dude.Tint = CommonMethods.dudeTints[i];
+                    PlayerEntity p = this.CurrentRoomState.CurrentGameState.Players[i];
+                    if (p != null)
+                    {
+                        dude.PlayerId = this.CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                        dude.Enabled = true;
+                        dude.X = CommonMethods.random.Next(400);
+                        dude.Y = 450;
+                    }
+                }
+
+                int starX = 12;
+                for (int i = 0; i < 12; i++)
+                {
+                    WebSocketObjects.SGCSStar newStar = new WebSocketObjects.SGCSStar();
+                    newStar.Enabled = true;
+                    newStar.X = starX + i * 70;
+                    newStar.Bounce = (4 + CommonMethods.random.Next(4)) / 10.0;
+                    this.sgcsState.Stars.Add(newStar);
+                }
+                WebSocketObjects.SGCSBomb newBomb = new WebSocketObjects.SGCSBomb();
+                newBomb.X = CommonMethods.random.Next(800);
+                newBomb.VelX = (50 + CommonMethods.random.Next(100)) * (CommonMethods.random.Next(2) == 0 ? -1 : 1);
+                this.sgcsState.Bombs.Add(newBomb);
+            }
+            else
+            {
+                this.sgcsState.Stage++;
+                for (int i = 0; i < 12; i++)
+                {
+                    this.sgcsState.Stars[i].Enabled = true;
+                    this.sgcsState.Stars[i].X = 5 + CommonMethods.random.Next(790);
+                    this.sgcsState.Stars[i].Bounce = (4 + CommonMethods.random.Next(4)) / 10.0;
+                }
+                WebSocketObjects.SGCSBomb nextBomb = new WebSocketObjects.SGCSBomb();
+                nextBomb.X = CommonMethods.random.Next(800);
+                nextBomb.VelX = (50 + CommonMethods.random.Next(100)) * (CommonMethods.random.Next(2) == 0 ? -1 : 1);
+                this.sgcsState.Bombs.Add(nextBomb);
+            }
+
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyCreateCollectStar", new List<object>() { this.sgcsState });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyCreateCollectStar", new List<object>() { this.sgcsState });
+            return true;
+        }
+
+        public void NotifyGrabStar(int playerIndex, int starIndex)
+        {
+            if (this.sgcsState.IsGameOver) return;
+            lock (this.sgcsState)
+            {
+                if (this.sgcsState.Stars[starIndex].Enabled)
+                {
+                    this.sgcsState.Dudes[playerIndex].Score += 10;
+                    this.sgcsState.Stars[starIndex].Enabled = false;
+                    IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyGrabStar", new List<object>() { playerIndex, starIndex });
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyGrabStar", new List<object>() { playerIndex, starIndex });
+                }
+            }
+        }
+
+        public void NotifyEndCollectStar(int playerIndex)
+        {
+            this.sgcsState.IsGameOver = true;
+            this.sgcsState.Dudes[playerIndex].Enabled = false;
+            foreach (var dude in this.sgcsState.Dudes)
+            {
+                if (dude.Enabled == true)
+                {
+                    this.sgcsState.IsGameOver = false;
+                    break;
+                }
+            }
+
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
         }
 
         public void SpecialEndGameRequest(string playerID)
