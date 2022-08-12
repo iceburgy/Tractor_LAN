@@ -487,6 +487,7 @@ namespace TractorServer
             {
                 if (this.sgcsState != null && !this.sgcsState.IsGameOver) return false;
                 this.sgcsState = state;
+                log.Debug(string.Format("player {0} started game: {1}", sgcsState.PlayerId, WebSocketObjects.SmallGameName_CollectStar));
                 this.sgcsState.Stage = 1;
                 for (int i = 0; i < this.CurrentRoomState.CurrentGameState.Players.Count; i++)
                 {
@@ -563,6 +564,7 @@ namespace TractorServer
             this.sgcsState.IsGameOver = true;
             this.sgcsState.Dudes[playerIndex].Enabled = false;
             this.CurrentRoomState.CurrentGameState.Players[playerIndex].PlayingSG = string.Empty;
+            log.Debug(string.Format("player {0} ended game: {1}", this.CurrentRoomState.CurrentGameState.Players[playerIndex].PlayerId, WebSocketObjects.SmallGameName_CollectStar));
             foreach (var dude in this.sgcsState.Dudes)
             {
                 if (dude.Enabled == true)
@@ -570,6 +572,10 @@ namespace TractorServer
                     this.sgcsState.IsGameOver = false;
                     break;
                 }
+            }
+            if (this.sgcsState.IsGameOver)
+            {
+                log.Debug(string.Format("game: {0} fully ended", WebSocketObjects.SmallGameName_CollectStar));
             }
 
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
