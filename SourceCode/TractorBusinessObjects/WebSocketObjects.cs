@@ -95,7 +95,7 @@ namespace Duan.Xiugang.Tractor.Objects
             [DataMember]
             public int Y = -1;
             [DataMember]
-            public double Bounce;
+            public double Bounce = 0.2;
             [DataMember]
             public int Score = 0;
             [DataMember]
