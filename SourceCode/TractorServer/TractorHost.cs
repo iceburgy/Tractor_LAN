@@ -602,6 +602,7 @@ namespace TractorServer
         public void NotifyCreateCollectStar(string playerID, string content)
         {
             if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
 
             WebSocketObjects.SGCSState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGCSState>(content);
             GameRoom gameRoom = this.SessionIDGameRoom[playerID];
@@ -624,6 +625,8 @@ namespace TractorServer
         public void NotifyEndCollectStar(string playerID, string content)
         {
             if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            log.Debug(string.Format("player {0} attempted to end game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
+
             int playerIndex = int.Parse(content);
             GameRoom gameRoom = this.SessionIDGameRoom[playerID];
             gameRoom.NotifyEndCollectStar(playerIndex);
