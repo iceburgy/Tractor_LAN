@@ -555,6 +555,13 @@ namespace TractorServer
                     this.sgcsState.Stars[starIndex].Enabled = false;
                     IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyGrabStar", new List<object>() { playerIndex, starIndex });
                     IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyGrabStar", new List<object>() { playerIndex, starIndex });
+                    if (!this.sgcsState.Stars.Exists(s => s.Enabled))
+                    {
+                        new Thread(() =>
+                        {
+                            this.NotifyCreateCollectStar(this.sgcsState);
+                        }).Start();
+                    }
                 }
             }
         }

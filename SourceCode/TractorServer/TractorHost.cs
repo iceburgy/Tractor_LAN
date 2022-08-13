@@ -1275,22 +1275,19 @@ namespace TractorServer
                 }
                 if (isNewClientID)
                 {
-                    if (string.IsNullOrEmpty(clientInfo.overridePass))
+                    HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
+                    string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                    int attempts = 1;
+                    while (allPasses.Contains(temp) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
                     {
-                        HashSet<string> allPasses = GetAllNickNameOverridePass(clientInfoDict);
-                        string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
-                        int attempts = 1;
-                        while (allPasses.Contains(temp) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
-                        {
-                            temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
-                            attempts++;
-                        }
-                        if (allPasses.Contains(temp))
-                        {
-                            return new string[] { "尝试生成昵称验证码失败", "请稍后再试" };
-                        }
-                        clientInfo.overridePass = temp;
+                        temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLength);
+                        attempts++;
                     }
+                    if (allPasses.Contains(temp))
+                    {
+                        return new string[] { "尝试生成昵称验证码失败", "请稍后再试" };
+                    }
+                    clientInfo.overridePass = temp;
                     validationResult = new string[] { clientInfo.overridePass };
                 }
                 if (!fileExists || isNewClientID)
