@@ -697,7 +697,7 @@ namespace TractorServer
         //玩家退出游戏
         public IAsyncResult BeginPlayerQuit(string playerID, AsyncCallback callback, object state)
         {
-            if (!this.handlePlayerDisconnect(playerID)) return new CompletedAsyncResult<string>(string.Format("BeginPlayerQuit: player {0} marked offline and return", playerID));
+            //if (!this.handlePlayerDisconnect(playerID)) return new CompletedAsyncResult<string>(string.Format("BeginPlayerQuit: player {0} marked offline and return", playerID));
             return new CompletedAsyncResult<string>(string.Format("BeginPlayerQuit: player {0} quit and return", playerID));
         }
 
