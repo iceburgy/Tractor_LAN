@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
     <Compile Include="CardsShoe.cs" />
+    <Compile Include="ClientInfoV3.cs" />
     <Compile Include="CommonMethods.cs" />
     <Compile Include="ClientInfo.cs" />
     <Compile Include="PlayerWSImpl.cs" />
