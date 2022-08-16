@@ -1286,7 +1286,7 @@ namespace TractorServer
                     {
                         string body = string.Format("邮箱绑定成功，【{0}】括号内是您的登录密码，请妥善保存", info.overridePass);
                         SendEmail(info.PlayerEmail, CommonMethods.emailSubjectLinkPlayerEmail, body);
-                        return new string[] { "邮箱绑定完成", "已尝试将您的密码发送至指定邮箱（密码维持不变）", "请查收确认绑定成功" };
+                        return new string[] { "邮箱绑定完成（可在设置页面中再次查看）", "已尝试将您的密码发送至指定邮箱（密码维持不变）", "请查收确认绑定成功", "下次登录时无需再输入邮箱" };
                     }
                     catch (Exception)
                     {
