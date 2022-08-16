@@ -11,6 +11,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public string PlayerID;
         [DataMember]
+        public string PlayerEmail = "";
+        [DataMember]
         public string overridePass;
         [DataMember]
         public HashSet<string> playerIPList;
@@ -21,9 +23,10 @@ namespace Duan.Xiugang.Tractor.Objects
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
 
-        public ClientInfoV3(string ip, string id, string orp)
+        public ClientInfoV3(string ip, string id, string orp, string pe)
         {
             PlayerID = id;
+            PlayerEmail= pe;
             overridePass = orp;
             playerIPList = new HashSet<string>();
             playerIPList.Add(ip);

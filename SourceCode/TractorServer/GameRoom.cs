@@ -17,6 +17,7 @@ namespace TractorServer
         public static string ReplaysFolder = "replays";
         public static string ClientinfoFileName = "clientinfo_v2.json";
         public static string ClientinfoV3FileName = "clientinfo_v3.json";
+        public static string EmailSettingsFileName = "emailsettings.json";
         public static string RegCodesFileName = "regcodes.json";
         public string BackupGamestateFileName = "backup_gamestate.json";
         public string BackupHandStateFileName = "backup_HandState.json";

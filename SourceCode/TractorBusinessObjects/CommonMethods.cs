@@ -16,6 +16,11 @@ namespace Duan.Xiugang.Tractor.Objects
     public static class CommonMethods
     {
         public static string replaySeparator = "===";
+        public static string recoverLoginPassFlag = "RecoverLoginPass";
+        public static string loginSuccessFlag = "LoginSuccess";
+        public static string emailSubjectRevcoverLoginPass = "用户登录密码找回";
+        public static string emailSubjectLinkPlayerEmail = "用户邮箱绑定";
+        public static string emailSubjectRegisterNewPlayer = "用户注册";
         public static string reenterRoomSignal = "断线重连中,请稍后...";
         public static string resumeGameSignal = "牌局加载中,请稍后...";
         public static string[] cardNumToValue = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
@@ -24,7 +29,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int nickNameOverridePassLengthUpper = 10;
         public static int nickNameOverridePassMaxGetAttempts = 10;
         public static string[] dudeTints = new string[] { "", "0x00ff00", "0xffa500", "0xffff00" }; // green, orange, yellow
-        public static int regcodesLength= 10;
+        public static int regcodesLength = 10;
 
         public static Random random = new Random();
         public static string RandomString(int lower, int upper)
@@ -44,7 +49,7 @@ namespace Duan.Xiugang.Tractor.Objects
         /// <returns></returns>
         public static byte RandomNext(int rangeExclusive)
         {
-            if (rangeExclusive <= 0 || rangeExclusive > Byte.MaxValue+1)
+            if (rangeExclusive <= 0 || rangeExclusive > Byte.MaxValue + 1)
                 throw new ArgumentOutOfRangeException("rangeExclusive out side of a byte value");
 
             byte[] randomNumber = new byte[1];
@@ -224,7 +229,7 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 firstSuit = suit;
             }
-            else if ((a%13) == rank)
+            else if ((a % 13) == rank)
             {
                 firstSuit = suit;
             }
@@ -264,7 +269,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (cp.BlackJoker > 0)
                 return 52;
             if (cp.MasterRank > 0)
-                return rank + ((int) trump - 1)*13;
+                return rank + ((int)trump - 1) * 13;
 
             if (cp.HeartsRankTotal > 0)
                 return rank;
@@ -378,7 +383,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
 
 
-            if (a == (suit - 1)*13 + rank)
+            if (a == (suit - 1) * 13 + rank)
             {
                 if (b == 53 || b == 52)
                 {
@@ -386,15 +391,15 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 return true;
             }
-            if (a%13 == rank)
+            if (a % 13 == rank)
             {
-                if (b == 53 || b == 52 || (b == (suit - 1)*13 + rank))
+                if (b == 53 || b == 52 || (b == (suit - 1) * 13 + rank))
                 {
                     return false;
                 }
                 return true;
             }
-            if (b == (suit - 1)*13 + rank)
+            if (b == (suit - 1) * 13 + rank)
             {
                 if (a == 53 || a == 52)
                 {
@@ -402,9 +407,9 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 return false;
             }
-            if (b%13 == rank)
+            if (b % 13 == rank)
             {
-                if (a == 53 || a == 52 || (a == (suit - 1)*13 + rank))
+                if (a == 53 || a == 52 || (a == (suit - 1) * 13 + rank))
                 {
                     return true;
                 }

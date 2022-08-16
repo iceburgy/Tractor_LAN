@@ -12,6 +12,8 @@ using Fleck;
 using System.Security.Cryptography.X509Certificates;
 using System.Timers;
 using System.Collections.Concurrent;
+using System.Net.Mail;
+using System.Net;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -36,6 +38,7 @@ namespace TractorServer
         public string KeyCertsFoler = "certsFoler";
         public string KeyCertsFile = "certsFile";
         public string KeyIsFullDebug = "isFullDebug";
+        public EmailSettings emailSettings;
 
         public CardsShoe CardsShoe { get; set; }
 
@@ -182,16 +185,11 @@ namespace TractorServer
                             string clientIP = socket.ConnectionInfo.ClientIpAddress;
 
                             string[] validationResult = ValidateClientInfoV3(clientIP, messageObj.playerID, messageObj.content);
+                            playerProxy.NotifyMessage(validationResult);
                             // 验证失败，返回错误信息
-                            if (validationResult.Length > 1)
+                            if (validationResult.Length < 1 || !string.Equals(validationResult[0], CommonMethods.loginSuccessFlag, StringComparison.OrdinalIgnoreCase))
                             {
-                                playerProxy.NotifyMessage(validationResult);
                                 return;
-                            }
-                            // 首次登录，返回验证码
-                            if (validationResult.Length == 1)
-                            {
-                                playerProxy.NotifyMessage(new string[] { string.Format("【{0}】", validationResult[0]), "括号内是您的登录密码", "请妥善保存", "此密码可在设置页面中再次查看" });
                             }
 
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
@@ -216,6 +214,7 @@ namespace TractorServer
             });
             threadStartHostWSS.Start();
             GenerateRegistrationCodes();
+            LoadEmailSettings();
 
             // setup logger
             AppDomain currentDomain = default(AppDomain);
@@ -1188,11 +1187,12 @@ namespace TractorServer
             }
         }
 
-        public string[] ValidateClientInfoV3(string clientIP, string playerID, string overridePass)
+        public string[] ValidateClientInfoV3(string clientIP, string playerID, string content)
         {
             lock (this)
             {
-                string[] validationResult = new string[] { };
+                string[] passAndEmailInfo = CommonMethods.ReadObjectFromString<string[]>(content);
+                string overridePass = passAndEmailInfo[0];
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = new Dictionary<string, ClientInfoV3>();
                 string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 bool fileV3Exists = File.Exists(fileNameV3);
@@ -1201,22 +1201,100 @@ namespace TractorServer
                 bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
                 bool isKnownIDIgnoreCase = clientInfoV3Dict.Keys.Contains(playerID, StringComparer.OrdinalIgnoreCase);
 
+                // 找回密码
+                if (passAndEmailInfo.Length == 2 && string.Equals(passAndEmailInfo[0], CommonMethods.recoverLoginPassFlag, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!isKnownIDExact)
+                    {
+                        return new string[] { "用户名或用户邮箱输入有误", "请确认后重试" };
+                    }
+                    string playerEmail = passAndEmailInfo[1];
+                    ClientInfoV3 info = clientInfoV3Dict[playerID];
+                    string playerExpectedEmail = info.PlayerEmail;
+                    if (!string.Equals(playerEmail, playerExpectedEmail, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new string[] { "用户名或用户邮箱输入有误", "请确认后重试!" };
+                    }
+
+                    try
+                    {
+                        string body = string.Format("【{0}】括号内是您的登录密码，请妥善保存", info.overridePass);
+                        SendEmail(playerEmail, CommonMethods.emailSubjectRevcoverLoginPass, body);
+                        return new string[] { "已成功将您的密码发送至指定邮箱", "请查收" };
+                    }
+                    catch (Exception)
+                    {
+                        return new string[] { "用户名和用户邮箱输无误", "但发送邮件失败", "请稍后重试" };
+                    }
+                }
+
                 HashSet<string> regcodes = LoadExistingRegCodes();
-                // 邀请码机制
+                // 使用邀请码注册新用户
                 if (regcodes.Contains(overridePass))
                 {
+                    if (passAndEmailInfo.Length < 2 || string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
+                    {
+                        return new string[] { "注册新用户时邮箱为必填（将用于找回或重设密码）", "请填写邮箱后重试" };
+                    }
                     if (isKnownIDIgnoreCase)
                     {
                         return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
                     }
-                    HashSet<string> existingPassCodes = loadExistingPassCodes();
+                    string regEmail = passAndEmailInfo[1];
+                    HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
+                    HashSet<string> existingPassCodes = existingPassCodesAndEmails[0];
+                    HashSet<string> existingEmails = existingPassCodesAndEmails[1];
+                    if (existingEmails.Contains(regEmail, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return new string[] { "此用户邮箱已被注册（不论大小写）", "请另选一个邮箱" };
+                    }
                     string newPassCode = generateNewCode(existingPassCodes, regcodes);
-                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode);
+                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail);
                     regcodes.Remove(overridePass);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                    return new string[] { newPassCode };
+                    return new string[] { "新用户注册成功", "并已将您的密码发送至指定邮箱", "请使用该密码登录大厅" };
                 }
+
+                // 老用户绑定邮箱
+                if (passAndEmailInfo.Length > 1 && !string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
+                {
+                    if (!isKnownIDExact)
+                    {
+                        return new string[] { "用户名或用户邮箱输入有误", "请确认后重试" };
+                    }
+                    ClientInfoV3 info = clientInfoV3Dict[playerID];
+                    if (string.IsNullOrEmpty(overridePass) || !string.Equals(overridePass, info.overridePass))
+                    {
+                        return new string[] { "用户信息验证失败", "请确认用户名及密码正确无误." };
+                    }
+                    string playerExistingEmail = info.PlayerEmail;
+                    if (!string.IsNullOrEmpty(info.PlayerEmail))
+                    {
+                        return new string[] { "该用户已经有绑定的邮箱", "请清空邮箱重新登录" };
+                    }
+                    HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
+                    HashSet<string> existingEmails = existingPassCodesAndEmails[1];
+                    if (existingEmails.Contains(passAndEmailInfo[1], StringComparer.OrdinalIgnoreCase))
+                    {
+                        return new string[] { "此用户邮箱已被注册（不论大小写）", "请另选一个邮箱" };
+                    }
+                    info.PlayerEmail = passAndEmailInfo[1];
+                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+
+                    try
+                    {
+                        string body = string.Format("邮箱绑定成功，【{0}】括号内是您的登录密码，请妥善保存", info.overridePass);
+                        SendEmail(info.PlayerEmail, CommonMethods.emailSubjectLinkPlayerEmail, body);
+                        return new string[] { "邮箱绑定完成", "已尝试将您的密码发送至指定邮箱（密码维持不变）", "请查收确认绑定成功" };
+                    }
+                    catch (Exception)
+                    {
+                        return new string[] { "邮箱绑定成功", "但发送邮件失败", "请稍后通过找回密码功能再次确认此邮箱有效" };
+                    }
+                }
+
+                // 普通登录
                 if (!isKnownIDExact && isKnownIDIgnoreCase)
                 {
                     return new string[] { "登录失败", "请确认用户名及密码正确无误!" };
@@ -1230,7 +1308,11 @@ namespace TractorServer
                 {
                     return new string[] { "登录失败", "请确认用户名及密码正确无误." };
                 }
-                return validationResult;
+                if (string.IsNullOrEmpty(clientInfoV3.PlayerEmail))
+                {
+                    return new string[] { "该用户尚未绑定邮箱（将用于找回或重设密码）", "请在登录页面中输入邮箱进行绑定后再重新登录" };
+                }
+                return new string[] { CommonMethods.loginSuccessFlag, clientInfoV3.overridePass, clientInfoV3.PlayerEmail };
             }
         }
 
@@ -1240,7 +1322,8 @@ namespace TractorServer
             int toGen = CommonMethods.regcodesLength - regcodes.Count;
             if (toGen > 0)
             {
-                HashSet<string> existingPassCodes = loadExistingPassCodes();
+                HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
+                HashSet<string> existingPassCodes = existingPassCodesAndEmails[0];
                 while (toGen > 0)
                 {
                     regcodes.Add(generateNewCode(existingPassCodes, regcodes));
@@ -1280,19 +1363,24 @@ namespace TractorServer
             return temp;
         }
 
-        private HashSet<string> loadExistingPassCodes()
+        private HashSet<string>[] loadExistingPassCodesAndEmails()
         {
             HashSet<string> existingCodes = new HashSet<string>();
+            HashSet<string> existingEmails = new HashSet<string>();
             string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
             bool fileV3Exists = File.Exists(fileNameV3);
-            if (!fileV3Exists) return existingCodes;
+            if (!fileV3Exists) return new HashSet<string>[] { existingCodes, existingEmails };
 
             Dictionary<string, ClientInfoV3> clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
             foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
             {
                 existingCodes.Add(entry.Value.overridePass);
+                if (!string.IsNullOrEmpty(entry.Value.PlayerEmail))
+                {
+                    existingEmails.Add(entry.Value.PlayerEmail);
+                }
             }
-            return existingCodes;
+            return new HashSet<string>[] { existingCodes, existingEmails };
         }
 
         public HashSet<string> GetAllNickNameOverridePass(Dictionary<string, ClientInfo> clientInfoDict)
@@ -1304,6 +1392,37 @@ namespace TractorServer
                 allPasses.Add(entry.Value.overridePass);
             }
             return allPasses;
+        }
+
+        private void LoadEmailSettings()
+        {
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.EmailSettingsFileName);
+            bool fileExists = File.Exists(fileName);
+            if (!fileExists) throw new Exception("email settings file not found!");
+            emailSettings = CommonMethods.ReadObjectFromFile<EmailSettings>(fileName);
+        }
+
+        public void SendEmail(string to, string subject, string body)
+        {
+            var fromAddress = new MailAddress(emailSettings.EmailFromAddress, emailSettings.EmailFromName);
+            var toAddress = new MailAddress(to);
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(fromAddress.Address, emailSettings.EmailFromPass)
+            };
+            using (var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                smtp.Send(message);
+            }
         }
     }
 
