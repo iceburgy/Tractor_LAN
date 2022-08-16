@@ -191,7 +191,7 @@ namespace TractorServer
                             // 首次登录，返回验证码
                             if (validationResult.Length == 1)
                             {
-                                playerProxy.NotifyMessage(new string[] { string.Format("【{0}】", validationResult[0]), "括号内是您的昵称验证码", "请妥善保存", "当您更换IP时将使用它来声名昵称所有权", "可在设置页面中再次查看" });
+                                playerProxy.NotifyMessage(new string[] { string.Format("【{0}】", validationResult[0]), "括号内是您的登录密码", "请妥善保存", "此密码可在设置页面中再次查看" });
                             }
 
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
@@ -215,7 +215,7 @@ namespace TractorServer
                 });
             });
             threadStartHostWSS.Start();
-            PortClientInfoV2ToV3();
+            GenerateRegistrationCodes();
 
             // setup logger
             AppDomain currentDomain = default(AppDomain);
@@ -1198,10 +1198,30 @@ namespace TractorServer
                 bool fileV3Exists = File.Exists(fileNameV3);
                 if (!fileV3Exists) return new string[] { "系统错误", "请稍后重试" };
                 clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
-                bool isKnownID = clientInfoV3Dict.ContainsKey(playerID);
+                bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
+                bool isKnownIDIgnoreCase = clientInfoV3Dict.Keys.Contains(playerID, StringComparer.OrdinalIgnoreCase);
 
-                // todo: introduce invitation code mechanism
-                if (!isKnownID)
+                HashSet<string> regcodes = LoadExistingRegCodes();
+                // 邀请码机制
+                if (regcodes.Contains(overridePass))
+                {
+                    if (isKnownIDIgnoreCase)
+                    {
+                        return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
+                    }
+                    HashSet<string> existingPassCodes = loadExistingPassCodes();
+                    string newPassCode = generateNewCode(existingPassCodes, regcodes);
+                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode);
+                    regcodes.Remove(overridePass);
+                    CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
+                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                    return new string[] { newPassCode };
+                }
+                if (!isKnownIDExact && isKnownIDIgnoreCase)
+                {
+                    return new string[] { "登录失败", "请确认用户名及密码正确无误!" };
+                }
+                if (!isKnownIDExact)
                 {
                     return new string[] { "登录失败", "请确认用户名及密码正确无误" };
                 }
@@ -1214,25 +1234,65 @@ namespace TractorServer
             }
         }
 
-        public void PortClientInfoV2ToV3()
+        public void GenerateRegistrationCodes()
         {
-            Dictionary<string, ClientInfo> clientInfoDict = new Dictionary<string, ClientInfo>();
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = new Dictionary<string, ClientInfoV3>();
-            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoFileName);
-            string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            bool fileExists = File.Exists(fileName);
-            bool fileV3Exists = File.Exists(fileNameV3);
-            if (fileV3Exists || !fileExists) return;
-
-            clientInfoDict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfo>>(fileName);
-            foreach (KeyValuePair<string, ClientInfo> entry in clientInfoDict)
+            HashSet<string> regcodes = LoadExistingRegCodes();
+            int toGen = CommonMethods.regcodesLength - regcodes.Count;
+            if (toGen > 0)
             {
-                if (entry.Value.playerIdList.Count == 0) continue;
-                string id = entry.Value.playerIdList.First();
-                ClientInfoV3 clientInfoV3 = new ClientInfoV3(entry.Value.IP, id, entry.Value.overridePass);
-                clientInfoV3Dict[id] = clientInfoV3;
+                HashSet<string> existingPassCodes = loadExistingPassCodes();
+                while (toGen > 0)
+                {
+                    regcodes.Add(generateNewCode(existingPassCodes, regcodes));
+                    toGen--;
+                }
+                CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
             }
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+        }
+
+        private static HashSet<string> LoadExistingRegCodes()
+        {
+            HashSet<string> regcodes = new HashSet<string>();
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.RegCodesFileName);
+            bool fileExists = File.Exists(fileName);
+            if (fileExists)
+            {
+                regcodes = CommonMethods.ReadObjectFromFile<HashSet<string>>(fileName);
+            }
+
+            return regcodes;
+        }
+
+        private string generateNewCode(HashSet<string> existingPassCodes, HashSet<string> regcodes)
+        {
+            int attempts = 1;
+            string temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLengthLower, CommonMethods.nickNameOverridePassLengthUpper);
+            while ((existingPassCodes.Contains(temp) || regcodes.Contains(temp)) && attempts < CommonMethods.nickNameOverridePassMaxGetAttempts)
+            {
+                temp = CommonMethods.RandomString(CommonMethods.nickNameOverridePassLengthLower, CommonMethods.nickNameOverridePassLengthUpper);
+                attempts++;
+            }
+
+            if (existingPassCodes.Contains(temp) || regcodes.Contains(temp))
+            {
+                throw new Exception("failed to generate new regcode after maxing out all attempts!");
+            }
+            return temp;
+        }
+
+        private HashSet<string> loadExistingPassCodes()
+        {
+            HashSet<string> existingCodes = new HashSet<string>();
+            string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            bool fileV3Exists = File.Exists(fileNameV3);
+            if (!fileV3Exists) return existingCodes;
+
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
+            foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+            {
+                existingCodes.Add(entry.Value.overridePass);
+            }
+            return existingCodes;
         }
 
         public HashSet<string> GetAllNickNameOverridePass(Dictionary<string, ClientInfo> clientInfoDict)
