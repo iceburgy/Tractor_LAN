@@ -1253,7 +1253,17 @@ namespace TractorServer
                     regcodes.Remove(overridePass);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                    return new string[] { "新用户注册成功", "并已将您的密码发送至指定邮箱", "请使用该密码登录大厅" };
+
+                    try
+                    {
+                        string body = string.Format("【{0}】括号内是您的登录密码，请妥善保存", newPassCode);
+                        SendEmail(regEmail, CommonMethods.emailSubjectRegisterNewPlayer, body);
+                        return new string[] { "新用户注册成功", "并已将您的密码发送至指定邮箱", "请使用该密码登录大厅" };
+                    }
+                    catch (Exception)
+                    {
+                        return new string[] { "新用户注册成功", "但发送邮件失败", "请确认您的邮箱为有效地址" };
+                    }
                 }
 
                 // 老用户绑定邮箱
