@@ -213,7 +213,8 @@ namespace TractorServer
                 });
             });
             threadStartHostWSS.Start();
-            GenerateRegistrationCodes();
+            HashSet<string> regcodes = LoadExistingRegCodes();
+            GenerateRegistrationCodes(regcodes);
             LoadEmailSettings();
 
             // setup logger
@@ -1251,6 +1252,7 @@ namespace TractorServer
                     string newPassCode = generateNewCode(existingPassCodes, regcodes);
                     clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail);
                     regcodes.Remove(overridePass);
+                    GenerateRegistrationCodes(regcodes);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
 
@@ -1326,9 +1328,8 @@ namespace TractorServer
             }
         }
 
-        public void GenerateRegistrationCodes()
+        public void GenerateRegistrationCodes(HashSet<string> regcodes)
         {
-            HashSet<string> regcodes = LoadExistingRegCodes();
             int toGen = CommonMethods.regcodesLength - regcodes.Count;
             if (toGen > 0)
             {
