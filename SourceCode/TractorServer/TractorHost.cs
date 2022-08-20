@@ -488,10 +488,12 @@ namespace TractorServer
             {
                 //断线重连
                 log.Debug(string.Format("player {0} re-entered hall from offline - web client.", playerID));
-                player.NotifyMessage(new string[] { CommonMethods.reenterRoomSignal });
+                string[] reenterMsgs = new string[] { string.Format("玩家【{0}】{1}", playerID, CommonMethods.reenterRoomSignal) };
+                player.NotifyMessage(reenterMsgs);
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.PublishMessage(reenterMsgs);
                 Thread.Sleep(2000);
 
-                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 lock (gameRoom)
                 {
                     bool entered = gameRoom.PlayerReenterRoom(playerID, clientIP, player, AllowSameIP);
