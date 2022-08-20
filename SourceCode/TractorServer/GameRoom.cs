@@ -84,10 +84,6 @@ namespace TractorServer
                             PublishMessage(new string[] { msg });
                         }
                     }
-                    else
-                    {
-                        tractorHost.LogClientInfo(clientIP, playerID, false);
-                    }
 
                     log.Debug(string.Format("observer {0} joined.", playerID));
 
@@ -126,7 +122,6 @@ namespace TractorServer
                         }
                     }
                 }
-                tractorHost.LogClientInfo(clientIP, playerID, false);
                 CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
                 log.Debug(string.Format("player {0} joined.", playerID));
@@ -215,7 +210,6 @@ namespace TractorServer
             }
 
             CurrentRoomState.CurrentGameState.Players[posID].IsOffline = false;
-            tractorHost.LogClientInfo(clientIP, playerID, false);
             CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
             PlayersProxy.Add(playerID, player);
             log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
