@@ -215,10 +215,33 @@ namespace TractorServer
             log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
 
             player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
-            UpdatePlayerCurrentTrickState();
+
+            // if it is a new trickstate, allow reentered player to show all 4 players showed cards first
+            List<String> playerIDList = new List<string>();
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+            {
+                if (p == null) continue;
+                playerIDList.Add(p.PlayerId);
+            }
+            if (!CurrentRoomState.CurrentTrickState.IsStarted())
+            {
+                CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
+                cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
+                cts.Learder = serverLocalCache.lastLeader;
+                player.NotifyCurrentTrickState(cts);
+            }
+            else
+            {
+                UpdatePlayerCurrentTrickState();
+            }
+
             UpdatePlayersCurrentHandState();
             Thread.Sleep(2000);
             UpdateGameState();
+            if (!CurrentRoomState.CurrentTrickState.IsStarted())
+            {
+                UpdatePlayerCurrentTrickState();
+            }
 
             PublishMessage(new string[] { string.Format("玩家【{0}】断线重连成功", playerID) });
             PublishStartTimer(0);
