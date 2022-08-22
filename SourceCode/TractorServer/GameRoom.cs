@@ -215,6 +215,7 @@ namespace TractorServer
             log.Debug(string.Format("player {0} re-joined room from offline.", playerID));
 
             player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
+            UpdatePlayersCurrentHandState();
 
             // if it is a new trickstate, allow reentered player to show all 4 players showed cards first
             List<String> playerIDList = new List<string>();
@@ -235,7 +236,6 @@ namespace TractorServer
                 UpdatePlayerCurrentTrickState();
             }
 
-            UpdatePlayersCurrentHandState();
             Thread.Sleep(2000);
             UpdateGameState();
             if (!CurrentRoomState.CurrentTrickState.IsStarted())
@@ -750,9 +750,9 @@ namespace TractorServer
                 //log trump and rank before a new game starts
                 log.Debug(string.Format("starting a new game: starter {0} {1} {2}", CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentHandState.Trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
 
-                BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
                 CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.Playing;
                 UpdatePlayersCurrentHandState();
+                BeginNewTrick(CurrentRoomState.CurrentHandState.Starter);
 
                 BuildReplayEntity();
 
@@ -1442,8 +1442,8 @@ namespace TractorServer
             PublishMessage(new string[] { CommonMethods.resumeGameSignal });
             Thread.Sleep(2000);
 
-            UpdatePlayerCurrentTrickState();
             UpdatePlayersCurrentHandState();
+            UpdatePlayerCurrentTrickState();
             Thread.Sleep(2000);
             UpdateGameState();
 
