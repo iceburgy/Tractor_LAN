@@ -31,6 +31,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_EndCollectStar = "EndCollectStar";
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
+        public const string WebSocketMessageType_NotifyOnlinePlayerList = "NotifyOnlinePlayerList";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
         public const string WebSocketMessageType_NotifyPing = "NotifyPing";
         public const string WebSocketMessageType_NotifyPong = "NotifyPong";

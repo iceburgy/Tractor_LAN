@@ -120,5 +120,8 @@ namespace Duan.Xiugang.Tractor.Objects
 
         [OperationContract(IsOneWay = true)]
         void NotifyGrabStar(int playerIndex, int starIndex);
+
+        [OperationContract(IsOneWay = true)]
+        void NotifyOnlinePlayerList(List<string> OnlinePlayerList);
     }
 }

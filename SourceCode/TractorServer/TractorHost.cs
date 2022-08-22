@@ -515,6 +515,12 @@ namespace TractorServer
 
             new Thread(new ThreadStart(() =>
             {
+                Thread.Sleep(1000);
+                this.UpdateOnlinePlayerList();
+            })).Start();
+
+            new Thread(new ThreadStart(() =>
+            {
                 Thread.Sleep(PingInterval);
                 this.InitTimerForIPlayer(playerID);
             })).Start();
@@ -742,6 +748,7 @@ namespace TractorServer
             }
             PlayerToIP.Remove(playerID);
             PlayersProxy.Remove(playerID);
+            this.UpdateOnlinePlayerList();
         }
 
         public string EndPlayerQuit(IAsyncResult ar)
@@ -1086,6 +1093,16 @@ namespace TractorServer
             if (namesToCall.Count > 0)
             {
                 IPlayerInvokeForAll(PlayersProxy, namesToCall, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall });
+            }
+        }
+
+        public void UpdateOnlinePlayerList()
+        {
+            List<string> namesToCall = new List<string>();
+            lock (PlayersProxy)
+            {
+                List<string> playerList = PlayersProxy.Keys.ToList<string>();
+                IPlayerInvokeForAll(PlayersProxy, playerList, "NotifyOnlinePlayerList", new List<object>() { playerList });
             }
         }
 

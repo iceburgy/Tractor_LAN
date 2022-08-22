@@ -765,5 +765,6 @@ namespace Duan.Xiugang.Tractor.Player
         public void NotifyCreateCollectStar(WebSocketObjects.SGCSState state) { }
         public void NotifyEndCollectStar(WebSocketObjects.SGCSState state) { }
         public void NotifyGrabStar(int playerIndex, int starIndex) { }
+        public void NotifyOnlinePlayerList(List<string> OnlinePlayerList) { }
     }
 }
