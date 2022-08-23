@@ -516,7 +516,7 @@ namespace TractorServer
             new Thread(new ThreadStart(() =>
             {
                 Thread.Sleep(1000);
-                this.UpdateOnlinePlayerList();
+                this.UpdateOnlinePlayerList(playerID, true);
             })).Start();
 
             new Thread(new ThreadStart(() =>
@@ -748,7 +748,7 @@ namespace TractorServer
             }
             PlayerToIP.Remove(playerID);
             PlayersProxy.Remove(playerID);
-            this.UpdateOnlinePlayerList();
+            this.UpdateOnlinePlayerList(playerID, false);
         }
 
         public string EndPlayerQuit(IAsyncResult ar)
@@ -1096,13 +1096,13 @@ namespace TractorServer
             }
         }
 
-        public void UpdateOnlinePlayerList()
+        public void UpdateOnlinePlayerList(string playerID, bool isJoining)
         {
             List<string> namesToCall = new List<string>();
             lock (PlayersProxy)
             {
                 List<string> playerList = PlayersProxy.Keys.ToList<string>();
-                IPlayerInvokeForAll(PlayersProxy, playerList, "NotifyOnlinePlayerList", new List<object>() { playerList });
+                IPlayerInvokeForAll(PlayersProxy, playerList, "NotifyOnlinePlayerList", new List<object>() {playerID, isJoining, playerList });
             }
         }
 
