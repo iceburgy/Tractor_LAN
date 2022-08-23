@@ -224,7 +224,7 @@ namespace TractorServer
                 if (p == null) continue;
                 playerIDList.Add(p.PlayerId);
             }
-            if (!CurrentRoomState.CurrentTrickState.IsStarted())
+            if (!CurrentRoomState.CurrentTrickState.IsStarted() && serverLocalCache.lastShowedCards.Count > 0)
             {
                 CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
                 cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
