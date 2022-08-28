@@ -18,6 +18,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string replaySeparator = "===";
         public static string recoverLoginPassFlag = "RecoverLoginPass";
         public static string loginSuccessFlag = "LoginSuccess";
+        public static string emailSubjectRevcoverPlayerID = "用户名找回";
         public static string emailSubjectRevcoverLoginPass = "用户登录密码找回";
         public static string emailSubjectLinkPlayerEmail = "用户邮箱绑定";
         public static string emailSubjectRegisterNewPlayer = "用户注册";

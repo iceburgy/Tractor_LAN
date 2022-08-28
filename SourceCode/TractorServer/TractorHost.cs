@@ -1221,14 +1221,36 @@ namespace TractorServer
                 bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
                 bool isKnownIDIgnoreCase = clientInfoV3Dict.Keys.Contains(playerID, StringComparer.OrdinalIgnoreCase);
 
-                // 找回密码
+                // 找回密码或用户名
                 if (passAndEmailInfo.Length == 2 && string.Equals(passAndEmailInfo[0], CommonMethods.recoverLoginPassFlag, StringComparison.OrdinalIgnoreCase))
                 {
+                    string playerEmail = passAndEmailInfo[1];
+                    // 找回用户名
+                    if (string.IsNullOrEmpty(playerID))
+                    {
+                        string actualPlayerID = findPlayerIDByEmail(clientInfoV3Dict, playerEmail);
+                        if (string.IsNullOrEmpty(actualPlayerID))
+                        {
+                            return new string[] { "用户邮箱输入有误", "请确认后重试" };
+                        }
+
+                        try
+                        {
+                            string body = string.Format("【{0}】括号内是您的登录用户名，请妥善保存", actualPlayerID);
+                            SendEmail(playerEmail, CommonMethods.emailSubjectRevcoverPlayerID, body);
+                            return new string[] { "已成功将您的登录用户名发送至指定邮箱", "请查收" };
+                        }
+                        catch (Exception)
+                        {
+                            return new string[] { "用户邮箱输无误", "但发送邮件失败", "请稍后重试" };
+                        }
+                    }
+
+                    // 找回密码
                     if (!isKnownIDExact)
                     {
                         return new string[] { "用户名或用户邮箱输入有误", "请确认后重试" };
                     }
-                    string playerEmail = passAndEmailInfo[1];
                     ClientInfoV3 info = clientInfoV3Dict[playerID];
                     string playerExpectedEmail = info.PlayerEmail;
                     if (!string.Equals(playerEmail, playerExpectedEmail, StringComparison.OrdinalIgnoreCase))
@@ -1250,8 +1272,12 @@ namespace TractorServer
 
                 HashSet<string> regcodes = LoadExistingRegCodes();
                 // 使用邀请码注册新用户
-                if (regcodes.Contains(overridePass))
+                if (passAndEmailInfo.Length > 1 && !string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
                 {
+                    if (!regcodes.Contains(overridePass))
+                    {
+                        return new string[] { "注册新用户失败：邀请码无效", "请确认后重试" };
+                    }
                     if (passAndEmailInfo.Length < 2 || string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
                     {
                         return new string[] { "注册新用户时邮箱为必填（将用于找回或重设密码）", "请填写邮箱后重试" };
@@ -1266,7 +1292,7 @@ namespace TractorServer
                     HashSet<string> existingEmails = existingPassCodesAndEmails[1];
                     if (existingEmails.Contains(regEmail, StringComparer.OrdinalIgnoreCase))
                     {
-                        return new string[] { "此用户邮箱已被注册（不论大小写）", "请另选一个邮箱" };
+                        return new string[] { "此邮箱已被其他玩家使用", "请另选一个邮箱" };
                     }
                     string newPassCode = generateNewCode(existingPassCodes, regcodes);
                     clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail);
@@ -1284,44 +1310,6 @@ namespace TractorServer
                     catch (Exception)
                     {
                         return new string[] { "新用户注册成功", "但发送邮件失败", "请确认您的邮箱为有效地址" };
-                    }
-                }
-
-                // 老用户绑定邮箱
-                if (passAndEmailInfo.Length > 1 && !string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
-                {
-                    if (!isKnownIDExact)
-                    {
-                        return new string[] { "用户名或用户邮箱输入有误", "请确认后重试" };
-                    }
-                    ClientInfoV3 info = clientInfoV3Dict[playerID];
-                    if (string.IsNullOrEmpty(overridePass) || !string.Equals(overridePass, info.overridePass))
-                    {
-                        return new string[] { "用户信息验证失败", "请确认用户名及密码正确无误." };
-                    }
-                    string playerExistingEmail = info.PlayerEmail;
-                    if (!string.IsNullOrEmpty(info.PlayerEmail))
-                    {
-                        return new string[] { "该用户已经有绑定的邮箱", "请清空邮箱重新登录" };
-                    }
-                    HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
-                    HashSet<string> existingEmails = existingPassCodesAndEmails[1];
-                    if (existingEmails.Contains(passAndEmailInfo[1], StringComparer.OrdinalIgnoreCase))
-                    {
-                        return new string[] { "此用户邮箱已被注册（不论大小写）", "请另选一个邮箱" };
-                    }
-                    info.PlayerEmail = passAndEmailInfo[1];
-                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-
-                    try
-                    {
-                        string body = string.Format("邮箱绑定成功，【{0}】括号内是您的登录密码，请妥善保存", info.overridePass);
-                        SendEmail(info.PlayerEmail, CommonMethods.emailSubjectLinkPlayerEmail, body);
-                        return new string[] { "邮箱绑定完成（可在设置页面中再次查看）", "已尝试将您的密码发送至指定邮箱（密码维持不变）", "请查收确认绑定成功", "下次登录时无需再输入邮箱" };
-                    }
-                    catch (Exception)
-                    {
-                        return new string[] { "邮箱绑定成功", "但发送邮件失败", "请稍后通过找回密码功能再次确认此邮箱有效" };
                     }
                 }
 
@@ -1345,6 +1333,18 @@ namespace TractorServer
                 }
                 return new string[] { CommonMethods.loginSuccessFlag, clientInfoV3.overridePass, clientInfoV3.PlayerEmail };
             }
+        }
+
+        private string findPlayerIDByEmail(Dictionary<string, ClientInfoV3> clientInfoV3Dict, string playerEmail)
+        {
+            foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+            {
+                if (string.Equals( entry.Value.PlayerEmail, playerEmail))
+                {
+                    return entry.Value.PlayerID;
+                }
+            }
+            return string.Empty;
         }
 
         public void GenerateRegistrationCodes(HashSet<string> regcodes)
