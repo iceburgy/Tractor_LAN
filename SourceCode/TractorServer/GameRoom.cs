@@ -69,7 +69,17 @@ namespace TractorServer
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
                     if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
                     {
-                        tractorHost.LogClientInfo(clientIP, playerID, true);
+                        string otherID = string.Empty;
+                        foreach (KeyValuePair<string, string> entry in CurrentRoomState.CurrentGameState.PlayerToIP)
+                        {
+                            if (string.Equals(entry.Value, clientIP))
+                            {
+                                otherID = entry.Key;
+                            }
+                        }
+
+                        string cheating = string.Format("player {0} (with other ID {1}) attempted double observing with IP {2}", playerID, otherID, clientIP);
+                        tractorHost.LogClientInfo(clientIP, playerID, cheating);
                         log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {

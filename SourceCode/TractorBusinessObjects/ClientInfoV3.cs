@@ -34,15 +34,15 @@ namespace Duan.Xiugang.Tractor.Objects
             loginHistory = new List<string>();
         }
 
-        public void logLogin(string ip, bool isCheating)
+        public void logLogin(string ip, string cheating)
         {
             playerIPList.Add(ip);
             DateTime saveNow = DateTime.Now.ToLocalTime();
             string lastLogin = saveNow.ToString(datePatt);
             loginHistory.Add(string.Format("{0} at {1}", ip, lastLogin));
-            if (isCheating)
+            if (!string.IsNullOrEmpty(cheating))
             {
-                cheatHistory.Add(string.Format("player {0} attempted double observing with IP {1} at {2}", PlayerID, ip, lastLogin));
+                cheatHistory.Add(string.Format("{0} at {1}", cheating, lastLogin));
             }
         }
     }

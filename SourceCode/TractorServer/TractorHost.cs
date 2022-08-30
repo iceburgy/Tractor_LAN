@@ -481,7 +481,13 @@ namespace TractorServer
         public void PlayerEnterHallWS(string playerID)
         {
             string clientIP = ((PlayerWSImpl)this.PlayersProxy[playerID]).Socket.ConnectionInfo.ClientIpAddress;
-            LogClientInfo(clientIP, playerID, false);
+            string cheating = string.Empty;
+            List<string> playerIDsWithSameIP = OtherPlayerIDsWithSameIP(playerID, clientIP);
+            if (playerIDsWithSameIP.Count > 0)
+            {
+                cheating = string.Format("player {0} (with other ID {1}) attempted login with IP {2}", playerID, string.Join("; ", playerIDsWithSameIP), clientIP);
+            }
+            LogClientInfo(clientIP, playerID, cheating);
             IPlayer player = this.PlayersProxy[playerID];
             this.PlayerToIP[playerID] = clientIP;
             if (this.SessionIDGameRoom.ContainsKey(playerID))
@@ -1187,7 +1193,7 @@ namespace TractorServer
             return OperationContext.Current.SessionId;
         }
 
-        public void LogClientInfo(string clientIP, string playerID, bool isCheating)
+        public void LogClientInfo(string clientIP, string playerID, string isCheating)
         {
             lock (this)
             {
@@ -1453,6 +1459,25 @@ namespace TractorServer
             {
                 smtp.Send(message);
             }
+        }
+
+        private List<string> OtherPlayerIDsWithSameIP(string PlayerID, string clientIP)
+        {
+            HashSet<string> others = new HashSet<string>();
+            string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            bool fileV3Exists = File.Exists(fileNameV3);
+            if (!fileV3Exists) return others.ToList();
+
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
+            foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+            {
+                if (string.Equals(entry.Key, PlayerID)) continue;
+                if (entry.Value.playerIPList.Contains(clientIP))
+                {
+                    others.Add(entry.Value.PlayerID);
+                }
+            }
+            return others.ToList();
         }
     }
 
