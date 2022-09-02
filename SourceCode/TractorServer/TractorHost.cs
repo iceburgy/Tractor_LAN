@@ -130,16 +130,8 @@ namespace TractorServer
                         {
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
                             {
-                                string clientIP = socket.ConnectionInfo.ClientIpAddress;
-                                if (this.PlayerToIP.ContainsValue(clientIP))
-                                {
-                                    playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
-                                    this.handlePlayerDisconnect(messageObj.playerID);
-                                }
-                                else
-                                {
-                                    playerProxy.NotifyMessage(new string[] { "玩家昵称重名", "请更改昵称后重试" });
-                                }
+                                playerProxy.NotifyMessage(new string[] { "此账号已在别处登录", "现已将在别出登录的账号退出", "请重启游戏后再尝试进入大厅" });
+                                this.handlePlayerDisconnect(messageObj.playerID);
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
@@ -194,15 +186,8 @@ namespace TractorServer
 
                             if (this.PlayersProxy.ContainsKey(messageObj.playerID))
                             {
-                                if (this.PlayerToIP.ContainsValue(clientIP))
-                                {
-                                    playerProxy.NotifyMessage(new string[] { "之前非正常退出", "请重启游戏后再尝试进入大厅" });
-                                    this.handlePlayerDisconnect(messageObj.playerID);
-                                }
-                                else
-                                {
-                                    playerProxy.NotifyMessage(new string[] { "该玩家已在别处登录", "请不要同时在多处登录" });
-                                }
+                                playerProxy.NotifyMessage(new string[] { "此账号已在别处登录", "现已将在别出登录的账号退出", "请重启游戏后再尝试进入大厅" });
+                                this.handlePlayerDisconnect(messageObj.playerID);
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
@@ -745,7 +730,7 @@ namespace TractorServer
             if (playerIDToTimer.ContainsKey(playerID))
             {
                 System.Timers.Timer timer = playerIDToTimer[playerID];
-                if(!playerIDToTimer.TryRemove(playerID, out timer))
+                if (!playerIDToTimer.TryRemove(playerID, out timer))
                 {
                     log.Debug("concurrence removing playerIDToTimer failed with key: " + playerID);
                 }
@@ -753,7 +738,11 @@ namespace TractorServer
                 timerToPlayerID.TryRemove(timer, out temp);
             }
             PlayerToIP.Remove(playerID);
-            PlayersProxy.Remove(playerID);
+            if (PlayersProxy.ContainsKey(playerID))
+            {
+                PlayersProxy[playerID].Close();
+                PlayersProxy.Remove(playerID);
+            }
             this.UpdateOnlinePlayerList(playerID, false);
         }
 

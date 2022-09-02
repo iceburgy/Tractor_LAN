@@ -186,5 +186,15 @@ namespace Duan.Xiugang.Tractor.Objects
             var args = new List<object>();
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_StartGame, "", args);
         }
+        public void Close()
+        {
+            try
+            {
+                this.Socket.Close();
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }
