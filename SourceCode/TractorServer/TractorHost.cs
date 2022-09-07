@@ -23,7 +23,7 @@ namespace TractorServer
     public class TractorHost : ITractorHost
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string[] RoomNames = new string[] { "旁观模式", "旁观模式", "旁观模式", "旁观模式" };
+        private readonly string[] RoomNames = new string[] { "1", "2", "3", "4" };
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
