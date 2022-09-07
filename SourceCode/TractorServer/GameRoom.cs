@@ -394,7 +394,7 @@ namespace TractorServer
         // returns: needs to restart
         public bool handleWSPlayerDisconnect(string playerID)
         {
-            if (this.IsAllOnline() && this.IsActualPlayer(playerID) && this.CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing)
+            if (this.IsAllOnline() && this.IsActualPlayer(playerID) && (HandStep.DiscardingLast8Cards <= this.CurrentRoomState.CurrentHandState.CurrentHandStep && this.CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing))
             {
                 return this.PlayerQuitFromCleanup(new List<string>() { playerID });
             }
