@@ -461,5 +461,17 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             return -1;
         }
+
+        public static int GetFirstActualPlayerIndex(List<PlayerEntity> Players)
+        {
+            for (int i = 0; i < Players.Count; i++)
+            {
+                if (Players[i] != null)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 }

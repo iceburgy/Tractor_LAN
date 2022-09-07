@@ -23,7 +23,7 @@ namespace TractorServer
     public class TractorHost : ITractorHost
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string[] RoomNames = new string[] { "桃园结义", "五谷丰登", "无中生有", "万箭齐发" };
+        private readonly string[] RoomNames = new string[] { "旁观模式", "旁观模式", "旁观模式", "旁观模式" };
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
@@ -581,12 +581,12 @@ namespace TractorServer
                 if (entered)
                 {
                     SessionIDGameRoom[playerID] = gameRoom;
-                    new Thread(new ThreadStart(() =>
-                    {
-                        Thread.Sleep(500);
-                        this.UpdateGameHall();
-                    })).Start();
                 }
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
             }
         }
 
@@ -645,52 +645,80 @@ namespace TractorServer
         //玩家退出房间
         public void PlayerExitRoom(string playerID)
         {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            //如果退出的是正常玩家，先记录旁观玩家和离线玩家
-            List<string> obs = new List<string>();
-            List<string> quitPlayers = new List<string>() { playerID };
-            if (gameRoom.IsActualPlayer(playerID))
+            lock (this)
             {
-                obs = gameRoom.ObserversProxy.Keys.ToList<string>();
-                foreach (var player in gameRoom.CurrentRoomState.CurrentGameState.Players)
+                if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                //如果退出的是正常玩家，先记录旁观玩家和离线玩家
+                List<string> obs = new List<string>();
+                List<string> obsToMove = new List<string>();
+                List<string> quitPlayers = new List<string>() { playerID };
+                PlayerEntity firstActualPlayer = null;
+                if (gameRoom.IsActualPlayer(playerID))
                 {
-                    if (player == null) continue;
-                    if (player.IsOffline)
+                    obs = gameRoom.ObserversProxy.Keys.ToList<string>();
+                    for (int i = 0; i < 4; i++)
                     {
-                        quitPlayers.Add(player.PlayerId);
+                        PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players[i];
+                        if (player == null)
+                        {
+                            continue;
+                        }
+                        if (player.PlayerId != playerID && !player.IsOffline && firstActualPlayer == null)
+                        {
+                            firstActualPlayer = player;
+                        }
+                        if (player.IsOffline)
+                        {
+                            quitPlayers.Add(player.PlayerId);
+                            if (player.Observers.Count > 0)
+                            {
+                                obsToMove.AddRange(player.Observers);
+                            }
+                        }
+                        else if (player != null && !PlayersProxy.ContainsKey(player.PlayerId) && !obs.Contains(player.PlayerId) && !quitPlayers.Contains(player.PlayerId))
+                        {
+                            obs.Add(player.PlayerId);
+                        }
+                        if (player.PlayerId == playerID && player.Observers.Count > 0)
+                        {
+                            obsToMove.AddRange(player.Observers);
+                        }
                     }
                 }
-                foreach (PlayerEntity p in gameRoom.CurrentRoomState.CurrentGameState.Players)
+
+                //先将退出的玩家和离线玩家移出房间
+                gameRoom.PlayerQuit(quitPlayers);
+                foreach (string qp in quitPlayers)
                 {
-                    if (p != null && !PlayersProxy.ContainsKey(p.PlayerId) && !obs.Contains(p.PlayerId) && !quitPlayers.Contains(p.PlayerId))
+                    SessionIDGameRoom.Remove(qp);
+                }
+
+                //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
+                if (firstActualPlayer == null)
+                {
+                    gameRoom.PlayerQuit(obs);
+                    foreach (string ob in obs)
                     {
-                        obs.Add(p.PlayerId);
+                        SessionIDGameRoom.Remove(ob);
                     }
                 }
-            }
+                else
+                {
+                    foreach (string ob in obsToMove)
+                    {
+                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob);
+                    }
+                }
 
-            //先将退出的玩家和离线玩家移出房间
-            gameRoom.PlayerQuit(quitPlayers);
-            foreach (string qp in quitPlayers)
-            {
-                SessionIDGameRoom.Remove(qp);
+                log.Debug(string.Format("player {0} exited room.", playerID));
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
             }
-
-            //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
-            gameRoom.PlayerQuit(obs);
-            foreach (string ob in obs)
-            {
-                SessionIDGameRoom.Remove(ob);
-            }
-
-            log.Debug(string.Format("player {0} exited room.", playerID));
-            new Thread(new ThreadStart(() =>
-            {
-                Thread.Sleep(500);
-                this.UpdateGameHall();
-            })).Start();
         }
 
         //玩家退出游戏

@@ -63,8 +63,19 @@ namespace TractorServer
         {
             if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
-                if (IsRoomFull())
+                //加入旁观
+                if (posID < 0)
                 {
+                    int firstActualPlayerIndex = CommonMethods.GetFirstActualPlayerIndex(CurrentRoomState.CurrentGameState.Players);
+                    if (firstActualPlayerIndex < 0)
+                    {
+                        new Thread(new ThreadStart(() =>
+                        {
+                            Thread.Sleep(700);
+                            player.NotifyMessage(new string[] { "房间为空", "不能加入旁观模式", "请点击座位加入玩家模式" });
+                        })).Start();
+                        return false;
+                    }
                     //防止双开旁观
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
                     if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
@@ -99,7 +110,7 @@ namespace TractorServer
 
                     player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     ObserversProxy.Add(playerID, player);
-                    ObservePlayerById(CurrentRoomState.CurrentGameState.Players[0].PlayerId, playerID);
+                    ObservePlayerById(CurrentRoomState.CurrentGameState.Players[firstActualPlayerIndex].PlayerId, playerID);
 
                     if (IsGameOnGoing())
                     {
@@ -117,20 +128,14 @@ namespace TractorServer
                     return true;
                 }
 
-                if (posID >= 0 && CurrentRoomState.CurrentGameState.Players[posID] == null)
+                if (CurrentRoomState.CurrentGameState.Players[posID] == null)
                 {
                     CurrentRoomState.CurrentGameState.Players[posID] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
                 }
                 else
                 {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (CurrentRoomState.CurrentGameState.Players[i] == null)
-                        {
-                            CurrentRoomState.CurrentGameState.Players[i] = new PlayerEntity { PlayerId = playerID, Rank = 0, Team = GameTeam.None, Observers = new HashSet<string>() };
-                            break;
-                        }
-                    }
+                    player.NotifyMessage(new string[] { "该座位已被占用", "请尝试选择另一个座位" });
+                    return false;
                 }
                 CurrentRoomState.CurrentGameState.PlayerToIP.Add(playerID, clientIP);
                 PlayersProxy.Add(playerID, player);
@@ -299,9 +304,9 @@ namespace TractorServer
         {
             foreach (PlayerEntity p in this.CurrentRoomState.CurrentGameState.Players)
             {
-                if (p != null && p.Observers.Contains(playerID)) return false;
+                if (p != null && p.PlayerId == playerID) return true;
             }
-            return true;
+            return false;
         }
 
         // returns: needRestart
@@ -332,11 +337,6 @@ namespace TractorServer
                     CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
                     CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
                     CurrentRoomState.CurrentGameState.Players[i].Team = GameTeam.None;
-                    foreach (string ob in CurrentRoomState.CurrentGameState.Players[i].Observers)
-                    {
-                        ObserversProxy.Remove(ob);
-                        // notify exit to hall
-                    }
                     if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                     {
                         CurrentRoomState.CurrentGameState.Players[i] = null;
@@ -1385,12 +1385,21 @@ namespace TractorServer
             }
 
             // 重置每个玩家的状态
-            foreach (PlayerEntity p in gs.Players)
+            for (int i = 0; i < 4; i++)
             {
+                PlayerEntity p = gs.Players[i];
                 p.IsOffline = false;
                 p.IsReadyToStart = true;
                 p.IsRobot = false;
                 p.Observers.Clear();
+                HashSet<string> obs = CurrentRoomState.CurrentGameState.Players[i].Observers;
+                if (obs.Count > 0)
+                {
+                    foreach (string ob in obs)
+                    {
+                        p.Observers.Add(ob);
+                    }
+                }
             }
 
             string fileNameHandState = string.Format("{0}\\{1}", this.LogsByRoomFullFolder, this.BackupHandStateFileName);
@@ -1400,19 +1409,6 @@ namespace TractorServer
                 restoredMsg.Add("继续牌局【失败】- HandState");
                 PublishMessage(restoredMsg.ToArray());
                 return;
-            }
-
-            // 到了这里，至少可以还原牌局了，但不一定能还原手牌
-            // 因为游戏状态备份文件不包含旁观玩家信息
-            // 还原之前必须先把旁观玩家清除，否则会造成游戏状态紊乱
-            List<string> obs = new List<string>();
-            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
-            {
-                obs.AddRange(p.Observers);
-            }
-            foreach (string ob in obs)
-            {
-                this.tractorHost.PlayerExitRoom(ob);
             }
 
             foreach (var cp in hs.PlayerHoldingCards)
