@@ -267,6 +267,12 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_ExitRoom:
                     this.PlayerExitRoom(playerID);
                     break;
+                case WebSocketObjects.WebSocketMessageType_ExitAndEnterRoom:
+                    this.PlayerExitAndEnterRoom(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_ExitAndObserve:
+                    this.PlayerExitAndObserve(playerID);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_PlayerMakeTrump:
                     this.PlayerMakeTrumpWS(playerID, content);
                     break;
@@ -713,6 +719,140 @@ namespace TractorServer
                 }
 
                 log.Debug(string.Format("player {0} exited room.", playerID));
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                })).Start();
+            }
+        }
+
+        //玩家已在房间里，直接从旁观加入游戏
+        public void PlayerExitAndEnterRoom(string playerID, string content)
+        {
+            WebSocketObjects.PlayerEnterRoomWSMessage messageObj = CommonMethods.ReadObjectFromString<WebSocketObjects.PlayerEnterRoomWSMessage>(content);
+            if (messageObj == null)
+            {
+                log.Debug(string.Format("failed to unmarshal PlayerEnterRoomWSMessage: {0}", content));
+                return;
+            }
+            if (!PlayersProxy.ContainsKey(playerID)) return;
+            IPlayer player = PlayersProxy[playerID];
+            if (player == null)
+            {
+                log.Debug(string.Format("PlayerExitAndEnterRoom failed, playerID: {0}", playerID));
+                return;
+            }
+
+            lock (this)
+            {
+                if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                string clientIP = PlayerToIP[playerID];
+                if (gameRoom.PlayerExitAndEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID))
+                {
+                    log.Debug(string.Format("player {0} exited and entered room successfully.", playerID));
+                }
+                else
+                {
+                    log.Debug(string.Format("player {0} attempted to exited and entered room but failed.", playerID));
+                }
+                new Thread(new ThreadStart(() =>
+                    {
+                        Thread.Sleep(500);
+                        this.UpdateGameHall();
+                    })).Start();
+            }
+        }
+
+        //玩家已在房间里，直接离开座位上树
+        public void PlayerExitAndObserve(string playerID)
+        {
+            lock (this)
+            {
+                if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                //如果退出的是正常玩家，先记录旁观玩家和离线玩家
+                List<string> obs = new List<string>();
+                List<string> obsToMove = new List<string>();
+                List<string> quitPlayers = new List<string>() { playerID };
+                PlayerEntity firstActualPlayer = null;
+                if (gameRoom.IsActualPlayer(playerID))
+                {
+                    obs = gameRoom.ObserversProxy.Keys.ToList<string>();
+                    for (int i = 0; i < 4; i++)
+                    {
+                        PlayerEntity player = gameRoom.CurrentRoomState.CurrentGameState.Players[i];
+                        if (player == null)
+                        {
+                            continue;
+                        }
+                        if (player.PlayerId != playerID && !player.IsOffline && firstActualPlayer == null)
+                        {
+                            firstActualPlayer = player;
+                        }
+                        if (player.IsOffline)
+                        {
+                            quitPlayers.Add(player.PlayerId);
+                            if (player.Observers.Count > 0)
+                            {
+                                obsToMove.AddRange(player.Observers);
+                            }
+                        }
+                        else if (player != null && !PlayersProxy.ContainsKey(player.PlayerId) && !obs.Contains(player.PlayerId) && !quitPlayers.Contains(player.PlayerId))
+                        {
+                            obs.Add(player.PlayerId);
+                        }
+                        if (player.PlayerId == playerID && player.Observers.Count > 0)
+                        {
+                            obsToMove.AddRange(player.Observers);
+                        }
+                    }
+                }
+
+                //先将退出的玩家和离线玩家移出房间
+                gameRoom.PlayerQuit(quitPlayers);
+
+                //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
+                if (firstActualPlayer == null)
+                {
+                    foreach (string qp in quitPlayers)
+                    {
+                        SessionIDGameRoom.Remove(qp);
+                    }
+                    gameRoom.PlayerQuit(obs);
+                    foreach (string ob in obs)
+                    {
+                        SessionIDGameRoom.Remove(ob);
+                    }
+                }
+                else
+                {
+                    foreach (string ob in obsToMove)
+                    {
+                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob);
+                    }
+                }
+
+                if (PlayersProxy.ContainsKey(playerID))
+                {
+                    IPlayer player = PlayersProxy[playerID];
+                    if (player != null)
+                    {
+                        string clientIP = PlayerToIP[playerID];
+                        if (gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, -1))
+                        {
+                            log.Debug(string.Format("player {0} exited room and rejoined as observer.", playerID));
+                        }
+                        else
+                        {
+                            log.Debug(string.Format("player {0} exited room but failed to rejoin as observer.", playerID));
+                        }
+                    }
+                }
+
                 new Thread(new ThreadStart(() =>
                 {
                     Thread.Sleep(500);

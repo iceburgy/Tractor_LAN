@@ -122,7 +122,7 @@ namespace TractorServer
                         player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
                     }
 
-                    Thread.Sleep(2000);
+                    //Thread.Sleep(2000);
                     IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
 
                     return true;
@@ -298,6 +298,18 @@ namespace TractorServer
             }
 
             return needsRestart;
+        }
+
+        //玩家已在房间里，直接从旁观加入游戏
+        public bool PlayerExitAndEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
+        {
+            RemoveObserver(new List<string>() { playerID });
+            if (this.PlayerEnterRoom(playerID, clientIP, player, allowSameIP, posID))
+            {
+                return true;
+            }
+            UpdateGameState();
+            return false;
         }
 
         public bool IsActualPlayer(string playerID)
