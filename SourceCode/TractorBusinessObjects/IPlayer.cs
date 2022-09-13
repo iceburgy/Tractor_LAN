@@ -125,6 +125,9 @@ namespace Duan.Xiugang.Tractor.Objects
         void NotifyOnlinePlayerList(string playerID, bool isJoining, List<string> OnlinePlayerList);
 
         [OperationContract(IsOneWay = true)]
+        void NotifyGameRoomPlayerList(string playerID, bool isJoining, string roomName);
+
+        [OperationContract(IsOneWay = true)]
         void Close();
     }
 }

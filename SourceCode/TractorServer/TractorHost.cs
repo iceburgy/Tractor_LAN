@@ -500,6 +500,8 @@ namespace TractorServer
                         {
                             Thread.Sleep(500);
                             this.UpdateGameHall();
+                            Thread.Sleep(1000);
+                            this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
                         })).Start();
                     }
                 }
@@ -592,6 +594,7 @@ namespace TractorServer
                 {
                     Thread.Sleep(500);
                     this.UpdateGameHall();
+                    this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
                 })).Start();
             }
         }
@@ -699,6 +702,7 @@ namespace TractorServer
                 foreach (string qp in quitPlayers)
                 {
                     SessionIDGameRoom.Remove(qp);
+                    this.UpdateGameRoomPlayerList(qp, false, gameRoom.CurrentRoomState.roomSetting.RoomName);
                 }
 
                 //再将旁观玩家移出房间，这样旁观玩家才能得到最新的handstep的更新
@@ -708,6 +712,7 @@ namespace TractorServer
                     foreach (string ob in obs)
                     {
                         SessionIDGameRoom.Remove(ob);
+                        this.UpdateGameRoomPlayerList(ob, false, gameRoom.CurrentRoomState.roomSetting.RoomName);
                     }
                 }
                 else
@@ -821,11 +826,13 @@ namespace TractorServer
                     foreach (string qp in quitPlayers)
                     {
                         SessionIDGameRoom.Remove(qp);
+                        this.UpdateGameRoomPlayerList(qp, false, gameRoom.CurrentRoomState.roomSetting.RoomName);
                     }
                     gameRoom.PlayerQuit(obs);
                     foreach (string ob in obs)
                     {
                         SessionIDGameRoom.Remove(ob);
+                        this.UpdateGameRoomPlayerList(ob, false, gameRoom.CurrentRoomState.roomSetting.RoomName);
                     }
                 }
                 else
@@ -911,6 +918,12 @@ namespace TractorServer
                 PlayersProxy[playerID].Close();
                 PlayersProxy.Remove(playerID);
             }
+            string roomName = "";
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                roomName = this.SessionIDGameRoom[playerID].CurrentRoomState.roomSetting.RoomName;
+            }
+            this.UpdateGameRoomPlayerList(playerID, false, roomName);
             this.UpdateOnlinePlayerList(playerID, false);
         }
 
@@ -1261,11 +1274,18 @@ namespace TractorServer
 
         public void UpdateOnlinePlayerList(string playerID, bool isJoining)
         {
-            List<string> namesToCall = new List<string>();
             lock (PlayersProxy)
             {
                 List<string> playerList = PlayersProxy.Keys.ToList<string>();
                 IPlayerInvokeForAll(PlayersProxy, playerList, "NotifyOnlinePlayerList", new List<object>() {playerID, isJoining, playerList });
+            }
+        }
+
+        public void UpdateGameRoomPlayerList(string playerID, bool isJoining, string roomName)
+        {
+            lock (PlayersProxy)
+            {
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyGameRoomPlayerList", new List<object>() { playerID, isJoining, roomName });
             }
         }
 

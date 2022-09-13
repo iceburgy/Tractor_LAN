@@ -96,6 +96,12 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyOnlinePlayerList, playerID, args);
         }
 
+        public void NotifyGameRoomPlayerList(string playerID, bool isJoining, string roomName)
+        {
+            var args = new List<object>() { isJoining, roomName };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameRoomPlayerList, playerID, args);
+        }
+
         public void NotifyGameState(GameState gameState)
         {
             var args = new List<object>() { gameState };
