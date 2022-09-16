@@ -757,7 +757,7 @@ namespace TractorServer
                 string clientIP = PlayerToIP[playerID];
                 if (gameRoom.PlayerExitAndEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID))
                 {
-                    log.Debug(string.Format("player {0} exited and entered room successfully.", playerID));
+                    log.Debug(string.Format("player {0} took seat {1} successfully.", playerID, messageObj.posID + 1));
                 }
                 else
                 {

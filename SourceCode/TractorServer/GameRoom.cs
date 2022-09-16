@@ -303,13 +303,22 @@ namespace TractorServer
         //玩家已在房间里，直接从旁观加入游戏
         public bool PlayerExitAndEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
         {
-            RemoveObserver(new List<string>() { playerID });
-            if (this.PlayerEnterRoom(playerID, clientIP, player, allowSameIP, posID))
+            if (!IsActualPlayer(playerID))
             {
+                RemoveObserver(new List<string>() { playerID });
+                if (this.PlayerEnterRoom(playerID, clientIP, player, allowSameIP, posID))
+                {
+                    return true;
+                }
+                UpdateGameState();
+                return false;
+            }
+            else
+            {
+                SwapPlayers(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID), posID);
+                UpdateGameState();
                 return true;
             }
-            UpdateGameState();
-            return false;
         }
 
         public bool IsActualPlayer(string playerID)
