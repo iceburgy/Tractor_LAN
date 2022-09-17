@@ -288,6 +288,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_CardsReady:
                     this.CardsReadyWS(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_SaveRoomSetting:
+                    this.SaveRoomSettingWS(playerID, content);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_ResumeGameFromFile:
                     new Thread(() =>
                     {
@@ -1236,6 +1239,12 @@ namespace TractorServer
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.SetRoomSetting(roomSetting);
             }
+        }
+
+        public void SaveRoomSettingWS(string playerId, string content)
+        {
+            RoomSetting roomSetting = CommonMethods.ReadObjectFromString<RoomSetting>(content);
+            SaveRoomSetting(playerId, roomSetting);
         }
         #endregion
 

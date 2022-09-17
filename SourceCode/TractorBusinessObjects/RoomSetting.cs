@@ -31,6 +31,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public int secondsToWaitForReenter;
         [DataMember]
         public bool DisplaySignalCardInfo;
+        [DataMember]
+        public bool HideOverridingFlag;
 
         public override bool Equals(object obj)
         {
@@ -58,6 +60,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (secondsToWaitForReenter != rs.secondsToWaitForReenter) return false;
             if (AllowJToBottom != rs.AllowJToBottom) return false;
             if (DisplaySignalCardInfo != rs.DisplaySignalCardInfo) return false;
+            if (HideOverridingFlag != rs.HideOverridingFlag) return false;
             if (AllowSurrender != rs.AllowSurrender) return false;
             if (AllowRobotMakeTrump != rs.AllowRobotMakeTrump) return false;
             if (!ManditoryRanks.SequenceEqual(rs.ManditoryRanks)) return false;
