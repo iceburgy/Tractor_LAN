@@ -122,7 +122,7 @@ namespace Duan.Xiugang.Tractor.Objects
         void NotifyGrabStar(int playerIndex, int starIndex);
 
         [OperationContract(IsOneWay = true)]
-        void NotifyOnlinePlayerList(string playerID, bool isJoining, List<string> OnlinePlayerList);
+        void NotifyOnlinePlayerList(string playerID, bool isJoining);
 
         [OperationContract(IsOneWay = true)]
         void NotifyGameRoomPlayerList(string playerID, bool isJoining, string roomName);

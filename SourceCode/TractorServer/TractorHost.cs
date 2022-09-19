@@ -1251,9 +1251,9 @@ namespace TractorServer
         #region Update Client State
         public void UpdateGameHall()
         {
-            List<string> namesToCall = new List<string>();
             lock (PlayersProxy)
             {
+                List<string> namesToCall = new List<string>();
                 List<string> names = PlayersProxy.Keys.ToList<string>();
                 foreach (var name in names)
                 {
@@ -1274,10 +1274,7 @@ namespace TractorServer
                         namesToCall.Add(name);
                     }
                 }
-            }
-            if (namesToCall.Count > 0)
-            {
-                IPlayerInvokeForAll(PlayersProxy, namesToCall, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall });
+                IPlayerInvokeForAll(PlayersProxy, names, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall });
             }
         }
 
@@ -1285,8 +1282,7 @@ namespace TractorServer
         {
             lock (PlayersProxy)
             {
-                List<string> playerList = PlayersProxy.Keys.ToList<string>();
-                IPlayerInvokeForAll(PlayersProxy, playerList, "NotifyOnlinePlayerList", new List<object>() {playerID, isJoining, playerList });
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyOnlinePlayerList", new List<object>() { playerID, isJoining });
             }
         }
 

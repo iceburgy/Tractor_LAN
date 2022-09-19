@@ -90,9 +90,9 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameHall, "", args);
         }
 
-        public void NotifyOnlinePlayerList(string playerID, bool isJoining, List<string> playerList)
+        public void NotifyOnlinePlayerList(string playerID, bool isJoining)
         {
-            var args = new List<object>() { isJoining, playerList };
+            var args = new List<object>() { isJoining };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyOnlinePlayerList, playerID, args);
         }
 
