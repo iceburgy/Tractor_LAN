@@ -37,6 +37,7 @@ namespace TractorServer
         private ServerLocalCache serverLocalCache;
         private bool isGameOver;
         private bool isGameRestarted;
+        private bool shouldKeepCardsShoeFromRestore = false;
         public GameRoom(int roomID, string roomName, TractorHost host)
         {
             string rootFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -993,6 +994,7 @@ namespace TractorServer
                         return;
                     }
                     CleanupOfflinePlayers();
+                    this.shouldKeepCardsShoeFromRestore = false;
                 }
             }
             else
@@ -1025,7 +1027,7 @@ namespace TractorServer
             {
                 foreach (string bp in badPlayers)
                 {
-                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                    this.tractorHost.handlePlayerDisconnect(bp);
                 }
                 return true;
             }
@@ -1080,7 +1082,7 @@ namespace TractorServer
             {
                 foreach (string bp in badPlayers)
                 {
-                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                    this.tractorHost.handlePlayerDisconnect(bp);
                 }
             }
         }
@@ -1103,7 +1105,7 @@ namespace TractorServer
                 Thread.Sleep(5000 + 1000);
 
                 //将离线玩家移出游戏
-                this.tractorHost.BeginPlayerQuit(playerId, PlayerQuitCallback, this.tractorHost);
+                this.tractorHost.handlePlayerDisconnect(playerId);
                 return false;
             }
             return true;
@@ -1308,37 +1310,46 @@ namespace TractorServer
         }
 
         //读取牌局
-        public void RestoreGameStateFromFile(GameState gs, CurrentHandState hs, List<string> restoredMsg)
+        public void RestoreGameStateFromFile(GameState gs, CurrentHandState hs, List<string> restoredMsg, bool arePlayersMatching)
         {
+            if (arePlayersMatching && HandStep.DistributingCards <= hs.CurrentHandStep && hs.CurrentHandStep < HandStep.DiscardingLast8Cards)
+            {
+                this.shouldKeepCardsShoeFromRestore = true;
+            }
+
             for (int i = 0; i < 4; i++)
             {
                 CurrentRoomState.CurrentGameState.Players[i].Rank = gs.Players[i].Rank;
             }
             int lastStarterIndex = -1;
-            for (int i = 0; i < 4; i++)
+            if (hs.Starter != null)
             {
-                if (gs.Players[i] != null && gs.startNextHandStarter != null && gs.Players[i].PlayerId == gs.startNextHandStarter.PlayerId)
+                for (int i = 0; i < 4; i++)
                 {
-                    lastStarterIndex = i;
-                    break;
+                    if (gs.Players[i] != null && gs.startNextHandStarter != null && gs.Players[i].PlayerId == gs.startNextHandStarter.PlayerId)
+                    {
+                        lastStarterIndex = i;
+                        break;
+                    }
                 }
             }
 
+            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
+            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
+            PlayerEntity thisStarter = null;
             if (lastStarterIndex < 0)
             {
-                PublishMessage(new string[] { "读取牌局失败", "上盘牌局无庄家" });
-                return;
+                CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.BeforeDistributingCards;
+                CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
             }
-
-            PlayerEntity thisStarter = CurrentRoomState.CurrentGameState.Players[lastStarterIndex];
-
-            CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
-            CurrentRoomState.CurrentHandState.Starter = thisStarter.PlayerId;
-            CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
-            CurrentRoomState.CurrentHandState.LeftCardsCount = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
-
-            CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
-            CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
+            else
+            {
+                thisStarter = CurrentRoomState.CurrentGameState.Players[lastStarterIndex];
+                CurrentRoomState.CurrentHandState.Starter = thisStarter.PlayerId;
+                CurrentRoomState.CurrentHandState.Rank = thisStarter.Rank;
+                CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
+                CurrentRoomState.CurrentGameState.startNextHandStarter = thisStarter;
+            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -1391,6 +1402,7 @@ namespace TractorServer
                 return;
             }
             bool isResumable = true;
+            bool arePlayersMatching = false;
             for (int i = 0; i < 4; i++)
             {
                 if (CurrentRoomState.CurrentGameState.Players[i].PlayerId != gs.Players[i].PlayerId)
@@ -1439,12 +1451,13 @@ namespace TractorServer
                     restoredMsg.Add("上盘牌局已出完所有牌");
                     restoredMsg.Add("游戏将顺延至下盘牌局并继续");
                     isResumable = false;
+                    arePlayersMatching = true; // 如果玩家匹配，则要考虑是否保持原有手牌
                     break;
                 }
             }
             if (!isResumable)
             {
-                RestoreGameStateFromFile(gs, hs, restoredMsg);
+                RestoreGameStateFromFile(gs, hs, restoredMsg, arePlayersMatching);
                 return;
             }
             CurrentRoomState.CurrentGameState = gs;
@@ -1613,6 +1626,10 @@ namespace TractorServer
                 PublishStartTimer(5);
                 //加一秒缓冲时间，让客户端倒计时完成
                 Thread.Sleep(5000 + 1000);
+                if (!IsAllOnline())
+                {
+                    return;
+                }
                 if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -1666,6 +1683,10 @@ namespace TractorServer
                 }
                 PublishStartTimer(5);
                 Thread.Sleep(5000 + 1000);
+                if (!IsAllOnline())
+                {
+                    return;
+                }
                 if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
                 {
                     break;
@@ -1698,6 +1719,7 @@ namespace TractorServer
         public bool DistributeCards()
         {
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DistributingCards;
+            SaveGameStateToFile();
             UpdatePlayersCurrentHandState();
 
             for (int i = 0; i < 4; i++)
@@ -1719,15 +1741,23 @@ namespace TractorServer
                 playersFromStarter[x] = CurrentRoomState.CurrentGameState.GetNextPlayerAfterThePlayer(playersFromStarter[x - 1]).PlayerId;
             }
 
-            ShuffleCardsWithRNGCsp(this.CardsShoe);
-            //切牌
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
-            if (ObserversProxy.Count > 0)
+            if (this.shouldKeepCardsShoeFromRestore)
             {
-                IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
+                this.shouldKeepCardsShoeFromRestore = false;
+                StartDistributingCards();
             }
+            else
+            {
+                ShuffleCardsWithRNGCsp(this.CardsShoe);
+                //切牌
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
+                if (ObserversProxy.Count > 0)
+                {
+                    IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
+                }
 
-            PlayersProxy[playersFromStarter[3]].CutCardShoeCards();
+                PlayersProxy[playersFromStarter[3]].CutCardShoeCards();
+            }
             return false;
         }
 
@@ -1770,6 +1800,11 @@ namespace TractorServer
                 if (!IsAllOnline()) return;
             }
 
+            StartDistributingCards();
+        }
+
+        private void StartDistributingCards()
+        {
             // Setting up Timer for distributing cards
             cardNumberofEachPlayer = TractorRules.GetCardNumberofEachPlayer(CurrentRoomState.CurrentGameState.Players.Count);
             cardDistributedCount = 0;
@@ -2123,7 +2158,7 @@ namespace TractorServer
             {
                 foreach (string bp in allBadPlayerIDs)
                 {
-                    this.tractorHost.BeginPlayerQuit(bp, PlayerQuitCallback, this.tractorHost);
+                    this.tractorHost.handlePlayerDisconnect(bp);
                 }
             }
             return needsRestart;
@@ -2187,9 +2222,14 @@ namespace TractorServer
 
         public void ShuffleCardsWithRNGCsp(CardsShoe cardShoe)
         {
-            log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
-            cardShoe.KnuthShuffleWithRNGCsp();
-            log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
+            log.Debug(string.Format("before sort: {0}", string.Join(", ", cardShoe.Cards)));
+            Array.Sort(cardShoe.Cards);
+            log.Debug(string.Format("after sort: {0}", string.Join(", ", cardShoe.Cards)));
+            for (int i = 0; i < 3; i++)
+            {
+                cardShoe.KnuthShuffleWithRNGCsp();
+                log.Debug(string.Format("after shuffle{0}: {1}", i, string.Join(", ", cardShoe.Cards)));
+            }
         }
 
         //切牌

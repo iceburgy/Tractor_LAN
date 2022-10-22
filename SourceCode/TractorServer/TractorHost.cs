@@ -212,7 +212,7 @@ namespace TractorServer
         }
 
         // returns if needs restart
-        private bool handlePlayerDisconnect(string playerID)
+        public bool handlePlayerDisconnect(string playerID)
         {
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
