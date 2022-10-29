@@ -2222,9 +2222,7 @@ namespace TractorServer
 
         public void ShuffleCardsWithRNGCsp(CardsShoe cardShoe)
         {
-            log.Debug(string.Format("before sort: {0}", string.Join(", ", cardShoe.Cards)));
-            Array.Sort(cardShoe.Cards);
-            log.Debug(string.Format("after sort: {0}", string.Join(", ", cardShoe.Cards)));
+            log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
             for (int i = 0; i < 3; i++)
             {
                 cardShoe.KnuthShuffleWithRNGCsp();
