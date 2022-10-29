@@ -2223,11 +2223,8 @@ namespace TractorServer
         public void ShuffleCardsWithRNGCsp(CardsShoe cardShoe)
         {
             log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
-            for (int i = 0; i < 3; i++)
-            {
-                cardShoe.KnuthShuffleWithRNGCsp();
-                log.Debug(string.Format("after shuffle{0}: {1}", i, string.Join(", ", cardShoe.Cards)));
-            }
+            cardShoe.KnuthShuffleWithRNGCsp();
+            log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
         }
 
         //切牌
