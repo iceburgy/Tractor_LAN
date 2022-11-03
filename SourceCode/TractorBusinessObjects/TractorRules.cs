@@ -283,7 +283,7 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             var cp = new CurrentPoker[4];
             Suit trump = trickState.Trump;
-            var trumpInt = (int) trickState.Trump;
+            var trumpInt = (int)trickState.Trump;
             int rank = trickState.Rank;
             cp[0] = new CurrentPoker(trickState.ShowedCards[trickState.Learder], trumpInt, rank);
             string nextPlayer1 = trickState.NextPlayer(trickState.Learder);
@@ -299,19 +299,19 @@ namespace Duan.Xiugang.Tractor.Objects
 
             int leadingCardsCount = trickState.ShowedCards[trickState.Learder].Count;
             int winderNumber = 0;
-            var leadingSuit = (int) trickState.LeadingSuit;
+            var leadingSuit = (int)trickState.LeadingSuit;
 
 
             List<int> leadingTractor = cp[0].GetTractorOfAnySuit();
             //甩牌 拖拉机
-            if ((leadingTractor.Count > 1) && (cp[0].Count > leadingTractor.Count*2)) //甩拖拉机
+            if ((leadingTractor.Count > 1) && (cp[0].Count > leadingTractor.Count * 2)) //甩拖拉机
             {
-                int maxCard = leadingTractor[0];
+                int maxCard = CommonMethods.GetMaxCard(leadingTractor, trump, rank);
                 List<int> tractor1 = cp[1].GetTractor(trump);
                 if (tractor1.Count >= leadingTractor.Count &&
                     (!cp[1].IsMixed() && cp[1].GetPairs().Count >= cp[0].GetPairs().Count))
                 {
-                    int tmpMax = tractor1[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor1, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 1;
@@ -322,7 +322,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 if (tractor2.Count >= leadingTractor.Count &&
                     (!cp[2].IsMixed() && cp[2].GetPairs().Count >= cp[0].GetPairs().Count))
                 {
-                    int tmpMax = tractor2[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor2, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 2;
@@ -333,14 +333,14 @@ namespace Duan.Xiugang.Tractor.Objects
                 if (tractor3.Count >= leadingTractor.Count &&
                     (!cp[3].IsMixed() && cp[3].GetPairs().Count >= cp[0].GetPairs().Count))
                 {
-                    int tmpMax = tractor3[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor3, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 3;
                     }
                 }
             }
-                //甩牌 对
+            //甩牌 对
             else if ((2 < leadingCardsCount) && (cp[0].GetPairs().Count > 0) && leadingTractor.Count < 2)
             {
                 int maxCard = CommonMethods.GetMaxCard(cp[0].GetPairs(), trump, rank);
@@ -371,7 +371,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
                 }
             }
-                //甩多个单张牌
+            //甩多个单张牌
             else if ((leadingCardsCount > 1) && (cp[0].GetPairs().Count == 0))
             {
                 int maxCard = CommonMethods.GetMaxCard(trickState.ShowedCards[trickState.Learder], trump, rank);
@@ -407,7 +407,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
                 }
             }
-                //拖拉机
+            //拖拉机
             else if (leadingTractor.Count > 1)
             {
                 //如果有拖拉机
@@ -415,10 +415,10 @@ namespace Duan.Xiugang.Tractor.Objects
                 List<int> tractor1 = cp[1].GetTractorOfAnySuit();
                 List<int> tractor2 = cp[2].GetTractorOfAnySuit();
                 List<int> tractor3 = cp[3].GetTractorOfAnySuit();
-                int maxCard = tractor0[0];
+                int maxCard = CommonMethods.GetMaxCard(tractor0, trump, rank);
                 if (tractor1.Count >= tractor0.Count)
                 {
-                    int tmpMax = tractor1[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor1, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 1;
@@ -427,7 +427,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 if (tractor2.Count >= tractor0.Count)
                 {
-                    int tmpMax = tractor2[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor2, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 2;
@@ -436,7 +436,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 if (tractor3.Count >= tractor0.Count)
                 {
-                    int tmpMax = tractor3[0];
+                    int tmpMax = CommonMethods.GetMaxCard(tractor3, trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 3;
@@ -446,10 +446,10 @@ namespace Duan.Xiugang.Tractor.Objects
 
             else if (cp[0].GetPairs().Count == 1 && (leadingCardsCount == 2)) //如果有一个对
             {
-                var maxCard = (int) cp[0].GetPairs()[0];
+                var maxCard = (int)cp[0].GetPairs()[0];
                 if (cp[1].GetPairs().Count > 0)
                 {
-                    var tmpMax = (int) cp[1].GetPairs()[0];
+                    var tmpMax = (int)cp[1].GetPairs()[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 1;
@@ -458,7 +458,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 if (cp[2].GetPairs().Count > 0)
                 {
-                    var tmpMax = (int) cp[2].GetPairs()[0];
+                    var tmpMax = (int)cp[2].GetPairs()[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 2;
@@ -467,7 +467,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
                 if (cp[3].GetPairs().Count > 0)
                 {
-                    var tmpMax = (int) cp[3].GetPairs()[0];
+                    var tmpMax = (int)cp[3].GetPairs()[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 3;
