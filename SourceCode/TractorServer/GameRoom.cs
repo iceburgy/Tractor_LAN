@@ -35,6 +35,7 @@ namespace TractorServer
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
         private ServerLocalCache serverLocalCache;
+        private List<int> cardsToRecycle;
         private bool isGameOver;
         private bool isGameRestarted;
         private bool shouldKeepCardsShoeFromRestore = false;
@@ -50,6 +51,7 @@ namespace TractorServer
             PlayersProxy = new Dictionary<string, IPlayer>();
             ObserversProxy = new Dictionary<string, IPlayer>();
             serverLocalCache = new ServerLocalCache();
+            cardsToRecycle = new List<int>();
             CurrentRoomState.roomSetting = ReadRoomSettingFromFile();
             CurrentRoomState.roomSetting.RoomName = roomName;
             CurrentRoomState.roomSetting.RoomOwner = string.Empty;
@@ -753,6 +755,7 @@ namespace TractorServer
             foreach (var card in cards)
             {
                 CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].RemoveCard(card);
+                this.cardsToRecycle.Add(card);
             }
             
             StringBuilder logMsg = new StringBuilder();
@@ -854,6 +857,7 @@ namespace TractorServer
             foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
             {
                 CurrentRoomState.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
+                this.cardsToRecycle.Add(card);
             }
             //即时更新旁观手牌
             UpdatePlayersCurrentHandState();
@@ -1748,7 +1752,7 @@ namespace TractorServer
             }
             else
             {
-                ShuffleCardsWithRNGCsp(this.CardsShoe);
+                ShuffleCardsWithRNGCspFromCardsToRecycle(this.CardsShoe);
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
                 if (ObserversProxy.Count > 0)
@@ -2220,8 +2224,14 @@ namespace TractorServer
             }
         }
 
-        public void ShuffleCardsWithRNGCsp(CardsShoe cardShoe)
+        public void ShuffleCardsWithRNGCspFromCardsToRecycle(CardsShoe cardShoe)
         {
+            if (this.cardsToRecycle.Count == this.CardsShoe.Cards.Length)
+            {
+                log.Debug("using cards from recycle");
+                this.CardsShoe.Cards = this.cardsToRecycle.ToArray();
+            }
+            this.cardsToRecycle.Clear();
             log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
             cardShoe.KnuthShuffleWithRNGCsp();
             log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
