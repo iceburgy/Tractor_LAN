@@ -1713,7 +1713,6 @@ namespace TractorServer
         }
 
         //发牌
-        System.Timers.Timer timerDC;
         Dictionary<string, StringBuilder> LogList;
         string starterID;
         int cardDistributedCount;
@@ -1818,20 +1817,23 @@ namespace TractorServer
                 LogList[player.Key] = new StringBuilder();
             }
 
-            timerDC = new System.Timers.Timer();
-            timerDC.Interval = 500;
-            timerDC.Elapsed += this.OnTimedDCEvent;
-            timerDC.AutoReset = true;
-            timerDC.Enabled = true;
+            this.DistributeNextCard();
         }
 
-        private void OnTimedDCEvent(Object source, System.Timers.ElapsedEventArgs e)
+        private void DistributeNextCard()
+        {
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(500);
+                this.DistributeNextCardWorker();
+            })).Start();
+        }
+
+        private void DistributeNextCardWorker()
         {
             int totalToDis = cardNumberofEachPlayer * 4;
             if (cardDistributedCount >= totalToDis || !IsAllOnline())
             {
-                timerDC.Stop();
-                timerDC.Dispose();
                 if (cardDistributedCount == totalToDis && IsAllOnline()) this.DistributeCardsPart2();
                 return;
             }
@@ -1841,22 +1843,16 @@ namespace TractorServer
                 string playerID = playersFromStarter[i];
                 if (!PlayersProxy.ContainsKey(playerID))
                 {
-                    timerDC.Stop();
-                    timerDC.Dispose();
                     return;
                 }
                 if (!string.IsNullOrEmpty(IPlayerInvoke(playerID, PlayersProxy[playerID], "GetDistributedCard", new List<object>() { CardsShoe.Cards[cardDistributedCount] }, true)))
                 {
-                    timerDC.Stop();
-                    timerDC.Dispose();
                     return;
                 }
                 //旁观：发牌
                 PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == playerID);
                 if (IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { CardsShoe.Cards[cardDistributedCount] }))
                 {
-                    timerDC.Stop();
-                    timerDC.Dispose();
                     return;
                 }
                 LogList[playerID].Append(CardsShoe.Cards[cardDistributedCount].ToString() + ", ");
@@ -1864,6 +1860,7 @@ namespace TractorServer
                 CurrentRoomState.CurrentHandState.PlayerHoldingCards[playerID].AddCard(CardsShoe.Cards[cardDistributedCount]);
                 cardDistributedCount++;
             }
+            this.DistributeNextCard();
         }
 
         public void DistributeCardsPart2()
