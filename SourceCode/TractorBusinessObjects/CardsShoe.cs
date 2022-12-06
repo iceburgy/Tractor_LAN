@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Duan.Xiugang.Tractor.Objects
@@ -9,6 +11,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public int[] Cards = null;
         private int _deckNumber;
+        private int shuffleRiffleFlips = 5;
+        private int shuffleOverhandPasses = 5;
 
         public CardsShoe()
         {
@@ -42,19 +46,7 @@ namespace Duan.Xiugang.Tractor.Objects
             }
         }
 
-        //Knuth shuffle
-        public void KnuthShuffle()
-        {
-            int N = Cards.Length;
-            for (int i = 0; i < N; i++)
-            {
-                int r = CommonMethods.random.Next(i + 1);
-                Swap(i, r);
-            }
-        }
-
-        //Knuth shuffle
-        public void KnuthShuffleWithRNGCsp()
+        public void ShuffleKnuth()
         {
             int N = Cards.Length;
             for (int i = 0; i < N; i++)
@@ -62,6 +54,101 @@ namespace Duan.Xiugang.Tractor.Objects
                 int r = CommonMethods.RandomNext(i + 1);
                 Swap(i, r);
             }
+        }
+
+        public void ShuffleFisherYales()
+        {
+            int N = Cards.Length;
+            for (int i = N - 1; i >= 0; i--)
+            {
+                int r = CommonMethods.RandomNext(i + 1);
+                Swap(i, r);
+            }
+        }
+
+        public void ShuffleRiffleAndOverhand()
+        {
+            ShuffleRiffle();
+            ShuffleOverhand();
+        }
+
+        public void ShuffleRiffle()
+        {
+            int N = Cards.Length;
+            List<int> newList = new List<int>(Cards);
+
+            for (int i = 0; i < shuffleRiffleFlips; i++)
+            {
+                //cut the deck at the middle +/- 10%
+                int cutPoint = Cards.Length / 2 + (CommonMethods.RandomNext(2) == 0 ? -1 : 1) * CommonMethods.RandomNext((int)(N * 0.1));
+
+                //split the deck
+                List<int> left = new List<int>(newList.Take(cutPoint));
+                List<int> right = new List<int>(newList.Skip(cutPoint));
+
+                newList.Clear();
+
+                while (left.Count > 0 && right.Count > 0)
+                {
+                    //allow for imperfect riffling so that more than one card can come form the same side in a row
+                    //biased towards the side with more cards
+                    //remove the if and else and brackets for perfect riffling
+                    if (CommonMethods.random.NextDouble() >= ((double)left.Count / right.Count) / 2)
+                    {
+                        newList.Add(right.First());
+                        right.RemoveAt(0);
+                    }
+                    else
+                    {
+                        newList.Add(left.First());
+                        left.RemoveAt(0);
+                    }
+                }
+
+                //if either hand is out of cards then flip all of the other hand to the shuffled deck
+                if (left.Count > 0) newList.AddRange(left);
+                if (right.Count > 0) newList.AddRange(right);
+            }
+            Cards = newList.ToArray();
+        }
+
+        public void ShuffleOverhand()
+        {
+            int N = Cards.Length;
+            List<int> mainHand = new List<int>(Cards);
+            for (int i = 0; i < shuffleOverhandPasses; i++)
+            {
+                List<int> otherHand = new List<int>();
+
+                while (mainHand.Count > 0)
+                {
+                    //cut at up to 20% of the way through the deck
+                    int cutSize = Math.Min(mainHand.Count, CommonMethods.RandomNext((int)(N * 0.2)) + 1);
+                    //int cutPoint = CommonMethods.RandomNext(mainHand.Count - cutSize + 1);
+                    int cutPoint = 0;
+
+                    //grab the next cut up to the end of the cards left in the main hand at a random point
+                    List<int> temp = mainHand.GetRange(cutPoint, cutSize);
+                    mainHand.RemoveRange(cutPoint, cutSize);
+
+                    //add them to the cards in the other hand, sometimes to the front sometimes to the back
+                    if (CommonMethods.random.NextDouble() >= 0.1)
+                    {
+                        //front
+                        temp.AddRange(otherHand);
+                        otherHand = temp;
+                    }
+                    else
+                    {
+                        //end
+                        otherHand.AddRange(temp);
+                    }
+                }
+
+                //move the cards back to the main hand
+                mainHand = otherHand;
+            }
+            Cards = mainHand.ToArray();
         }
 
         //Better

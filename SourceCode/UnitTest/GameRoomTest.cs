@@ -169,7 +169,7 @@ namespace TestProject1
         }
 
         [TestMethod()]
-        public void ShuffleCardsTestWithRNGCsp()
+        public void TestShuffleKnuth()
         {
             GameRoom gameRoom = new GameRoom(0, "test", null);
             CardsShoe cardShoe = new CardsShoe();
@@ -183,12 +183,8 @@ namespace TestProject1
             int testCount = 1000;
             for (int x = 0; x < testCount; x++)
             {
-                int N = cardShoe.Cards.Length;
-                for (int i = 0; i < N; i++)
-                {
-                    int r = CommonMethods.RandomNext(i + 1);
-                    gameRoom.Swap(cardShoe.Cards, i, r);
-                }
+                cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                cardShoe.ShuffleKnuth();
 
                 for (int i = 0; i < 10; i++)
                 {
@@ -200,6 +196,128 @@ namespace TestProject1
             {
                 System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
             }
+        }
+
+        [TestMethod()]
+        public void TestShuffleFisherYales()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1000;
+            for (int x = 0; x < testCount; x++)
+            {
+                cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                cardShoe.ShuffleFisherYales();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            }
+        }
+
+        [TestMethod()]
+        public void TestShuffleRiffleAndOverhand()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1000;
+            for (int x = 0; x < testCount; x++)
+            {
+                cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                cardShoe.ShuffleRiffleAndOverhand();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            }
+        }
+
+        [TestMethod()]
+        public void TestShuffleRiffle()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1;
+            for (int x = 0; x < testCount; x++)
+            {
+                cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                cardShoe.ShuffleRiffle();
+                System.Console.Out.WriteLine("{0}", string.Join(",", cardShoe.Cards));
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            //}
+        }
+
+        [TestMethod()]
+        public void TestShuffleOverhand()
+        {
+            GameRoom gameRoom = new GameRoom(0, "test", null);
+            CardsShoe cardShoe = new CardsShoe();
+            cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            int[][] stats = new int[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                stats[i] = new int[10];
+            }
+
+            int testCount = 1;
+            for (int x = 0; x < testCount; x++)
+            {
+                cardShoe.Cards = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+                cardShoe.ShuffleOverhand();
+                System.Console.Out.WriteLine("{0}", string.Join(",", cardShoe.Cards));
+
+                for (int i = 0; i < 10; i++)
+                {
+                    stats[cardShoe.Cards[i]][i]++;
+                }
+            }
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    System.Console.Out.WriteLine("{0}: {1}", i, string.Join(",", stats[i]));
+            //}
         }
 
         [TestMethod()]

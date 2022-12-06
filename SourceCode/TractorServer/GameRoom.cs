@@ -1751,7 +1751,7 @@ namespace TractorServer
             }
             else
             {
-                ShuffleCardsWithRNGCspFromCardsToRecycle(this.CardsShoe);
+                ShuffleCardsFromCardsToRecycle(this.CardsShoe);
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
                 if (ObserversProxy.Count > 0)
@@ -2221,7 +2221,7 @@ namespace TractorServer
             }
         }
 
-        public void ShuffleCardsWithRNGCspFromCardsToRecycle(CardsShoe cardShoe)
+        public void ShuffleCardsFromCardsToRecycle(CardsShoe cardShoe)
         {
             if (this.cardsToRecycle.Count == this.CardsShoe.Cards.Length)
             {
@@ -2230,7 +2230,7 @@ namespace TractorServer
             }
             this.cardsToRecycle.Clear();
             log.Debug(string.Format("before shuffle: {0}", string.Join(", ", cardShoe.Cards)));
-            cardShoe.KnuthShuffleWithRNGCsp();
+            cardShoe.ShuffleRiffleAndOverhand();
             log.Debug(string.Format("after shuffle: {0}", string.Join(", ", cardShoe.Cards)));
         }
 
