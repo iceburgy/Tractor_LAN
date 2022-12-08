@@ -40,8 +40,6 @@ namespace TractorServer
         public string KeyIsFullDebug = "isFullDebug";
         public EmailSettings emailSettings;
 
-        public CardsShoe CardsShoe { get; set; }
-
         public Dictionary<string, string> PlayerToIP;
         public Dictionary<string, IPlayer> PlayersProxy;
         public List<GameRoom> GameRooms { get; set; }
@@ -81,7 +79,6 @@ namespace TractorServer
                 log.Debug(string.Format("reading config {0} failed with exception: {1}", KeyAllowSameIP, ex.Message));
             }
 
-            CardsShoe = new CardsShoe();
             PlayerToIP = new Dictionary<string, string>();
             PlayersProxy = new Dictionary<string, IPlayer>();
             GameRooms = new List<GameRoom>();
