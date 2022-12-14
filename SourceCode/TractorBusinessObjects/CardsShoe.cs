@@ -44,7 +44,6 @@ namespace Duan.Xiugang.Tractor.Objects
                     Cards[i*54 + j] = j;
                 }
             }
-            this.ShuffleFisherYales();
         }
 
         public void ShuffleKnuth()
