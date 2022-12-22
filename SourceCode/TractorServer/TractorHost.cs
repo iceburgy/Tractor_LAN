@@ -913,7 +913,7 @@ namespace TractorServer
                     this.PublishShengbi(ptob);
                     UpdateGameHall();
                     this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID));
-                    log.Debug(string.Format("玩家【{0}】签到成功，获得福利：升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
+                    log.Debug(string.Format("玩家【{0}】签到成功，升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
                 }
                 else
                 {
