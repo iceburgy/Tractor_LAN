@@ -1472,13 +1472,7 @@ namespace TractorServer
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (publishShengbi)
                 {
-                    List<string> names = PlayersProxy.Keys.ToList<string>();
-                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = new Dictionary<string, ClientInfoV3.ShengbiInfo>();
-                    foreach (string pid in names)
-                    {
-                        if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                        ptob.Add(pid, new ClientInfoV3.ShengbiInfo(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao));
-                    }
+                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
                     this.PublishShengbi(ptob);
                 }
             }
