@@ -91,7 +91,7 @@ namespace TractorServer
                         }
 
                         string cheating = string.Format("player {0} (with other ID {1}) attempted double observing with IP {2}", playerID, otherID, clientIP);
-                        tractorHost.LogClientInfo(clientIP, playerID, cheating);
+                        tractorHost.LogClientInfo(clientIP, playerID, cheating, false);
                         log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {
@@ -935,17 +935,28 @@ namespace TractorServer
 
                     //检查是否本轮游戏结束
                     StringBuilder sb = null;
+                    List<string> winners = new List<string>();
+                    List<string> losers = new List<string>();
                     bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
                     if (isGameOver)
                     {
                         sb = new StringBuilder();
                         foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
                         {
+                            string pid = player.PlayerId;
                             if (player == null) continue;
                             player.Rank = 0;
                             if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
-                                sb.Append(string.Format("【{0}】", player.PlayerId));
+                            {
+                                sb.Append(string.Format("【{0}】", pid));
+                                winners.Add(pid);
+                            }
+                            else
+                            {
+                                losers.Add(pid);
+                            }
                         }
+                        IssueGameoverBonus(winners, losers);
                         CurrentRoomState.CurrentHandState.Rank = 0;
                         CurrentRoomState.CurrentHandState.Starter = null;
 
@@ -1009,6 +1020,34 @@ namespace TractorServer
                 UpdatePlayerCurrentTrickState();
             }
             CheckOfflinePlayers();
+        }
+
+        private void IssueGameoverBonus(List<string> winners, List<string> losers)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("玩家");
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
+            foreach (string w in winners)
+            {
+                clientInfoV3Dict[w].Shengbi += CommonMethods.winnerBonusShengbi;
+                sb.Append(string.Format("【{0}】", w));
+            }
+            sb.Append(string.Format("获胜，获得福利：升币+{0}，", CommonMethods.winnerBonusShengbi));
+
+            sb.Append("玩家");
+            foreach (string l in losers)
+            {
+                clientInfoV3Dict[l].Shengbi += CommonMethods.loserBonusShengbi;
+                sb.Append(string.Format("【{0}】", l));
+            }
+            sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
+
+            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+
+            Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
+            this.tractorHost.PublishShengbi(ptob);
+            this.tractorHost.UpdateGameHall();
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, sb.ToString());
         }
 
         private bool CleanupOfflinePlayers()

@@ -96,6 +96,12 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyOnlinePlayerList, playerID, args);
         }
 
+        public void NotifyShengbi(Dictionary<string, ClientInfoV3.ShengbiInfo> playerIDToShengbi)
+        {
+            var args = new List<object>() { playerIDToShengbi };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyShengbi, "", args);
+        }
+
         public void NotifyGameRoomPlayerList(string playerID, bool isJoining, string roomName)
         {
             var args = new List<object>() { isJoining, roomName };

@@ -324,6 +324,12 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_EndCollectStar:
                     this.NotifyEndCollectStar(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_PlayerQiandao:
+                    this.PlayerQiandao(playerID);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_UsedShengbi:
+                    this.UsedShengbi(playerID, content);
+                    break;
                 default:
                     break;
             }
@@ -478,7 +484,8 @@ namespace TractorServer
             {
                 cheating = string.Format("player {0} (with other ID {1}) attempted login with IP {2}", playerID, string.Join("; ", playerIDsWithSameIP), clientIP);
             }
-            LogClientInfo(clientIP, playerID, cheating);
+            LogClientInfo(clientIP, playerID, cheating, true);
+            Thread.Sleep(500);
             IPlayer player = this.PlayersProxy[playerID];
             this.PlayerToIP[playerID] = clientIP;
             if (this.SessionIDGameRoom.ContainsKey(playerID))
@@ -888,6 +895,67 @@ namespace TractorServer
             return result;
         }
 
+        private void PlayerQiandao(string playerID)
+        {
+            lock (this)
+            {
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
+                {
+                    log.Debug(string.Format("fail to find playerID {0} for qiandao!", playerID));
+                    return;
+                }
+                bool isSuccess = clientInfoV3Dict[playerID].performQiandao();
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                if (isSuccess)
+                {
+                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    this.PublishShengbi(ptob);
+                    UpdateGameHall();
+                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID));
+                }
+            }
+        }
+
+        private void UsedShengbi(string playerID, string content)
+        {
+            lock (this)
+            {
+                int shengbiCost = 0;
+                switch (content)
+                {
+                    case CommonMethods.usedShengbiType_Qiangliangka:
+                        shengbiCost = CommonMethods.qiangliangkaCost;
+                        break;
+                    default:
+                        return;
+                }
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
+                {
+                    log.Debug(string.Format("fail to find playerID {0} for UsedShengbi!", playerID));
+                    return;
+                }
+                clientInfoV3Dict[playerID].Shengbi -= shengbiCost;
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
+                this.PublishShengbi(ptob);
+                UpdateGameHall();
+            }
+        }
+
+        public Dictionary<string, ClientInfoV3.ShengbiInfo> buildPlayerToShengbi(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
+        {
+            List<string> names = PlayersProxy.Keys.ToList<string>();
+            Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = new Dictionary<string, ClientInfoV3.ShengbiInfo>();
+            foreach (string pid in names)
+            {
+                if (!clientInfoV3Dict.ContainsKey(pid)) continue;
+                ptob.Add(pid, new ClientInfoV3.ShengbiInfo(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao));
+            }
+            return ptob;
+        }
+
         // perform timer init for IPlayer
         private void InitTimerForIPlayer(string playerID)
         {
@@ -1028,11 +1096,15 @@ namespace TractorServer
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
         {
             bool isPlayerInGameHall = this.IsInGameHall(playerID);
-            if (isPlayerInGameHall)
+            if (isPlayerInGameHall || string.IsNullOrEmpty(playerID))
             {
                 isCenter = false;
-                List<string> playersInGameHall = this.getPlayersInGameHall();
-                IPlayerInvokeForAll(PlayersProxy, playersInGameHall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
+                List<string> playersToCall = this.getPlayersInGameHall();
+                if (string.IsNullOrEmpty(playerID))
+                {
+                    playersToCall = PlayersProxy.Keys.ToList<string>();
+                }
+                IPlayerInvokeForAll(PlayersProxy, playersToCall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
             }
             else if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
@@ -1283,6 +1355,14 @@ namespace TractorServer
             }
         }
 
+        public void PublishShengbi(Dictionary<string, ClientInfoV3.ShengbiInfo> playerIDToShengbi)
+        {
+            lock (PlayersProxy)
+            {
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyShengbi", new List<object>() { playerIDToShengbi });
+            }
+        }
+
         public void UpdateGameRoomPlayerList(string playerID, bool isJoining, string roomName)
         {
             lock (PlayersProxy)
@@ -1372,24 +1452,42 @@ namespace TractorServer
             return OperationContext.Current.SessionId;
         }
 
-        public void LogClientInfo(string clientIP, string playerID, string isCheating)
+        public void LogClientInfo(string clientIP, string playerID, string isCheating, bool publishShengbi)
         {
             lock (this)
             {
-                Dictionary<string, ClientInfoV3> clientInfoV3Dict = new Dictionary<string, ClientInfoV3>();
-                string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                if (File.Exists(fileNameV3))
-                {
-                    clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
-                }
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 if (!clientInfoV3Dict.ContainsKey(playerID))
                 {
                     log.Debug(string.Format("fail to find clientIP {0} for client info logging!", clientIP));
                     return;
                 }
+
                 clientInfoV3Dict[playerID].logLogin(clientIP, isCheating);
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                if (publishShengbi)
+                {
+                    List<string> names = PlayersProxy.Keys.ToList<string>();
+                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = new Dictionary<string, ClientInfoV3.ShengbiInfo>();
+                    foreach (string pid in names)
+                    {
+                        if (!clientInfoV3Dict.ContainsKey(pid)) continue;
+                        ptob.Add(pid, new ClientInfoV3.ShengbiInfo(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao));
+                    }
+                    this.PublishShengbi(ptob);
+                }
             }
+        }
+
+        public Dictionary<string, ClientInfoV3> LoadClientInfoV3()
+        {
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = new Dictionary<string, ClientInfoV3>();
+            string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            if (File.Exists(fileNameV3))
+            {
+                clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
+            }
+            return clientInfoV3Dict;
         }
 
         public string[] ValidateClientInfoV3(string clientIP, string playerID, string content)
@@ -1398,11 +1496,7 @@ namespace TractorServer
             {
                 string[] passAndEmailInfo = CommonMethods.ReadObjectFromString<string[]>(content);
                 string overridePass = passAndEmailInfo[0];
-                Dictionary<string, ClientInfoV3> clientInfoV3Dict = new Dictionary<string, ClientInfoV3>();
-                string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                bool fileV3Exists = File.Exists(fileNameV3);
-                if (!fileV3Exists) return new string[] { "系统错误", "请稍后重试" };
-                clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
                 bool isKnownIDIgnoreCase = clientInfoV3Dict.Keys.Contains(playerID, StringComparer.OrdinalIgnoreCase);
 
@@ -1582,11 +1676,7 @@ namespace TractorServer
         {
             HashSet<string> existingCodes = new HashSet<string>();
             HashSet<string> existingEmails = new HashSet<string>();
-            string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            bool fileV3Exists = File.Exists(fileNameV3);
-            if (!fileV3Exists) return new HashSet<string>[] { existingCodes, existingEmails };
-
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
             foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
             {
                 existingCodes.Add(entry.Value.overridePass);
@@ -1643,11 +1733,8 @@ namespace TractorServer
         private List<string> OtherPlayerIDsWithSameIP(string PlayerID, string clientIP)
         {
             HashSet<string> others = new HashSet<string>();
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
             string fileNameV3 = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            bool fileV3Exists = File.Exists(fileNameV3);
-            if (!fileV3Exists) return others.ToList();
-
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = CommonMethods.ReadObjectFromFile<Dictionary<string, ClientInfoV3>>(fileNameV3);
             foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
             {
                 if (string.Equals(entry.Key, PlayerID)) continue;

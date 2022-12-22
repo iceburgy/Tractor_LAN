@@ -20,6 +20,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public List<string> cheatHistory;
         [DataMember]
         public List<string> loginHistory;
+        [DataMember]
+        public int Shengbi = 0;
+        [DataMember]
+        public DateTime lastQiandao;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
@@ -33,6 +37,7 @@ namespace Duan.Xiugang.Tractor.Objects
             playerIPList.Add(ip);
             cheatHistory = new List<string>();
             loginHistory = new List<string>();
+            lastQiandao = DateTime.MinValue;
         }
 
         public void logLogin(string ip, string cheating)
@@ -52,6 +57,31 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             int purgeCount = this.loginHistory.Count - maxLoginHistory + 1;
             if (purgeCount > 0) this.loginHistory.RemoveRange(0, purgeCount);
+        }
+
+        public class ShengbiInfo
+        {
+            public ShengbiInfo(int sb, DateTime lqd)
+            {
+                this.Shengbi = sb;
+                this.lastQiandao = lqd;
+            }
+            [DataMember]
+            public int Shengbi = 0;
+            [DataMember]
+            public DateTime lastQiandao;
+        }
+
+        public bool performQiandao()
+        {
+            var now = DateTime.Now;
+            if (now.Date > this.lastQiandao.Date)
+            {
+                this.lastQiandao = now;
+                this.Shengbi++;
+                return true;
+            }
+            return false;
         }
     }
 }
