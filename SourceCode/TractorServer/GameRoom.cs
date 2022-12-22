@@ -1047,7 +1047,9 @@ namespace TractorServer
             Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
             this.tractorHost.PublishShengbi(ptob);
             this.tractorHost.UpdateGameHall();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, sb.ToString());
+            string logMsg = sb.ToString();
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg);
+            log.Debug(logMsg);
         }
 
         private bool CleanupOfflinePlayers()

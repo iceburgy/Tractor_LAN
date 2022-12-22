@@ -59,19 +59,6 @@ namespace Duan.Xiugang.Tractor.Objects
             if (purgeCount > 0) this.loginHistory.RemoveRange(0, purgeCount);
         }
 
-        public class ShengbiInfo
-        {
-            public ShengbiInfo(int sb, DateTime lqd)
-            {
-                this.Shengbi = sb;
-                this.lastQiandao = lqd;
-            }
-            [DataMember]
-            public int Shengbi = 0;
-            [DataMember]
-            public DateTime lastQiandao;
-        }
-
         public bool performQiandao()
         {
             var now = DateTime.Now;
@@ -82,6 +69,23 @@ namespace Duan.Xiugang.Tractor.Objects
                 return true;
             }
             return false;
+        }
+
+        public class ShengbiInfo
+        {
+            public ShengbiInfo(int sb, DateTime lqd)
+            {
+                this.Shengbi = sb;
+                var now = DateTime.Now;
+                if (now.Date > lqd.Date)
+                {
+                    this.isRenewed = true;
+                }
+            }
+            [DataMember]
+            public int Shengbi = 0;
+            [DataMember]
+            public bool isRenewed = false;
         }
     }
 }
