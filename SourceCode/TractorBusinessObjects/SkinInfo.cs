@@ -8,9 +8,10 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class SkinInfo
     {
-        public SkinInfo(string sn, string sd, int st, int sc, DateTime exp)
+        public SkinInfo(string sn, string ss, string sd, int st, int sc, DateTime exp)
         {
             this.skinName = sn;
+            this.skinSex = ss;
             this.skinDesc = sd;
             this.skinType = st;
             this.skinCost = sc;
@@ -18,6 +19,8 @@ namespace Duan.Xiugang.Tractor.Objects
         }
         [DataMember]
         public string skinName;
+        [DataMember]
+        public string skinSex;
         [DataMember]
         public string skinDesc;
         [DataMember]

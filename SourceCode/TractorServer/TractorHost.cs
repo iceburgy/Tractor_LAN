@@ -1563,9 +1563,9 @@ namespace TractorServer
             }
             else
             {
-                skinInfo.Add(CommonMethods.defaultSkinInUse, new SkinInfo(CommonMethods.defaultSkinInUse, "空白皮肤", 0, 0, DateTime.Now.AddYears(999)));
-                skinInfo.Add("skin_basicmale", new SkinInfo("skin_basicmale", "免费标准皮肤-男性", 0, 0, DateTime.Now.AddYears(999)));
-                skinInfo.Add("skin_basicfemale", new SkinInfo("skin_basicfemale", "免费标准皮肤-女性", 0, 0, DateTime.Now.AddYears(999)));
+                skinInfo.Add(CommonMethods.defaultSkinInUse, new SkinInfo(CommonMethods.defaultSkinInUse, "m", "空白皮肤", 0, 0, DateTime.Now.AddYears(999)));
+                skinInfo.Add("skin_basicmale", new SkinInfo("skin_basicmale", "m", "免费标准皮肤-男性", 0, 0, DateTime.Now.AddYears(999)));
+                skinInfo.Add("skin_basicfemale", new SkinInfo("skin_basicfemale", "f", "免费标准皮肤-女性", 0, 0, DateTime.Now.AddYears(999)));
                 CommonMethods.WriteObjectToFile(skinInfo, GameRoom.LogsFolder, GameRoom.SkinInfoFileName);
             }
             return skinInfo;
