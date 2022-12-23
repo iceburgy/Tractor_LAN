@@ -53,6 +53,9 @@
   <ItemGroup>
     <Compile Include="Algorithm.cs" />
     <Compile Include="CardsShoe.cs" />
+    <Compile Include="DaojuInfoByPlayer.cs" />
+    <Compile Include="SkinInfo.cs" />
+    <Compile Include="DaojuInfo.cs" />
     <Compile Include="EmailSettings.cs" />
     <Compile Include="ClientInfoV3.cs" />
     <Compile Include="CommonMethods.cs" />

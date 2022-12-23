@@ -35,6 +35,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int loserBonusShengbi = 1;
         public const string usedShengbiType_Qiangliangka = "UsedShengbiType_Qiangliangka";
         public static int qiangliangkaCost = 1;
+        public static string defaultSkinInUse = "skin_questionmark";
 
         public static Random random = new Random();
         public static string RandomString(int lower, int upper)

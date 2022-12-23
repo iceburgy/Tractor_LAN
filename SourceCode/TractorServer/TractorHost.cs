@@ -96,6 +96,9 @@ namespace TractorServer
             SessionIDGameRoom = new Dictionary<string, GameRoom>();
             this.SetTimer();
 
+            // test one time
+            this.InitSkinInUse();
+
             var threadStartHostWS = new Thread(() =>
             {
                 var server = new WebSocketServer("ws://0.0.0.0:" + Webport);
@@ -329,6 +332,9 @@ namespace TractorServer
                     break;
                 case WebSocketObjects.WebSocketMessageType_UsedShengbi:
                     this.UsedShengbi(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_BuyUseSkin:
+                    this.BuyUseSkin(playerID, content);
                     break;
                 default:
                     break;
@@ -909,8 +915,8 @@ namespace TractorServer
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (isSuccess)
                 {
-                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
-                    this.PublishShengbi(ptob);
+                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    this.PublishDaojuInfo(daojuInfo);
                     UpdateGameHall();
                     this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID));
                     log.Debug(string.Format("玩家【{0}】签到成功，升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
@@ -943,22 +949,71 @@ namespace TractorServer
                 }
                 clientInfoV3Dict[playerID].Shengbi -= shengbiCost;
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
-                this.PublishShengbi(ptob);
+                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                this.PublishDaojuInfo(daojuInfo);
                 UpdateGameHall();
             }
         }
 
-        public Dictionary<string, ClientInfoV3.ShengbiInfo> buildPlayerToShengbi(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
+        private void BuyUseSkin(string playerID, string content)
         {
+            lock (this)
+            {
+                string skinName = content;
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
+                {
+                    log.Debug(string.Format("fail to find playerID {0} for BuyUseSkin!", playerID));
+                    return;
+                }
+                Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo();
+                if (!fullSkinInfo.ContainsKey(skinName))
+                {
+                    log.Debug(string.Format("fail to find skin {0} for BuyUseSkin!", skinName));
+                    return;
+                }
+
+                ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
+                SkinInfo skinInfoToBuyUse = fullSkinInfo[skinName];
+                bool isBuy = false;
+                if (!curClientInfo.ownedSkinInfo.Contains(skinName))
+                {
+                    isBuy = true;
+                    if (curClientInfo.Shengbi < skinInfoToBuyUse.skinCost)
+                    {
+                        log.Debug(string.Format("fail to buy skin {0} for BuyUseSkin due to insufficient fund", skinName));
+                        return;
+                    }
+                    curClientInfo.Shengbi -= skinInfoToBuyUse.skinCost;
+                    curClientInfo.ownedSkinInfo.Add(skinName);
+                }
+
+                curClientInfo.skinInUse = skinName;
+
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                this.PublishDaojuInfo(daojuInfo);
+                UpdateGameHall();
+                if (isBuy)
+                {
+                    string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】", playerID, skinInfoToBuyUse.skinDesc);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, msg);
+                    log.Debug(msg);
+                }
+            }
+        }
+
+        public DaojuInfo buildPlayerToShengbi(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
+        {
+            Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo();
             List<string> names = PlayersProxy.Keys.ToList<string>();
-            Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = new Dictionary<string, ClientInfoV3.ShengbiInfo>();
+            DaojuInfo daojuInfo = new DaojuInfo(fullSkinInfo, new Dictionary<string, DaojuInfoByPlayer>());
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                ptob.Add(pid, new ClientInfoV3.ShengbiInfo(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao));
+                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse));
             }
-            return ptob;
+            return daojuInfo;
         }
 
         // perform timer init for IPlayer
@@ -1360,11 +1415,11 @@ namespace TractorServer
             }
         }
 
-        public void PublishShengbi(Dictionary<string, ClientInfoV3.ShengbiInfo> playerIDToShengbi)
+        public void PublishDaojuInfo(DaojuInfo daojuInfo)
         {
             lock (PlayersProxy)
             {
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyShengbi", new List<object>() { playerIDToShengbi });
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyDaojuInfo", new List<object>() { daojuInfo });
             }
         }
 
@@ -1472,10 +1527,48 @@ namespace TractorServer
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (publishShengbi)
                 {
-                    Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.buildPlayerToShengbi(clientInfoV3Dict);
-                    this.PublishShengbi(ptob);
+                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    this.PublishDaojuInfo(daojuInfo);
                 }
             }
+        }
+
+        public void InitSkinInUse()
+        {
+            lock (this)
+            {
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+                {
+                    if (string.IsNullOrEmpty(entry.Value.skinInUse))
+                    {
+                        entry.Value.skinInUse = CommonMethods.defaultSkinInUse;
+                    }
+                    if (!entry.Value.ownedSkinInfo.Contains(CommonMethods.defaultSkinInUse))
+                    {
+                        entry.Value.ownedSkinInfo.Add(CommonMethods.defaultSkinInUse);
+                    }
+                }
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            }
+        }
+
+        public Dictionary<string, SkinInfo> LoadSkinInfo()
+        {
+            Dictionary<string, SkinInfo> skinInfo = new Dictionary<string, SkinInfo>();
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.SkinInfoFileName);
+            if (File.Exists(fileName))
+            {
+                skinInfo = CommonMethods.ReadObjectFromFile<Dictionary<string, SkinInfo>>(fileName);
+            }
+            else
+            {
+                skinInfo.Add(CommonMethods.defaultSkinInUse, new SkinInfo(CommonMethods.defaultSkinInUse, "空白皮肤", 0, 0, DateTime.Now.AddYears(999)));
+                skinInfo.Add("skin_basicmale", new SkinInfo("skin_basicmale", "免费标准皮肤-男性", 0, 0, DateTime.Now.AddYears(999)));
+                skinInfo.Add("skin_basicfemale", new SkinInfo("skin_basicfemale", "免费标准皮肤-女性", 0, 0, DateTime.Now.AddYears(999)));
+                CommonMethods.WriteObjectToFile(skinInfo, GameRoom.LogsFolder, GameRoom.SkinInfoFileName);
+            }
+            return skinInfo;
         }
 
         public Dictionary<string, ClientInfoV3> LoadClientInfoV3()
@@ -1573,7 +1666,7 @@ namespace TractorServer
                         return new string[] { "此邮箱已被其他玩家使用", "请另选一个邮箱" };
                     }
                     string newPassCode = generateNewCode(existingPassCodes, regcodes);
-                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail);
+                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail, CommonMethods.defaultSkinInUse);
                     regcodes.Remove(overridePass);
                     GenerateRegistrationCodes(regcodes);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);

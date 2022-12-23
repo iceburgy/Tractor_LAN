@@ -34,10 +34,11 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_SaveRoomSetting = "SaveRoomSetting";
         public const string WebSocketMessageType_PlayerQiandao = "PlayerQiandao";
         public const string WebSocketMessageType_UsedShengbi = "UsedShengbi";
+        public const string WebSocketMessageType_BuyUseSkin = "BuyUseSkin";
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyOnlinePlayerList = "NotifyOnlinePlayerList";
-        public const string WebSocketMessageType_NotifyShengbi = "NotifyShengbi";
+        public const string WebSocketMessageType_NotifyDaojuInfo = "NotifyDaojuInfo";
         public const string WebSocketMessageType_NotifyGameRoomPlayerList = "NotifyGameRoomPlayerList";
         public const string WebSocketMessageType_NotifyMessage = "NotifyMessage";
         public const string WebSocketMessageType_NotifyPing = "NotifyPing";

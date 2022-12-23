@@ -19,6 +19,7 @@ namespace TractorServer
         public static string ClientinfoV3FileName = "clientinfo_v3.json";
         public static string EmailSettingsFileName = "emailsettings.json";
         public static string RegCodesFileName = "regcodes.json";
+        public static string SkinInfoFileName = "skininfo.json";
         public string BackupGamestateFileName = "backup_gamestate.json";
         public string BackupHandStateFileName = "backup_HandState.json";
         public string BackupTrickStateFileName = "backup_TrickState.json";
@@ -1044,8 +1045,8 @@ namespace TractorServer
 
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
 
-            Dictionary<string, ClientInfoV3.ShengbiInfo> ptob = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
-            this.tractorHost.PublishShengbi(ptob);
+            DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
+            this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             string logMsg = sb.ToString();
             this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg);

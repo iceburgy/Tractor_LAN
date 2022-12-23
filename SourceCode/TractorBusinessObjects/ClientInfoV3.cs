@@ -24,11 +24,15 @@ namespace Duan.Xiugang.Tractor.Objects
         public int Shengbi = 0;
         [DataMember]
         public DateTime lastQiandao;
+        [DataMember]
+        public List<string> ownedSkinInfo;
+        [DataMember]
+        public string skinInUse;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
 
-        public ClientInfoV3(string ip, string id, string orp, string pe)
+        public ClientInfoV3(string ip, string id, string orp, string pe, string skiu)
         {
             PlayerID = id;
             PlayerEmail = pe;
@@ -38,6 +42,8 @@ namespace Duan.Xiugang.Tractor.Objects
             cheatHistory = new List<string>();
             loginHistory = new List<string>();
             lastQiandao = DateTime.MinValue;
+            ownedSkinInfo = new List<string>();
+            skinInUse = skiu;
         }
 
         public void logLogin(string ip, string cheating)
@@ -69,23 +75,6 @@ namespace Duan.Xiugang.Tractor.Objects
                 return true;
             }
             return false;
-        }
-
-        public class ShengbiInfo
-        {
-            public ShengbiInfo(int sb, DateTime lqd)
-            {
-                this.Shengbi = sb;
-                var now = DateTime.Now;
-                if (now.Date > lqd.Date)
-                {
-                    this.isRenewed = true;
-                }
-            }
-            [DataMember]
-            public int Shengbi = 0;
-            [DataMember]
-            public bool isRenewed = false;
         }
     }
 }
