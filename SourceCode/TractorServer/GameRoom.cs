@@ -933,6 +933,7 @@ namespace TractorServer
                     }
                     CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                     CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
+                    IssueRoundoverBonus();
 
                     //检查是否本轮游戏结束
                     StringBuilder sb = null;
@@ -1023,6 +1024,41 @@ namespace TractorServer
             CheckOfflinePlayers();
         }
 
+        private void IssueRoundoverBonus()
+        {
+            bool isDefenderWin = CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(this.CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId);
+            int winBonus = 0;
+            StringBuilder sb = new StringBuilder();
+            if (isDefenderWin)
+            {
+                sb.Append("守庄成功，玩家");
+            }
+            else
+            {
+                sb.Append("攻庄成功，玩家");
+            }
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
+            foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
+            {
+                if (player.roundWinnerBonusShengbi > 0)
+                {
+                    winBonus = player.roundWinnerBonusShengbi;
+                    player.roundWinnerBonusShengbi = 0;
+                    clientInfoV3Dict[player.PlayerId].Shengbi += winBonus;
+                    sb.Append(string.Format("【{0}】", player.PlayerId));
+                }
+            }
+            sb.Append(string.Format("获得福利：升币+{0}，", winBonus));
+            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+
+            DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
+            this.tractorHost.PublishDaojuInfo(daojuInfo);
+            this.tractorHost.UpdateGameHall();
+            string logMsg = sb.ToString();
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, logMsg, true);
+            log.Debug(logMsg);
+        }
+
         private void IssueGameoverBonus(List<string> winners, List<string> losers)
         {
             StringBuilder sb = new StringBuilder();
@@ -1049,7 +1085,7 @@ namespace TractorServer
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             string logMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg);
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg, true);
             log.Debug(logMsg);
         }
 
@@ -2121,10 +2157,10 @@ namespace TractorServer
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyMessage", new List<object>() { msg });
         }
 
-        public void PublishEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
+        public void PublishEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker)
         {
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
-            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker });
         }
 
         public void PublishStartTimer(int timerLength)

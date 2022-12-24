@@ -71,7 +71,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (now.Date > this.lastQiandao.Date)
             {
                 this.lastQiandao = now;
-                this.Shengbi++;
+                this.Shengbi += CommonMethods.qiandaoBonusShengbi;
                 return true;
             }
             return false;

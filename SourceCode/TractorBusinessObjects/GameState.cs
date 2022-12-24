@@ -107,6 +107,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     if (player == null) continue;
                     if (player.Team != starterTeam && !CurrentRoomState.roomSetting.GetManditoryRanks().Contains(player.Rank))
                     {
+                        UpdatePlayerRoundWinnerBonusShengbi(rankToAdd, player, 1);
                         UpdatePlayerRank(CurrentRoomState, rankToAdd, player);
                     }
                 }
@@ -133,12 +134,19 @@ namespace Duan.Xiugang.Tractor.Objects
                     if (player == null) continue;
                     if (player.Team == starterTeam)
                     {
+                        UpdatePlayerRoundWinnerBonusShengbi(rankToAdd, player, 0);
                         UpdatePlayerRank(CurrentRoomState, rankToAdd, player);
                     }
                 }
             }
 
             return nextStarter;
+        }
+
+        private void UpdatePlayerRoundWinnerBonusShengbi(int rankToAdd, PlayerEntity player, int affenderAddition)
+        {
+            int maxRankToAdd = Math.Min(rankToAdd, 13 - player.Rank);
+            player.roundWinnerBonusShengbi = (maxRankToAdd + affenderAddition) * CommonMethods.roundWinnerBonusShengbi;
         }
 
         private static void UpdatePlayerRank(RoomState CurrentRoomState, int rankToAdd, PlayerEntity player)

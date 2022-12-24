@@ -918,7 +918,7 @@ namespace TractorServer
                     DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                     this.PublishDaojuInfo(daojuInfo);
                     UpdateGameHall();
-                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID));
+                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID), true);
                     log.Debug(string.Format("玩家【{0}】签到成功，升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
                 }
                 else
@@ -997,7 +997,7 @@ namespace TractorServer
                 if (isBuy)
                 {
                     string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】", playerID, skinInfoToBuyUse.skinDesc);
-                    this.PlayerSendEmojiWorker("", -1, -1, false, msg);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, msg, true);
                     log.Debug(msg);
                 }
             }
@@ -1138,7 +1138,7 @@ namespace TractorServer
 
         public void PlayerSendEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
         {
-            PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, "");
+            PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, "", false);
         }
 
         public void PlayerSendEmojiWS(string playerID, string content)
@@ -1150,10 +1150,10 @@ namespace TractorServer
             string emojiString = (string)args[2];
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
-            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString);
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false);
         }
 
-        public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
+        public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker)
         {
             bool isPlayerInGameHall = this.IsInGameHall(playerID);
             if (isPlayerInGameHall || string.IsNullOrEmpty(playerID))
@@ -1164,12 +1164,12 @@ namespace TractorServer
                 {
                     playersToCall = PlayersProxy.Keys.ToList<string>();
                 }
-                IPlayerInvokeForAll(PlayersProxy, playersToCall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString });
+                IPlayerInvokeForAll(PlayersProxy, playersToCall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker });
             }
             else if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString);
+                gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker);
             }
         }
 

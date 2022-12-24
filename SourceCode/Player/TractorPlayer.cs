@@ -299,7 +299,7 @@ namespace Duan.Xiugang.Tractor.Player
                 NotifyMessageEvent(msg);
         }
 
-        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
+        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker)
         {
             if (NotifyEmojiEvent != null)
                 NotifyEmojiEvent(playerID, emojiType, emojiIndex, isCenter, msgString);

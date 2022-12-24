@@ -78,9 +78,9 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyDumpingValidationResult, "", args);
         }
 
-        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString)
+        public void NotifyEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker)
         {
-            var args = new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString };
+            var args = new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyEmoji, "", args);
         }
 

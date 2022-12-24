@@ -31,10 +31,12 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int nickNameOverridePassMaxGetAttempts = 10;
         public static string[] dudeTints = new string[] { "", "0x00ff00", "0xffa500", "0xffff00" }; // green, orange, yellow
         public static int regcodesLength = 10;
-        public static int winnerBonusShengbi = 2;
-        public static int loserBonusShengbi = 1;
+        public static int qiandaoBonusShengbi = 10;
+        public static int winnerBonusShengbi = 10;
+        public static int loserBonusShengbi = 5;
+        public static int roundWinnerBonusShengbi = 1;
         public const string usedShengbiType_Qiangliangka = "UsedShengbiType_Qiangliangka";
-        public static int qiangliangkaCost = 1;
+        public static int qiangliangkaCost = 10;
         public static string defaultSkinInUse = "skin_questionmark";
 
         public static Random random = new Random();
