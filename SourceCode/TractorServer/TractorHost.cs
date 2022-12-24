@@ -918,12 +918,12 @@ namespace TractorServer
                     DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                     this.PublishDaojuInfo(daojuInfo);
                     UpdateGameHall();
-                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+1", playerID), true);
-                    log.Debug(string.Format("玩家【{0}】签到成功，升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
+                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true);
+                    log.Debug(string.Format("玩家【{0}】签到成功，升币x{1}", playerID, clientInfoV3Dict[playerID].Shengbi));
                 }
                 else
                 {
-                    log.Debug(string.Format("玩家【{0}】签到失败！升币x{01}", playerID, clientInfoV3Dict[playerID].Shengbi));
+                    log.Debug(string.Format("玩家【{0}】签到失败！升币x{1}", playerID, clientInfoV3Dict[playerID].Shengbi));
                 }
             }
         }
