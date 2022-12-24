@@ -916,7 +916,10 @@ namespace TractorServer
                 if (isSuccess)
                 {
                     DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                    this.PublishDaojuInfo(daojuInfo);
+                    List<string> others = PlayersProxy.Keys.ToList<string>();
+                    others.Remove(playerID);
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, others, false, false);
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, false);
                     UpdateGameHall();
                     this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true);
                     log.Debug(string.Format("玩家【{0}】签到成功，升币x{1}", playerID, clientInfoV3Dict[playerID].Shengbi));
@@ -992,7 +995,7 @@ namespace TractorServer
 
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                this.PublishDaojuInfo(daojuInfo);
+                PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), false, true);
                 UpdateGameHall();
                 if (isBuy)
                 {
@@ -1417,9 +1420,14 @@ namespace TractorServer
 
         public void PublishDaojuInfo(DaojuInfo daojuInfo)
         {
+            PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), false, false);
+        }
+
+        public void PublishDaojuInfoWithSpecificPlayersStatusUpdate(DaojuInfo daojuInfo, List<string> playerIDs, bool updateQiandao, bool updateSkin)
+        {
             lock (PlayersProxy)
             {
-                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyDaojuInfo", new List<object>() { daojuInfo });
+                IPlayerInvokeForAll(PlayersProxy, playerIDs, "NotifyDaojuInfo", new List<object>() { daojuInfo, updateQiandao, updateSkin });
             }
         }
 
@@ -1528,7 +1536,10 @@ namespace TractorServer
                 if (publishShengbi)
                 {
                     DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                    this.PublishDaojuInfo(daojuInfo);
+                    List<string> others = PlayersProxy.Keys.ToList<string>();
+                    others.Remove(playerID);
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, others, false, false);
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, true);
                 }
             }
         }

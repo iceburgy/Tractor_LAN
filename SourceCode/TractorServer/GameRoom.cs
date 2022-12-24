@@ -1048,7 +1048,7 @@ namespace TractorServer
                     sb.Append(string.Format("【{0}】", player.PlayerId));
                 }
             }
-            sb.Append(string.Format("获得福利：升币+{0}，", winBonus));
+            sb.Append(string.Format("获得福利：升币+{0}", winBonus));
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
 
             DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);

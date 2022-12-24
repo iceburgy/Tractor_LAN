@@ -96,9 +96,9 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyOnlinePlayerList, playerID, args);
         }
 
-        public void NotifyDaojuInfo(DaojuInfo daojuInfo)
+        public void NotifyDaojuInfo(DaojuInfo daojuInfo, bool updateQiandao, bool updateSkin)
         {
-            var args = new List<object>() { daojuInfo };
+            var args = new List<object>() { daojuInfo, updateQiandao, updateSkin };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyDaojuInfo, "", args);
         }
 
