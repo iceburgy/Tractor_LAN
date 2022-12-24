@@ -8,9 +8,10 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class DaojuInfo
     {
-        public DaojuInfo(Dictionary<string, SkinInfo> fsi, Dictionary<string, DaojuInfoByPlayer> djibp)
+        public DaojuInfo(Dictionary<string, SkinInfo> fsi, Dictionary<string, int> sblb, Dictionary<string, DaojuInfoByPlayer> djibp)
         {
             this.fullSkinInfo = fsi;
+            this.shengbiLeadingBoard = sblb;
             this.daojuInfoByPlayer = djibp;
         }
 
@@ -18,5 +19,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public Dictionary<string, SkinInfo> fullSkinInfo;
         [DataMember]
         public Dictionary<string, DaojuInfoByPlayer> daojuInfoByPlayer;
+        [DataMember]
+        Dictionary<string, int> shengbiLeadingBoard;
     }
 }

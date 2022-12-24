@@ -1009,14 +1009,25 @@ namespace TractorServer
         public DaojuInfo buildPlayerToShengbi(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
         {
             Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo();
+            Dictionary<string, int> shengbiLeadingBoard = this.BuildshengbiLeadingBoard(clientInfoV3Dict);
             List<string> names = PlayersProxy.Keys.ToList<string>();
-            DaojuInfo daojuInfo = new DaojuInfo(fullSkinInfo, new Dictionary<string, DaojuInfoByPlayer>());
+            DaojuInfo daojuInfo = new DaojuInfo(fullSkinInfo, shengbiLeadingBoard, new Dictionary<string, DaojuInfoByPlayer>());
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
                 daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse));
             }
             return daojuInfo;
+        }
+
+        private Dictionary<string, int> BuildshengbiLeadingBoard(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
+        {
+            Dictionary<string, int> lb = new Dictionary<string, int>();
+            foreach (KeyValuePair< string, ClientInfoV3>  entry in clientInfoV3Dict)
+            {
+                lb.Add(entry.Key, entry.Value.Shengbi);
+            }
+            return lb;
         }
 
         // perform timer init for IPlayer
