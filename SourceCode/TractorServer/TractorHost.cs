@@ -969,7 +969,7 @@ namespace TractorServer
                     log.Debug(string.Format("fail to find playerID {0} for BuyUseSkin!", playerID));
                     return;
                 }
-                Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo();
+                Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo(null);
                 if (!fullSkinInfo.ContainsKey(skinName))
                 {
                     log.Debug(string.Format("fail to find skin {0} for BuyUseSkin!", skinName));
@@ -1008,7 +1008,7 @@ namespace TractorServer
 
         public DaojuInfo buildPlayerToShengbi(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
         {
-            Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo();
+            Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo(clientInfoV3Dict);
             Dictionary<string, int> shengbiLeadingBoard = this.BuildshengbiLeadingBoard(clientInfoV3Dict);
             List<string> names = PlayersProxy.Keys.ToList<string>();
             DaojuInfo daojuInfo = new DaojuInfo(fullSkinInfo, shengbiLeadingBoard, new Dictionary<string, DaojuInfoByPlayer>());
@@ -1575,7 +1575,7 @@ namespace TractorServer
             }
         }
 
-        public Dictionary<string, SkinInfo> LoadSkinInfo()
+        public Dictionary<string, SkinInfo> LoadSkinInfo(Dictionary<string, ClientInfoV3> clientInfoV3Dict)
         {
             Dictionary<string, SkinInfo> skinInfo = new Dictionary<string, SkinInfo>();
             string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.SkinInfoFileName);
@@ -1590,6 +1590,19 @@ namespace TractorServer
                 skinInfo.Add("skin_basicfemale", new SkinInfo("skin_basicfemale", "f", "免费标准皮肤-女性", 0, 0, DateTime.Now.AddYears(999)));
                 CommonMethods.WriteObjectToFile(skinInfo, GameRoom.LogsFolder, GameRoom.SkinInfoFileName);
             }
+
+            // calculate skin owners info
+            if (clientInfoV3Dict != null)
+            {
+                foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+                {
+                    foreach (string skinName in entry.Value.ownedSkinInfo)
+                    {
+                        skinInfo[skinName].skinOwners++;
+                    }
+                }
+            }
+
             return skinInfo;
         }
 

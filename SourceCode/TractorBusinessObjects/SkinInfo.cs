@@ -29,6 +29,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public int skinCost;
         [DataMember]
         public DateTime skinExpiration;
+        [DataMember]
+        public int skinOwners;
 
         [DataMember]
         public bool isSkinExpired
