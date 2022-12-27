@@ -96,8 +96,8 @@ namespace TractorServer
             SessionIDGameRoom = new Dictionary<string, GameRoom>();
             this.SetTimer();
 
-            // test one time
-            this.InitSkinInUse();
+            // initialize newly introduced fields if they are added for the first time
+            this.InitNewFieldsFirstTime();
 
             var threadStartHostWS = new Thread(() =>
             {
@@ -911,7 +911,8 @@ namespace TractorServer
                     log.Debug(string.Format("fail to find playerID {0} for qiandao!", playerID));
                     return;
                 }
-                bool isSuccess = clientInfoV3Dict[playerID].performQiandao();
+                ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
+                bool isSuccess = curClientInfo.performQiandao(log, playerID);
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (isSuccess)
                 {
@@ -922,11 +923,10 @@ namespace TractorServer
                     PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, false);
                     UpdateGameHall();
                     this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true);
-                    log.Debug(string.Format("玩家【{0}】签到成功，升币x{1}", playerID, clientInfoV3Dict[playerID].Shengbi));
                 }
                 else
                 {
-                    log.Debug(string.Format("玩家【{0}】签到失败！升币x{1}", playerID, clientInfoV3Dict[playerID].Shengbi));
+                    log.Debug(string.Format("玩家【{0}】签到失败！升币【{1}】", playerID, curClientInfo.Shengbi));
                 }
             }
         }
@@ -950,7 +950,7 @@ namespace TractorServer
                     log.Debug(string.Format("fail to find playerID {0} for UsedShengbi!", playerID));
                     return;
                 }
-                clientInfoV3Dict[playerID].Shengbi -= shengbiCost;
+                clientInfoV3Dict[playerID].transactShengbi(-shengbiCost, log, playerID, string.Format("使用道具【{0}】", content));
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                 this.PublishDaojuInfo(daojuInfo);
@@ -987,7 +987,7 @@ namespace TractorServer
                         log.Debug(string.Format("fail to buy skin {0} for BuyUseSkin due to insufficient fund", skinName));
                         return;
                     }
-                    curClientInfo.Shengbi -= skinInfoToBuyUse.skinCost;
+                    curClientInfo.transactShengbi(-skinInfoToBuyUse.skinCost, log, playerID, string.Format("购买皮肤【{0}】", skinInfoToBuyUse.skinDesc));
                     curClientInfo.ownedSkinInfo.Add(skinName);
                 }
 
@@ -1555,7 +1555,7 @@ namespace TractorServer
             }
         }
 
-        public void InitSkinInUse()
+        public void InitNewFieldsFirstTime()
         {
             lock (this)
             {
@@ -1569,6 +1569,10 @@ namespace TractorServer
                     if (!entry.Value.ownedSkinInfo.Contains(CommonMethods.defaultSkinInUse))
                     {
                         entry.Value.ownedSkinInfo.Add(CommonMethods.defaultSkinInUse);
+                    }
+                    if (entry.Value.ShengbiTotal == 0)
+                    {
+                        entry.Value.ShengbiTotal = entry.Value.Shengbi;
                     }
                 }
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);

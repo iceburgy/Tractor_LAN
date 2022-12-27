@@ -1029,14 +1029,16 @@ namespace TractorServer
             bool isDefenderWin = CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(this.CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId);
             int winBonus = 0;
             StringBuilder sb = new StringBuilder();
+            string bonusType = "";
             if (isDefenderWin)
             {
-                sb.Append("守庄成功，玩家");
+                bonusType = "守庄成功";
             }
             else
             {
-                sb.Append("攻庄成功，玩家");
+                bonusType = "攻庄成功";
             }
+            sb.Append(string.Format("【{0}】，玩家", bonusType));
             Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
             foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
             {
@@ -1044,7 +1046,7 @@ namespace TractorServer
                 {
                     winBonus = player.roundWinnerBonusShengbi;
                     player.roundWinnerBonusShengbi = 0;
-                    clientInfoV3Dict[player.PlayerId].Shengbi += winBonus;
+                    clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, log, player.PlayerId, bonusType);
                     sb.Append(string.Format("【{0}】", player.PlayerId));
                 }
             }
@@ -1066,7 +1068,7 @@ namespace TractorServer
             Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
             foreach (string w in winners)
             {
-                clientInfoV3Dict[w].Shengbi += CommonMethods.winnerBonusShengbi;
+                clientInfoV3Dict[w].transactShengbi(CommonMethods.winnerBonusShengbi, log, w, "获胜");
                 sb.Append(string.Format("【{0}】", w));
             }
             sb.Append(string.Format("获胜，获得福利：升币+{0}，", CommonMethods.winnerBonusShengbi));
@@ -1074,7 +1076,7 @@ namespace TractorServer
             sb.Append("玩家");
             foreach (string l in losers)
             {
-                clientInfoV3Dict[l].Shengbi += CommonMethods.loserBonusShengbi;
+                clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, log, l, "惜败");
                 sb.Append(string.Format("【{0}】", l));
             }
             sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
