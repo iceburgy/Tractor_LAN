@@ -26,6 +26,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_RandomSeat = "RandomSeat";
         public const string WebSocketMessageType_SwapSeat = "SwapSeat";
         public const string WebSocketMessageType_SendEmoji = "SendEmoji";
+        public const string WebSocketMessageType_SendBroadcast = "SendBroadcast";
         public const string WebSocketMessageType_PlayerHasCutCards = "PlayerHasCutCards";
         public const string WebSocketMessageType_SgcsPlayerUpdated = "SgcsPlayerUpdated";
         public const string WebSocketMessageType_CreateCollectStar = "CreateCollectStar";

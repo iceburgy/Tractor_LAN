@@ -1057,7 +1057,7 @@ namespace TractorServer
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             string logMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, logMsg, true);
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, logMsg, true, false);
             log.Debug(logMsg);
         }
 
@@ -1087,7 +1087,7 @@ namespace TractorServer
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             string logMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg, true);
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg, true, true);
             log.Debug(logMsg);
         }
 

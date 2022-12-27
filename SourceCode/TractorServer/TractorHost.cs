@@ -306,6 +306,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_SendEmoji:
                     this.PlayerSendEmojiWS(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_SendBroadcast:
+                    this.PlayerSendBroadcastWS(playerID, content);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
                     new Thread(() =>
                     {
@@ -922,7 +925,7 @@ namespace TractorServer
                     PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, others, false, false);
                     PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, false);
                     UpdateGameHall();
-                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true, true);
                 }
                 else
                 {
@@ -948,6 +951,11 @@ namespace TractorServer
                 if (!clientInfoV3Dict.ContainsKey(playerID))
                 {
                     log.Debug(string.Format("fail to find playerID {0} for UsedShengbi!", playerID));
+                    return;
+                }
+                if (clientInfoV3Dict[playerID].Shengbi < shengbiCost)
+                {
+                    log.Debug(string.Format("fail to UsedShengbi for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}!", playerID, shengbiCost, clientInfoV3Dict[playerID].Shengbi));
                     return;
                 }
                 clientInfoV3Dict[playerID].transactShengbi(-shengbiCost, log, playerID, string.Format("使用道具【{0}】", content));
@@ -984,7 +992,7 @@ namespace TractorServer
                     isBuy = true;
                     if (curClientInfo.Shengbi < skinInfoToBuyUse.skinCost)
                     {
-                        log.Debug(string.Format("fail to buy skin {0} for BuyUseSkin due to insufficient fund", skinName));
+                        log.Debug(string.Format("fail to buy skin {0} for BuyUseSkin due to insufficient shengbi: cost: {1}, shengbi: {2}", skinName, skinInfoToBuyUse.skinCost, curClientInfo.Shengbi));
                         return;
                     }
                     curClientInfo.transactShengbi(-skinInfoToBuyUse.skinCost, log, playerID, string.Format("购买皮肤【{0}】", skinInfoToBuyUse.skinDesc));
@@ -1000,7 +1008,7 @@ namespace TractorServer
                 if (isBuy)
                 {
                     string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】", playerID, skinInfoToBuyUse.skinDesc);
-                    this.PlayerSendEmojiWorker("", -1, -1, false, msg, true);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
                     log.Debug(msg);
                 }
             }
@@ -1152,7 +1160,7 @@ namespace TractorServer
 
         public void PlayerSendEmoji(string playerID, int emojiType, int emojiIndex, bool isCenter)
         {
-            PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, "", false);
+            PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, "", false, false);
         }
 
         public void PlayerSendEmojiWS(string playerID, string content)
@@ -1164,20 +1172,44 @@ namespace TractorServer
             string emojiString = (string)args[2];
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
-            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false);
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, false);
         }
 
-        public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker)
+        public void PlayerSendBroadcastWS(string playerID, string content)
         {
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+            if (!clientInfoV3Dict.ContainsKey(playerID))
+            {
+                log.Debug(string.Format("fail to find playerID {0} for PlayerSendBroadcastWS!", playerID));
+                return;
+            }
+            if (clientInfoV3Dict[playerID].Shengbi < CommonMethods.sendBroadcastCost)
+            {
+                log.Debug(string.Format("fail to PlayerSendBroadcastWS for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}", playerID, CommonMethods.sendBroadcastCost, clientInfoV3Dict[playerID].Shengbi));
+                return;
+            }
+
+            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.sendBroadcastCost, log, playerID, string.Format("使用道具【广播卡】"));
+            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+            this.PublishDaojuInfo(daojuInfo);
+            UpdateGameHall();
+
+            this.PlayerSendEmojiWorker(playerID, -1, -1, false, content, false, true);
+        }
+
+        public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker, bool isBroadcast)
+        {
+            if (isBroadcast)
+            {
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, false });
+                return;
+            }
             bool isPlayerInGameHall = this.IsInGameHall(playerID);
-            if (isPlayerInGameHall || string.IsNullOrEmpty(playerID))
+            if (isPlayerInGameHall)
             {
                 isCenter = false;
                 List<string> playersToCall = this.getPlayersInGameHall();
-                if (string.IsNullOrEmpty(playerID))
-                {
-                    playersToCall = PlayersProxy.Keys.ToList<string>();
-                }
                 IPlayerInvokeForAll(PlayersProxy, playersToCall, "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker });
             }
             else if (this.SessionIDGameRoom.ContainsKey(playerID))
