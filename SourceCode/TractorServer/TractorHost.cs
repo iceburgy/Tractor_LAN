@@ -1015,7 +1015,7 @@ namespace TractorServer
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse));
+                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse));
             }
             return daojuInfo;
         }
@@ -1025,7 +1025,7 @@ namespace TractorServer
             Dictionary<string, int> lb = new Dictionary<string, int>();
             foreach (KeyValuePair< string, ClientInfoV3>  entry in clientInfoV3Dict)
             {
-                lb.Add(entry.Key, entry.Value.Shengbi);
+                lb.Add(entry.Key, entry.Value.ShengbiTotal);
             }
             return lb;
         }

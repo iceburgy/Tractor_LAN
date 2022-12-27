@@ -8,15 +8,18 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class DaojuInfoByPlayer
     {
-        public DaojuInfoByPlayer(int sb, DateTime lqd, List<string> osi, string skiu)
+        public DaojuInfoByPlayer(int sb, int sbt, DateTime lqd, List<string> osi, string skiu)
         {
             this.Shengbi = sb;
+            this.ShengbiTotal = sbt;
             this.lastQiandao = lqd;
             this.ownedSkinInfo = osi;
             this.skinInUse = skiu;
         }
         [DataMember]
         public int Shengbi = 0;
+        [DataMember]
+        public int ShengbiTotal = 0;
         [DataMember]
         public DateTime lastQiandao;
         [DataMember]
