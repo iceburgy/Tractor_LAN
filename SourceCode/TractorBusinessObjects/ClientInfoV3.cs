@@ -34,7 +34,7 @@ namespace Duan.Xiugang.Tractor.Objects
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
 
-        public ClientInfoV3(string ip, string id, string orp, string pe, string skiu)
+        public ClientInfoV3(string ip, string id, string orp, string pe)
         {
             PlayerID = id;
             PlayerEmail = pe;
@@ -44,8 +44,8 @@ namespace Duan.Xiugang.Tractor.Objects
             cheatHistory = new List<string>();
             loginHistory = new List<string>();
             lastQiandao = DateTime.MinValue;
-            ownedSkinInfo = new List<string>();
-            skinInUse = skiu;
+            ownedSkinInfo = new List<string>() { CommonMethods.defaultSkinInUse };
+            skinInUse = CommonMethods.defaultSkinInUse;
         }
 
         public void logLogin(string ip, string cheating)

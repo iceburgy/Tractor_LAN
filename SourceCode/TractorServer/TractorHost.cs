@@ -1737,7 +1737,7 @@ namespace TractorServer
                         return new string[] { "此邮箱已被其他玩家使用", "请另选一个邮箱" };
                     }
                     string newPassCode = generateNewCode(existingPassCodes, regcodes);
-                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail, CommonMethods.defaultSkinInUse);
+                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, newPassCode, regEmail);
                     regcodes.Remove(overridePass);
                     GenerateRegistrationCodes(regcodes);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);
