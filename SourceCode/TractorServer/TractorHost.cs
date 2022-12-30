@@ -372,7 +372,7 @@ namespace TractorServer
             if (nowDate > this.PreviousDate)
             {
                 this.PreviousDate = nowDate;
-                this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！", true, true);
+                this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！（房间内可直接从设置页面签到）", true, true);
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                 PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), true, false);
