@@ -60,6 +60,9 @@ namespace TractorServer
         public ConcurrentDictionary<string, System.Timers.Timer> playerIDToTimer;
         public ConcurrentDictionary<System.Timers.Timer,string> timerToPlayerID;
 
+        // 签到提醒
+        public DateTime PreviousDate = DateTime.Now.Date;
+
         public TractorHost()
         {
             gameConfig = new GameConfig();
@@ -363,6 +366,18 @@ namespace TractorServer
                 timerPingClients.Enabled = false;
                 return;
             }
+
+            // 签到提醒
+            DateTime nowDate = DateTime.Now.Date;
+            if (nowDate > this.PreviousDate)
+            {
+                this.PreviousDate = nowDate;
+                this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！", true, true);
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), true, false);
+            }
+
             foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
             {
                 string playerID = entry.Key;
