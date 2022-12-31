@@ -1236,6 +1236,11 @@ namespace TractorServer
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker);
             }
+
+            if (!noSpeaker)
+            {
+                log.Debug(string.Format("【{0}】说：{1}", playerID, msgString));
+            }
         }
 
         private List<string> getPlayersInGameHall()
