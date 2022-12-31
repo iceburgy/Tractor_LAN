@@ -22,7 +22,7 @@ namespace TractorServer
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.Single)]
     public class TractorHost : ITractorHost
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly string[] RoomNames = new string[] { "1", "2", "3", "4" };
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
@@ -971,6 +971,10 @@ namespace TractorServer
                 if (clientInfoV3Dict[playerID].Shengbi < shengbiCost)
                 {
                     log.Debug(string.Format("fail to UsedShengbi for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}!", playerID, shengbiCost, clientInfoV3Dict[playerID].Shengbi));
+                    string warningMsg = string.Format("玩家【{0}】使用道具【抢亮卡】出现异常，游戏已终止", playerID);
+                    this.PlayerSendEmojiWorker(playerID, -1, -1, false, warningMsg, true, false);
+                    log.Debug(warningMsg);
+                    this.PlayerExitRoom(playerID);
                     return;
                 }
                 clientInfoV3Dict[playerID].transactShengbi(-shengbiCost, log, playerID, string.Format("使用道具【{0}】", content));
