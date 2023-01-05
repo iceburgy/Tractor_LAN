@@ -1057,9 +1057,7 @@ namespace TractorServer
             DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
-            string logMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, logMsg, true, false);
-            TractorHost.log.Debug(logMsg);
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, sb.ToString(), true, false);
         }
 
         private void IssueGameoverBonus(List<string> winners, List<string> losers)
@@ -1087,9 +1085,7 @@ namespace TractorServer
             DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
-            string logMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, logMsg, true, true);
-            TractorHost.log.Debug(logMsg);
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, sb.ToString(), true, true);
         }
 
         private bool CleanupOfflinePlayers()
