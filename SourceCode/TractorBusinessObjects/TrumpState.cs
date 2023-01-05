@@ -16,6 +16,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public TrumpExposingPoker TrumpExposingPoker { get; set; }
 
+        //是否为无人亮主
+        [DataMember]
+        public bool IsNoTrumpMaker { get; set; }
+
         //亮主的人
         [DataMember]
         public string TrumpMaker { get; set; }

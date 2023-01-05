@@ -829,6 +829,7 @@ namespace TractorServer
                     tempLastTrumState.TrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
                     tempLastTrumState.TrumpMaker = CurrentRoomState.CurrentHandState.TrumpMaker;
                     tempLastTrumState.Trump = CurrentRoomState.CurrentHandState.Trump;
+                    tempLastTrumState.IsNoTrumpMaker = CurrentRoomState.CurrentHandState.IsNoTrumpMaker;
                     CurrentRoomState.CurrentHandState.LastTrumpStates.Add(tempLastTrumState);
 
                     if (CurrentRoomState.CurrentHandState.IsFirstHand && CurrentRoomState.CurrentHandState.CurrentHandStep < HandStep.DistributingLast8Cards)
@@ -1783,6 +1784,7 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.TrumpExposingPoker = TrumpExposingPoker.PairRedJoker;
                     CurrentRoomState.CurrentHandState.TrumpMaker = CurrentRoomState.CurrentHandState.Starter;
                     CurrentRoomState.CurrentHandState.Trump = Suit.Joker;
+                    CurrentRoomState.CurrentHandState.IsNoTrumpMaker = true;
                 }
                 DistributeLast8Cards();
             }

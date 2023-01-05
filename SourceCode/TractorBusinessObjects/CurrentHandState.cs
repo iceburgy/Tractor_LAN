@@ -109,6 +109,10 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public string TrumpMaker { get; set; }
 
+        //是否为无人亮主
+        [DataMember]
+        public bool IsNoTrumpMaker { get; set; }
+
         [DataMember]
         public HandStep CurrentHandStep { get; set; }
 
