@@ -677,7 +677,6 @@ namespace TractorServer
         public void UpdateGobang(string playerID, string content)
         {
             if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-            log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_Gobang));
 
             WebSocketObjects.SGGBState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGGBState>(content);
             GameRoom gameRoom = this.SessionIDGameRoom[playerID];

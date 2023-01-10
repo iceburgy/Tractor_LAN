@@ -686,10 +686,12 @@ namespace TractorServer
                         }
                         this.sggbState.GameStage = "created";
                         this.sggbState.ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
+                        TractorHost.log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_Gobang));
                         break;
                     case "restart":
                         this.sggbState.GameStage = "restarted";
                         this.sggbState.ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
+                        TractorHost.log.Debug(string.Format("player {0} attempted to restart game: {1}", playerID, WebSocketObjects.SmallGameName_Gobang));
                         break;
                     case "join":
                         this.sggbState.GameStage = "joined";
@@ -699,7 +701,13 @@ namespace TractorServer
                         this.sggbState.GameStage = "moved";
                         int moveColor = this.sggbState.PlayerIdMoved == this.sggbState.PlayerId1 ? 1 : 2;
                         this.sggbState.ChessBoard[this.sggbState.CurMove[0], this.sggbState.CurMove[1]] = moveColor;
+                        log.Debug(string.Format("small game {0} player {1} made a move: [{2},{3}] with color {4}", WebSocketObjects.SmallGameName_Gobang, playerID, this.sggbState.CurMove[0], this.sggbState.CurMove[1], moveColor));
                         this.CheckGBWinner(moveColor);
+                        if (this.sggbState.GameStage == "over" && !string.IsNullOrEmpty(this.sggbState.PlayerIdWinner))
+                        {
+                            string theOther = this.sggbState.PlayerIdWinner == this.sggbState.PlayerId1 ? this.sggbState.PlayerId2 : this.sggbState.PlayerId1;
+                            TractorHost.log.Debug(string.Format("small game {0} completed, player {1} with color {2} win and {3} lose", WebSocketObjects.SmallGameName_Gobang, this.sggbState.PlayerIdWinner, moveColor, theOther));
+                        }
                         break;
                     case "quit":
                         // no broadcast
