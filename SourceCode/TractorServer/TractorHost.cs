@@ -327,6 +327,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_CreateCollectStar:
                     this.NotifyCreateCollectStar(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_UpdateGobang:
+                    this.UpdateGobang(playerID, content);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_GrabStar:
                     this.NotifyGrabStar(playerID, content);
                     break;
@@ -669,6 +672,19 @@ namespace TractorServer
             int playerIndex = int.Parse(content);
             GameRoom gameRoom = this.SessionIDGameRoom[playerID];
             gameRoom.NotifyEndCollectStar(playerIndex);
+        }
+
+        public void UpdateGobang(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_Gobang));
+
+            WebSocketObjects.SGGBState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGGBState>(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            if (!gameRoom.UpdateGobang(playerID, state))
+            {
+                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
+            }
         }
 
         //玩家强退

@@ -32,6 +32,7 @@ namespace TractorServer
         public CardsShoe CardsShoe { get; set; }
         public ReplayEntity replayEntity;
         public WebSocketObjects.SGCSState sgcsState;
+        public WebSocketObjects.SGGBState sggbState;
 
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
@@ -127,6 +128,17 @@ namespace TractorServer
                     //Thread.Sleep(2000);
                     IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
 
+                    // gobang state publication if it is on
+                    // need delay to create, to allow for some time for client to destroy old UI when exit and observe
+                    new Thread(new ThreadStart(() =>
+                    {
+                        Thread.Sleep(500);
+                        if (this.sggbState != null && (this.sggbState.GameStage != "over" || !string.IsNullOrEmpty(this.sggbState.PlayerIdWinner)))
+                        {
+                            IPlayerInvokeForAll(ObserversProxy, new List<string>() { playerID }, "NotifyUpdateGobang", new List<object>() { this.sggbState });
+                        }
+                    })).Start();
+
                     return true;
                 }
 
@@ -164,6 +176,11 @@ namespace TractorServer
                 UpdateGameState();
 
                 player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
+                // gobang state publication if it is on
+                if (this.sggbState != null && (this.sggbState.GameStage != "over" || !string.IsNullOrEmpty(this.sggbState.PlayerIdWinner)))
+                {
+                    IPlayerInvokeForAll(PlayersProxy, new List<string>() { playerID }, "NotifyUpdateGobang", new List<object>() { this.sggbState });
+                }
                 return true;
             }
             else
@@ -350,6 +367,11 @@ namespace TractorServer
             {
                 this.NotifyEndCollectStar(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID));
             }
+            if (this.sggbState != null && !string.IsNullOrEmpty(this.sggbState.GameStage))
+            {
+                this.sggbState.GameAction = "quit";
+                this.UpdateGobang(playerID, this.sggbState);
+            }
             PlayersProxy.Remove(playerID);
             if (PlayersProxy.Count == 0 && this.sgcsState != null) this.sgcsState.IsGameOver = true;
             for (int i = 0; i < 4; i++)
@@ -394,6 +416,11 @@ namespace TractorServer
                 if (this.sgcsState != null && !this.sgcsState.IsGameOver)
                 {
                     this.NotifyEndCollectStar(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID));
+                }
+                if (this.sggbState != null && !string.IsNullOrEmpty(this.sggbState.GameStage))
+                {
+                    this.sggbState.GameAction = "quit";
+                    this.UpdateGobang(playerID, this.sggbState);
                 }
                 PlayersProxy.Remove(playerID);
                 if (PlayersProxy.Count == 0 && this.sgcsState != null) this.sgcsState.IsGameOver = true;
@@ -641,6 +668,186 @@ namespace TractorServer
             IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
             IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyEndCollectStar", new List<object>() { this.sgcsState });
             UpdateGameState();
+        }
+
+        // returns: true - updated successfully, false - someone else is already playing
+        public bool UpdateGobang(string playerID, WebSocketObjects.SGGBState state)
+        {
+            lock (this)
+            {
+                bool isOngoing = this.sggbState != null && !string.IsNullOrEmpty(this.sggbState.PlayerId1);
+                this.sggbState = state;
+                switch (state.GameAction)
+                {
+                    case "create":
+                        if (isOngoing)
+                        {
+                            return false;
+                        }
+                        this.sggbState.GameStage = "created";
+                        this.sggbState.ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
+                        break;
+                    case "restart":
+                        this.sggbState.GameStage = "restarted";
+                        this.sggbState.ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
+                        break;
+                    case "join":
+                        this.sggbState.GameStage = "joined";
+                        this.sggbState.PlayerIdMoving = this.sggbState.PlayerId1;
+                        break;
+                    case "move":
+                        this.sggbState.GameStage = "moved";
+                        int moveColor = this.sggbState.PlayerIdMoved == this.sggbState.PlayerId1 ? 1 : 2;
+                        this.sggbState.ChessBoard[this.sggbState.CurMove[0], this.sggbState.CurMove[1]] = moveColor;
+                        this.CheckGBWinner(moveColor);
+                        break;
+                    case "quit":
+                        // no broadcast
+                        // there is at least one real player and no change to them
+                        if ((!string.IsNullOrEmpty(this.sggbState.PlayerId1) || !string.IsNullOrEmpty(this.sggbState.PlayerId2)) &&
+                            (playerID != this.sggbState.PlayerId1 && playerID != this.sggbState.PlayerId2))
+                        {
+                            var tempState = new WebSocketObjects.SGGBState();
+                            tempState.GameStage = "over";
+                            IPlayerInvokeForAll(PlayersProxy, new List<string>() { playerID }, "NotifyUpdateGobang", new List<object>() { tempState });
+                            return true;
+                        }
+                        // yes broadcast
+                        // real players decreased from two to one, restart the game
+                        if ((!string.IsNullOrEmpty(this.sggbState.PlayerId1) && !string.IsNullOrEmpty(this.sggbState.PlayerId2)) &&
+                            (playerID == this.sggbState.PlayerId1 || playerID == this.sggbState.PlayerId2))
+                        {
+                            // one of the real players quit and the other one is still remaining, promote the other as the player1
+                            string remainingPlayer = playerID == this.sggbState.PlayerId1 ? this.sggbState.PlayerId2 : this.sggbState.PlayerId1;
+                            this.sggbState = new WebSocketObjects.SGGBState();
+                            this.sggbState.GameStage = "restarted";
+                            this.sggbState.PlayerId1 = remainingPlayer;
+                            this.sggbState.PlayerId2 = "";
+                        }
+                        else
+                        {
+                            // no real players (a game just finished and all real players will be set to empty)
+                            // or real players decreased from one to zero
+                            // end the game altogether
+                            this.sggbState = new WebSocketObjects.SGGBState();
+                            this.sggbState.GameStage = "over";
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyUpdateGobang", new List<object>() { this.sggbState });
+                IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList(), "NotifyUpdateGobang", new List<object>() { this.sggbState });
+                return true;
+            }
+        }
+
+        private void CheckGBWinner(int moveColor)
+        {
+            // horizontal
+            // left
+            int count = 1;
+            int tempX = this.sggbState.CurMove[0];
+            int tempY = this.sggbState.CurMove[1];
+            while (tempY - 1 >= 0 && this.sggbState.ChessBoard[tempX, tempY - 1] == moveColor)
+            {
+                count++;
+                tempY--;
+            }
+            // right
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempY + 1 < CommonMethods.gobangBoardSize && this.sggbState.ChessBoard[tempX, tempY + 1] == moveColor)
+            {
+                count++;
+                tempY++;
+            }
+            if (count >= CommonMethods.gobangWinCount)
+            {
+                this.sggbState.GameStage = "over";
+                this.sggbState.PlayerIdWinner = this.sggbState.PlayerIdMoved;
+                return;
+            }
+
+            // vertical
+            // up
+            count = 1;
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX - 1 >= 0 && this.sggbState.ChessBoard[tempX - 1, tempY] == moveColor)
+            {
+                count++;
+                tempX--;
+            }
+            // down
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX + 1 < CommonMethods.gobangBoardSize && this.sggbState.ChessBoard[tempX + 1, tempY] == moveColor)
+            {
+                count++;
+                tempX++;
+            }
+            if (count >= CommonMethods.gobangWinCount)
+            {
+                this.sggbState.GameStage = "over";
+                this.sggbState.PlayerIdWinner = this.sggbState.PlayerIdMoved;
+                return;
+            }
+
+            // diagnal - forward slash
+            // up-right
+            count = 1;
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX - 1 >= 0 && tempY + 1 < CommonMethods.gobangBoardSize && this.sggbState.ChessBoard[tempX - 1, tempY + 1] == moveColor)
+            {
+                count++;
+                tempX--;
+                tempY++;
+            }
+            // down-left
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX + 1 < CommonMethods.gobangBoardSize && tempY - 1 >= 0 && this.sggbState.ChessBoard[tempX + 1, tempY - 1] == moveColor)
+            {
+                count++;
+                tempX++;
+                tempY--;
+            }
+            if (count >= CommonMethods.gobangWinCount)
+            {
+                this.sggbState.GameStage = "over";
+                this.sggbState.PlayerIdWinner = this.sggbState.PlayerIdMoved;
+                return;
+            }
+
+            // diagnal - backward slash
+            // up-left
+            count = 1;
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX - 1 >= 0 && tempY - 1 >= 0 && this.sggbState.ChessBoard[tempX - 1, tempY - 1] == moveColor)
+            {
+                count++;
+                tempX--;
+                tempY--;
+            }
+            // down-right
+            tempX = this.sggbState.CurMove[0];
+            tempY = this.sggbState.CurMove[1];
+            while (tempX + 1 < CommonMethods.gobangBoardSize && tempY + 1 < CommonMethods.gobangBoardSize && this.sggbState.ChessBoard[tempX + 1, tempY + 1] == moveColor)
+            {
+                count++;
+                tempX++;
+                tempY++;
+            }
+            if (count >= CommonMethods.gobangWinCount)
+            {
+                this.sggbState.GameStage = "over";
+                this.sggbState.PlayerIdWinner = this.sggbState.PlayerIdMoved;
+                return;
+            }
         }
 
         public void SpecialEndGameRequest(string playerID)

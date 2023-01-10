@@ -36,6 +36,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_PlayerQiandao = "PlayerQiandao";
         public const string WebSocketMessageType_UsedShengbi = "UsedShengbi";
         public const string WebSocketMessageType_BuyUseSkin = "BuyUseSkin";
+        public const string WebSocketMessageType_UpdateGobang = "UpdateGobang";
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyOnlinePlayerList = "NotifyOnlinePlayerList";
@@ -61,8 +62,10 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_NotifyCreateCollectStar = "NotifyCreateCollectStar";
         public const string WebSocketMessageType_NotifyGrabStar = "NotifyGrabStar";
         public const string WebSocketMessageType_NotifyEndCollectStar = "NotifyEndCollectStar";
+        public const string WebSocketMessageType_NotifyUpdateGobang = "NotifyUpdateGobang";
 
         public const string SmallGameName_CollectStar = "CatchStar";
+        public const string SmallGameName_Gobang= "Gobang";
 
         [Serializable]
         public class WebSocketMessage
@@ -150,6 +153,35 @@ namespace Duan.Xiugang.Tractor.Objects
             public List<SGCSStar> Stars;
             [DataMember]
             public List<SGCSBomb> Bombs;
+        }
+
+        [Serializable]
+        public class SGGBState
+        {
+            [DataMember]
+            public string PlayerId1;
+            [DataMember]
+            public string PlayerId2;
+            [DataMember]
+            public string PlayerIdMoved;
+            [DataMember]
+            public string PlayerIdMoving;
+            [DataMember]
+            public string PlayerIdWinner;
+
+            // create, join, move, quit, restart
+            [DataMember]
+            public string GameAction;
+            // created, joined, moved, over, restarted
+            [DataMember]
+            public string GameStage;
+
+            [DataMember]
+            public int[] LastMove = new int[] { -1, -1 };
+            [DataMember]
+            public int[] CurMove = new int[] { -1, -1 };
+            [DataMember]
+            public int[,] ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
         }
     }
 }

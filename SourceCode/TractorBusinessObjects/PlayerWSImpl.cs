@@ -177,6 +177,12 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGrabStar, "", args);
         }
 
+        public void NotifyUpdateGobang(WebSocketObjects.SGGBState state)
+        {
+            var args = new List<object>() { state };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyUpdateGobang, "", args);
+        }
+
         public void PlayerEnterRoom(string playerID, int roomID, int posID)
         {
         }
