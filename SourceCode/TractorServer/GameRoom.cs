@@ -565,7 +565,7 @@ namespace TractorServer
             bool needToUpdateGameState = false;
             if (state.Stage < 0)
             {
-                if (this.sgcsState != null && !this.sgcsState.IsGameOver) return false;
+                if (IsSmallGameOngoing()) return false;
                 this.sgcsState = state;
                 log.Debug(string.Format("player {0} started game: {1}", sgcsState.PlayerId, WebSocketObjects.SmallGameName_CollectStar));
                 this.sgcsState.Stage = 1;
@@ -624,6 +624,12 @@ namespace TractorServer
             return true;
         }
 
+        private bool IsSmallGameOngoing()
+        {
+            return (this.sgcsState != null && !this.sgcsState.IsGameOver) ||
+                (this.sggbState != null && !string.IsNullOrEmpty(this.sggbState.PlayerId1));
+        }
+
         public void NotifyGrabStar(int playerIndex, int starIndex)
         {
             if (this.sgcsState.IsGameOver) return;
@@ -675,15 +681,16 @@ namespace TractorServer
         {
             lock (this)
             {
-                bool isOngoing = this.sggbState != null && !string.IsNullOrEmpty(this.sggbState.PlayerId1);
+                bool isOngoing = this.IsSmallGameOngoing();
+                if (isOngoing && state.GameAction == "create")
+                {
+                    return false;
+                }
+
                 this.sggbState = state;
                 switch (state.GameAction)
                 {
                     case "create":
-                        if (isOngoing)
-                        {
-                            return false;
-                        }
                         this.sggbState.GameStage = "created";
                         this.sggbState.ChessBoard = new int[CommonMethods.gobangBoardSize, CommonMethods.gobangBoardSize];
                         TractorHost.log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_Gobang));
