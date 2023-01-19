@@ -1884,10 +1884,17 @@ namespace TractorServer
             }
             //即时更新旁观手牌
             UpdateGameState();
-            if (HandStep.DistributingCards <= this.CurrentRoomState.CurrentHandState.CurrentHandStep && this.CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing)
+            if (HandStep.DistributingCards <= this.CurrentRoomState.CurrentHandState.CurrentHandStep &&
+                this.CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing &&
+                !CurrentRoomState.CurrentTrickState.IsStarted() &&
+                serverLocalCache.lastShowedCards.Count > 0)
             {
-                UpdatePlayersCurrentHandState();
+                CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
+                cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
+                cts.Learder = serverLocalCache.lastLeader;
+                ObserversProxy[observerId].NotifyCurrentTrickState(cts);
             }
+            IPlayerInvokeForAll(ObserversProxy, new List<string>() { observerId }, "NotifyCurrentHandStateByType", new List<object>() { CurrentRoomState.CurrentHandState, CommonMethods.NotifyCurrentHandStateType_ObservePlayerById });
         }
         #endregion
 

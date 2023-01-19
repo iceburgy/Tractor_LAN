@@ -42,6 +42,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int gobangBoardSize = 15;
         public static int gobangWinCount = 5;
 
+        public static string NotifyCurrentHandStateType_ObservePlayerById = "ObservePlayerById";
+
         public static Random random = new Random();
         public static string RandomString(int lower, int upper)
         {

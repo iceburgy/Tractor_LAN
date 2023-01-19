@@ -60,15 +60,36 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyCardsReady, "", args);
         }
 
+        public void NotifyGameState(GameState gameState)
+        {
+            this.NotifyGameStateByType(gameState, "");
+        }
+
+        public void NotifyGameStateByType(GameState gameState,string gameStateType)
+        {
+            var args = new List<object>() { gameState, gameStateType };
+            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameState, "", args);
+        }
+
         public void NotifyCurrentHandState(CurrentHandState currentHandState)
         {
-            var args = new List<object>() { currentHandState };
+            this.NotifyCurrentHandStateByType(currentHandState, "");
+        }
+
+        public void NotifyCurrentHandStateByType(CurrentHandState currentHandState, string handStateType)
+        {
+            var args = new List<object>() { currentHandState, handStateType };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyCurrentHandState, "", args);
         }
 
         public void NotifyCurrentTrickState(CurrentTrickState currentTrickState)
         {
-            var args = new List<object>() { currentTrickState };
+            this.NotifyCurrentTrickStateByType(currentTrickState, "");
+        }
+
+        public void NotifyCurrentTrickStateByType(CurrentTrickState currentTrickState, string trickStateType)
+        {
+            var args = new List<object>() { currentTrickState, trickStateType };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyCurrentTrickState, "", args);
         }
 
@@ -106,12 +127,6 @@ namespace Duan.Xiugang.Tractor.Objects
         {
             var args = new List<object>() { isJoining, roomName };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameRoomPlayerList, playerID, args);
-        }
-
-        public void NotifyGameState(GameState gameState)
-        {
-            var args = new List<object>() { gameState };
-            NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameState, "", args);
         }
 
         public void NotifyMessage(string[] msg)
