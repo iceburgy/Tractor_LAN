@@ -1892,9 +1892,9 @@ namespace TractorServer
                 CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
                 cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
                 cts.Learder = serverLocalCache.lastLeader;
-                ObserversProxy[observerId].NotifyCurrentTrickState(cts);
+                IPlayerInvokeForAll(ObserversProxy, new List<string>() { observerId }, "NotifyCurrentTrickStateByType", new List<object>() { cts, CommonMethods.NotifyStateType_ObservePlayerById });
             }
-            IPlayerInvokeForAll(ObserversProxy, new List<string>() { observerId }, "NotifyCurrentHandStateByType", new List<object>() { CurrentRoomState.CurrentHandState, CommonMethods.NotifyCurrentHandStateType_ObservePlayerById });
+            IPlayerInvokeForAll(ObserversProxy, new List<string>() { observerId }, "NotifyCurrentHandStateByType", new List<object>() { CurrentRoomState.CurrentHandState, CommonMethods.NotifyStateType_ObservePlayerById });
         }
         #endregion
 
