@@ -2056,8 +2056,7 @@ namespace TractorServer
             }
             else
             {
-                //ShuffleCardsWithRNGCsp(this.CardsShoe);
-                this.CardsShoe.TestSet2();
+                ShuffleCardsWithRNGCsp(this.CardsShoe);
 
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
