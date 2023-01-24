@@ -1923,6 +1923,7 @@ namespace TractorServer
 
             // reset timer everytime Trump is modified
             var oldTrump = CurrentRoomState.CurrentHandState.Trump;
+            var oldTrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
             while (true)
             {
                 if (CurrentRoomState.CurrentHandState.Trump == Suit.None)
@@ -1936,11 +1937,12 @@ namespace TractorServer
                 {
                     return;
                 }
-                if (CurrentRoomState.CurrentHandState.Trump == oldTrump)
+                if (CurrentRoomState.CurrentHandState.Trump == oldTrump && CurrentRoomState.CurrentHandState.TrumpExposingPoker == oldTrumpExposingPoker)
                 {
                     break;
                 }
                 oldTrump = CurrentRoomState.CurrentHandState.Trump;
+                oldTrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;
             }
 
             if (IsAllOnline())
@@ -2054,7 +2056,9 @@ namespace TractorServer
             }
             else
             {
-                ShuffleCardsWithRNGCsp(this.CardsShoe);
+                //ShuffleCardsWithRNGCsp(this.CardsShoe);
+                this.CardsShoe.TestSet2();
+
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
                 if (ObserversProxy.Count > 0)
