@@ -36,6 +36,9 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int loserBonusShengbi = 5;
         public static int roundWinnerBonusShengbi = 1;
         public const string usedShengbiType_Qiangliangka = "UsedShengbiType_Qiangliangka";
+        public static Dictionary<string, string> daojuToDisplayName = new Dictionary<string, string> {
+            { usedShengbiType_Qiangliangka, "«¿¡¡ø®" }
+        };
         public static int qiangliangkaCost = 10;
         public static int sendBroadcastCost = 10;
         public static string defaultSkinInUse = "skin_questionmark";

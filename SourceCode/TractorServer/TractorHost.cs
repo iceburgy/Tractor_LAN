@@ -997,6 +997,10 @@ namespace TractorServer
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                 this.PublishDaojuInfo(daojuInfo);
                 UpdateGameHall();
+
+                string msg = string.Format("玩家【{0}】成功触发道具效果【{1}】，消耗升币：【{2}】", playerID, CommonMethods.daojuToDisplayName[content], shengbiCost);
+                this.PlayerSendEmojiWorker(playerID, -1, -1, false, msg, true, false);
+                log.Debug(msg);
             }
         }
 
@@ -1041,7 +1045,7 @@ namespace TractorServer
                 UpdateGameHall();
                 if (isBuy)
                 {
-                    string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】", playerID, skinInfoToBuyUse.skinDesc);
+                    string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】，消耗升币：【{2}】", playerID, skinInfoToBuyUse.skinDesc, skinInfoToBuyUse.skinCost);
                     this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
                     log.Debug(msg);
                 }
