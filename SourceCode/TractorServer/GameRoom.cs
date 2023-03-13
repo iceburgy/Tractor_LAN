@@ -1300,6 +1300,11 @@ namespace TractorServer
                 clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.log, l, "惜败");
                 sb.Append(string.Format("【{0}】", l));
             }
+            PlayerEntity firstLoser = this.CurrentRoomState.CurrentGameState.Players.FirstOrDefault(p => p != null && p.PlayerId==losers[0]);
+            if (firstLoser != null)
+            {
+                TractorHost.log.Debug(string.Format("败于：【{0}】", CommonMethods.GetNumberString(firstLoser.Rank)));
+            }
             sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
 
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
