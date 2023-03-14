@@ -1162,6 +1162,7 @@ namespace TractorServer
                     StringBuilder sb = null;
                     List<string> winners = new List<string>();
                     List<string> losers = new List<string>();
+                    int loseAtRank = -1;
                     bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
                     if (isGameOver)
                     {
@@ -1170,7 +1171,6 @@ namespace TractorServer
                         {
                             string pid = player.PlayerId;
                             if (player == null) continue;
-                            player.Rank = 0;
                             if (player.Team == CurrentRoomState.CurrentGameState.startNextHandStarter.Team)
                             {
                                 sb.Append(string.Format("【{0}】", pid));
@@ -1179,9 +1179,14 @@ namespace TractorServer
                             else
                             {
                                 losers.Add(pid);
+                                if (loseAtRank < 0)
+                                {
+                                    loseAtRank = player.Rank;
+                                }
                             }
+                            player.Rank = 0;
                         }
-                        IssueGameoverBonus(winners, losers);
+                        IssueGameoverBonus(winners, losers, loseAtRank);
                         CurrentRoomState.CurrentHandState.Rank = 0;
                         CurrentRoomState.CurrentHandState.Starter = null;
 
@@ -1282,7 +1287,7 @@ namespace TractorServer
             this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, sb.ToString(), true, false);
         }
 
-        private void IssueGameoverBonus(List<string> winners, List<string> losers)
+        private void IssueGameoverBonus(List<string> winners, List<string> losers, int loseAtRank)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("玩家");
@@ -1300,11 +1305,7 @@ namespace TractorServer
                 clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.log, l, "惜败");
                 sb.Append(string.Format("【{0}】", l));
             }
-            PlayerEntity firstLoser = this.CurrentRoomState.CurrentGameState.Players.FirstOrDefault(p => p != null && p.PlayerId==losers[0]);
-            if (firstLoser != null)
-            {
-                TractorHost.log.Debug(string.Format("败于：【{0}】", CommonMethods.GetNumberString(firstLoser.Rank)));
-            }
+            TractorHost.log.Debug(string.Format("败于：【{0}】", CommonMethods.GetNumberString(loseAtRank)));
             sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
 
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
