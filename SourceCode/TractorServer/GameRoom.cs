@@ -1285,6 +1285,16 @@ namespace TractorServer
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, sb.ToString(), true, false);
+            PlayerEntity p0 = this.CurrentRoomState.CurrentGameState.Players[0];
+            PlayerEntity p2 = this.CurrentRoomState.CurrentGameState.Players[2];
+            if (p0 != null)
+            {
+                TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p0.PlayerId, p0.Rank));
+            }
+            if (p2 != null)
+            {
+                TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p2.PlayerId, p2.Rank));
+            }
         }
 
         private void IssueGameoverBonus(List<string> winners, List<string> losers, int loseAtRank)
