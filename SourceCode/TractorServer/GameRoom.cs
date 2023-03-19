@@ -1162,7 +1162,6 @@ namespace TractorServer
                     StringBuilder sb = null;
                     List<string> winners = new List<string>();
                     List<string> losers = new List<string>();
-                    int loseAtRank = -1;
                     bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
                     if (isGameOver)
                     {
@@ -1179,14 +1178,10 @@ namespace TractorServer
                             else
                             {
                                 losers.Add(pid);
-                                if (loseAtRank < 0)
-                                {
-                                    loseAtRank = player.Rank;
-                                }
                             }
                             player.Rank = 0;
                         }
-                        IssueGameoverBonus(winners, losers, loseAtRank);
+                        IssueGameoverBonus(winners, losers);
                         CurrentRoomState.CurrentHandState.Rank = 0;
                         CurrentRoomState.CurrentHandState.Starter = null;
 
@@ -1297,7 +1292,7 @@ namespace TractorServer
             }
         }
 
-        private void IssueGameoverBonus(List<string> winners, List<string> losers, int loseAtRank)
+        private void IssueGameoverBonus(List<string> winners, List<string> losers)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("玩家");
@@ -1315,7 +1310,6 @@ namespace TractorServer
                 clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.log, l, "惜败");
                 sb.Append(string.Format("【{0}】", l));
             }
-            TractorHost.log.Debug(string.Format("败于：【{0}】", CommonMethods.GetNumberString(loseAtRank)));
             sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
 
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
