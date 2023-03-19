@@ -2117,6 +2117,11 @@ namespace TractorServer
 
             if (string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.Starter))
             {
+                TractorHost.log.Debug(string.Format("新游戏即将开始，玩家【{0}】【{1}】对阵【{2}】【{3}】",
+                    this.CurrentRoomState.CurrentGameState.Players[0],
+                    this.CurrentRoomState.CurrentGameState.Players[1],
+                    this.CurrentRoomState.CurrentGameState.Players[2],
+                    this.CurrentRoomState.CurrentGameState.Players[3]));
                 //新游戏开始前给出提示信息，开始倒计时，并播放提示音，告诉玩家要抢庄
                 PublishMessage(new string[] { "新游戏即将开始", "做好准备抢庄！" });
                 PublishStartTimer(5);
