@@ -964,7 +964,7 @@ namespace TractorServer
             }
         }
 
-        private void UsedShengbi(string playerID, string content)
+        public void UsedShengbi(string playerID, string content)
         {
             lock (this)
             {
@@ -1309,18 +1309,18 @@ namespace TractorServer
         }
 
         //亮主
-        public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
+        public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker, int usedShengbi)
         {
             if (this.SessionIDGameRoom.ContainsKey(trumpMaker))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[trumpMaker];
-                gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker);
+                gameRoom.PlayerMakeTrump(trumpExposingPoker, trump, trumpMaker, usedShengbi);
             }
         }
         public void PlayerMakeTrumpWS(string trumpMaker, string content)
         {
             List<int> messageObj = CommonMethods.ReadObjectFromString<List<int>>(content);
-            this.PlayerMakeTrump((TrumpExposingPoker)messageObj[0], (Suit)messageObj[1], trumpMaker);
+            this.PlayerMakeTrump((TrumpExposingPoker)messageObj[0], (Suit)messageObj[1], trumpMaker, messageObj[2]);
         }
 
         public void PlayerShowCards(string playerId, CurrentTrickState currentTrickState)

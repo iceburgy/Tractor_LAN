@@ -47,7 +47,7 @@ namespace Duan.Xiugang.Tractor.Objects
         string EndPingHost(IAsyncResult ar);
 
         [OperationContract(IsOneWay = true)]
-        void PlayerMakeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump, string playerId);
+        void PlayerMakeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump, string playerId, int usedShengbi);
 
         [OperationContract(IsOneWay = true)]
         void StoreDiscardedCards(string playerId, int[] cards);

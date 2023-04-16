@@ -313,7 +313,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void ExposeTrump(TrumpExposingPoker trumpExposingPoker, Suit trump)
         {
-            _tractorHost.PlayerMakeTrump(trumpExposingPoker, trump, this.PlayerId);
+            _tractorHost.PlayerMakeTrump(trumpExposingPoker, trump, this.PlayerId, 0);
             
         }
 

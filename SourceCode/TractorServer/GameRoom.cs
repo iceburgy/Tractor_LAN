@@ -1031,7 +1031,7 @@ namespace TractorServer
         }
 
         //亮主
-        public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker)
+        public void PlayerMakeTrump(Duan.Xiugang.Tractor.Objects.TrumpExposingPoker trumpExposingPoker, Duan.Xiugang.Tractor.Objects.Suit trump, string trumpMaker, int usedShengbi)
         {
             lock (CurrentRoomState.CurrentHandState)
             {
@@ -1043,6 +1043,7 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.TrumpExposingPoker = trumpExposingPoker;
                     CurrentRoomState.CurrentHandState.TrumpMaker = trumpMaker;
                     CurrentRoomState.CurrentHandState.Trump = trump;
+                    if (usedShengbi == 1) tractorHost.UsedShengbi(trumpMaker, CommonMethods.usedShengbiType_Qiangliangka);
 
                     //log who made what trump
                     log.Debug(string.Format("player made trump: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
