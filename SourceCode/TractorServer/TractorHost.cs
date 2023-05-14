@@ -1789,7 +1789,7 @@ namespace TractorServer
                     {
                         string body = string.Format("注册新用户成功！用户名：【{0}】，绑定邮箱：【{1}】。当你丢失用户名或者密码时，请参照使用手册通过绑定邮箱找回。", playerID, regEmail);
                         SendEmail(regEmail, CommonMethods.emailSubjectRegisterNewPlayer, body);
-                        return new string[] { "新用户注册成功", "并已将您的密码发送至指定邮箱", "请使用该密码登录大厅" };
+                        return new string[] { CommonMethods.loginSuccessFlag, overridePass, regEmail };
                     }
                     catch (Exception)
                     {
