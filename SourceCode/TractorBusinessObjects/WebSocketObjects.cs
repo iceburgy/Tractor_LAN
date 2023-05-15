@@ -9,6 +9,8 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     public class WebSocketObjects
     {
+        public const string WebSocketMessageType_PlayerClientType = "PlayerClientType";
+        public const string PlayerClientType_tljapp = "PlayerClientType_tljapp";
         public const string WebSocketMessageType_PlayerEnterHall = "PlayerEnterHall";
         public const string WebSocketMessageType_PlayerEnterRoom = "PlayerEnterRoom";
         public const string WebSocketMessageType_ReadyToStart = "ReadyToStart";

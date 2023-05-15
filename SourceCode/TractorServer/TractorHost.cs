@@ -127,6 +127,12 @@ namespace TractorServer
                             return;
                         }
 
+                        if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerClientType)
+                        {
+                            log.Debug(string.Format("player: {0} client type: {1}", messageObj.playerID, messageObj.content));
+                            return;
+                        }
+
                         var playerProxy = new PlayerWSImpl(socket);
 
                         if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
@@ -171,6 +177,12 @@ namespace TractorServer
                         if (messageObj == null)
                         {
                             log.Debug(string.Format("failed to unmarshal WS message: {0}", message));
+                            return;
+                        }
+
+                        if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerClientType)
+                        {
+                            log.Debug(string.Format("player: {0} client type: {1}", messageObj.playerID, messageObj.content));
                             return;
                         }
 
@@ -518,7 +530,7 @@ namespace TractorServer
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 //断线重连
-                log.Debug(string.Format("player {0} re-entered hall from offline - web client.", playerID));
+                log.Debug(string.Format("player {0} re-entered hall from offline", playerID));
                 string[] reenterMsgs = new string[] { string.Format("玩家【{0}】{1}", playerID, CommonMethods.reenterRoomSignal) };
                 player.NotifyMessage(reenterMsgs);
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
@@ -542,7 +554,7 @@ namespace TractorServer
             }
             else
             {
-                log.Debug(string.Format("player {0} entered hall - web client.", playerID));
+                log.Debug(string.Format("player {0} entered hall", playerID));
                 UpdateGameHall();
             }
 
