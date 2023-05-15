@@ -511,7 +511,7 @@ namespace TractorServer
             {
                 cheating = string.Format("player {0} (with other ID {1}) attempted login with IP {2}", playerID, string.Join("; ", playerIDsWithSameIP), clientIP);
             }
-            LogClientInfo(clientIP, playerID, cheating, true);
+            DaojuInfo daojuInfo = LogClientInfo(clientIP, playerID, cheating, true);
             Thread.Sleep(500);
             IPlayer player = this.PlayersProxy[playerID];
             this.PlayerToIP[playerID] = clientIP;
@@ -548,7 +548,14 @@ namespace TractorServer
 
             new Thread(new ThreadStart(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
+                if (daojuInfo != null)
+                {
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, true);
+                }
+            })).Start();
+            new Thread(new ThreadStart(() =>
+            {
                 this.UpdateOnlinePlayerList(playerID, true);
             })).Start();
 
@@ -1233,7 +1240,9 @@ namespace TractorServer
             this.PublishDaojuInfo(daojuInfo);
             UpdateGameHall();
 
-            this.PlayerSendEmojiWorker(playerID, -1, -1, false, content, false, true);
+            string message = string.Format("来自玩家【{0}】的广播消息：{1}", playerID, content);
+            this.PlayerSendEmojiWorker(playerID, -1, -1, false, message, false, true);
+            log.Debug(message);
         }
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker, bool isBroadcast)
@@ -1606,28 +1615,29 @@ namespace TractorServer
             return OperationContext.Current.SessionId;
         }
 
-        public void LogClientInfo(string clientIP, string playerID, string isCheating, bool publishShengbi)
+        public DaojuInfo LogClientInfo(string clientIP, string playerID, string isCheating, bool publishShengbi)
         {
+            DaojuInfo daojuInfo = null;
             lock (this)
             {
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 if (!clientInfoV3Dict.ContainsKey(playerID))
                 {
                     log.Debug(string.Format("fail to find clientIP {0} for client info logging!", clientIP));
-                    return;
+                    return null;
                 }
 
                 clientInfoV3Dict[playerID].logLogin(clientIP, isCheating);
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (publishShengbi)
                 {
-                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                    List<string> others = PlayersProxy.Keys.ToList<string>();
-                    others.Remove(playerID);
-                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, others, false, false);
-                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, true);
+                    daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    // 某人登录进入大厅，对其他人来说，不需要更新签到按钮，也不需要更新皮肤（因为此人肯定还在大厅，不需要显示其皮肤）
+                    // 如此分开调用，节约其他玩家的运行资源
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), false, false);
                 }
             }
+            return daojuInfo;
         }
 
         public void InitNewFieldsFirstTime()
@@ -1759,6 +1769,10 @@ namespace TractorServer
                 // 使用邀请码注册新用户
                 if (passAndEmailInfo.Length > 1 && !string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
                 {
+                    if (playerID.Length > CommonMethods.playerIDMaxLength)
+                    {
+                        return new string[] { "注册新用户失败：用户名过长", string.Format("请勿超过{0}个字符", CommonMethods.playerIDMaxLength) };
+                    }
                     if (!regcodes.Contains(overridePass))
                     {
                         return new string[] { "注册新用户失败：邀请码无效", "请确认后重试" };
