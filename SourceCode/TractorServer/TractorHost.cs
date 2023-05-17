@@ -1639,6 +1639,10 @@ namespace TractorServer
                     return null;
                 }
 
+                if (clientIP.StartsWith("127.0") || clientIP.StartsWith("192.168"))
+                {
+                    isCheating = string.Empty;
+                }
                 clientInfoV3Dict[playerID].logLogin(clientIP, isCheating);
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (publishShengbi)
