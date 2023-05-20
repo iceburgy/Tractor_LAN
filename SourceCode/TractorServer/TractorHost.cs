@@ -127,12 +127,6 @@ namespace TractorServer
                             return;
                         }
 
-                        if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerClientType)
-                        {
-                            log.Debug(string.Format("player: {0} client type: {1}", messageObj.playerID, messageObj.content));
-                            return;
-                        }
-
                         var playerProxy = new PlayerWSImpl(socket);
 
                         if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
@@ -180,12 +174,6 @@ namespace TractorServer
                             return;
                         }
 
-                        if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerClientType)
-                        {
-                            log.Debug(string.Format("player: {0} client type: {1}", messageObj.playerID, messageObj.content));
-                            return;
-                        }
-
                         if (messageObj.messageType == WebSocketObjects.WebSocketMessageType_PlayerEnterHall)
                         {
                             var playerProxy = new PlayerWSImpl(socket);
@@ -196,6 +184,7 @@ namespace TractorServer
                             // 验证失败，返回错误信息
                             if (validationResult.Length < 1 || !string.Equals(validationResult[0], CommonMethods.loginSuccessFlag, StringComparison.OrdinalIgnoreCase))
                             {
+                                socket.Close();
                                 return;
                             }
 
@@ -203,6 +192,7 @@ namespace TractorServer
                             {
                                 playerProxy.NotifyMessage(new string[] { "此账号已在别处登录", "现已将在别出登录的账号退出", "请重启游戏后再尝试进入大厅" });
                                 this.handlePlayerDisconnect(messageObj.playerID);
+                                socket.Close();
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
@@ -265,7 +255,7 @@ namespace TractorServer
             switch (messageType)
             {
                 case WebSocketObjects.WebSocketMessageType_PlayerEnterHall:
-                    this.PlayerEnterHallWS(playerID);
+                    this.PlayerEnterHallWS(playerID, content);
                     break;
                 case WebSocketObjects.WebSocketMessageType_PlayerEnterRoom:
                     this.PlayerEnterRoomWS(playerID, content);
@@ -514,7 +504,7 @@ namespace TractorServer
             */
         }
 
-        public void PlayerEnterHallWS(string playerID)
+        public void PlayerEnterHallWS(string playerID, string content)
         {
             string clientIP = ((PlayerWSImpl)this.PlayersProxy[playerID]).Socket.ConnectionInfo.ClientIpAddress;
             string cheating = string.Empty;
@@ -523,7 +513,9 @@ namespace TractorServer
             {
                 cheating = string.Format("player {0} (with other ID {1}) attempted login with IP {2}", playerID, string.Join("; ", playerIDsWithSameIP), clientIP);
             }
-            DaojuInfo daojuInfo = LogClientInfo(clientIP, playerID, cheating, true);
+            EnterHallInfo enterHallInfo = CommonMethods.ReadObjectFromString<EnterHallInfo>(content);
+
+            DaojuInfo daojuInfo = LogClientInfo(clientIP, playerID, cheating, true, enterHallInfo.clientType);
             Thread.Sleep(500);
             IPlayer player = this.PlayersProxy[playerID];
             this.PlayerToIP[playerID] = clientIP;
@@ -554,7 +546,7 @@ namespace TractorServer
             }
             else
             {
-                log.Debug(string.Format("player {0} entered hall", playerID));
+                log.Debug(string.Format("player {0} entered hall as {1}", playerID, enterHallInfo.clientType));
                 UpdateGameHall();
             }
 
@@ -1080,7 +1072,7 @@ namespace TractorServer
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse));
+                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse, clientInfoV3Dict[pid].clientType));
             }
             return daojuInfo;
         }
@@ -1627,7 +1619,7 @@ namespace TractorServer
             return OperationContext.Current.SessionId;
         }
 
-        public DaojuInfo LogClientInfo(string clientIP, string playerID, string isCheating, bool publishShengbi)
+        public DaojuInfo LogClientInfo(string clientIP, string playerID, string isCheating, bool publishShengbi, string clientType)
         {
             DaojuInfo daojuInfo = null;
             lock (this)
@@ -1644,6 +1636,10 @@ namespace TractorServer
                     isCheating = string.Empty;
                 }
                 clientInfoV3Dict[playerID].logLogin(clientIP, isCheating);
+                if (!string.IsNullOrEmpty(clientType))
+                {
+                    clientInfoV3Dict[playerID].clientType = clientType;
+                }
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (publishShengbi)
                 {
@@ -1726,16 +1722,16 @@ namespace TractorServer
         {
             lock (this)
             {
-                string[] passAndEmailInfo = CommonMethods.ReadObjectFromString<string[]>(content);
-                string overridePass = passAndEmailInfo[0];
+                EnterHallInfo enterHallInfo = CommonMethods.ReadObjectFromString<EnterHallInfo>(content);
+                string overridePass = enterHallInfo.password;
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
                 bool isKnownIDIgnoreCase = clientInfoV3Dict.Keys.Contains(playerID, StringComparer.OrdinalIgnoreCase);
 
                 // 找回密码或用户名
-                if (passAndEmailInfo.Length == 2 && string.Equals(passAndEmailInfo[0], CommonMethods.recoverLoginPassFlag, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(enterHallInfo.email.Trim()) && string.Equals(enterHallInfo.password, CommonMethods.recoverLoginPassFlag, StringComparison.OrdinalIgnoreCase))
                 {
-                    string playerEmail = passAndEmailInfo[1];
+                    string playerEmail = enterHallInfo.email;
                     // 找回用户名
                     if (string.IsNullOrEmpty(playerID))
                     {
@@ -1783,7 +1779,7 @@ namespace TractorServer
 
                 HashSet<string> regcodes = LoadExistingRegCodes();
                 // 使用邀请码注册新用户
-                if (passAndEmailInfo.Length > 1 && !string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
+                if (!string.IsNullOrEmpty(playerID) && !string.IsNullOrEmpty(enterHallInfo.password) && !string.IsNullOrEmpty(enterHallInfo.email))
                 {
                     if (playerID.Length > CommonMethods.playerIDMaxLength)
                     {
@@ -1793,15 +1789,11 @@ namespace TractorServer
                     {
                         return new string[] { "注册新用户失败：邀请码无效", "请确认后重试" };
                     }
-                    if (passAndEmailInfo.Length < 2 || string.IsNullOrEmpty(passAndEmailInfo[1].Trim()))
-                    {
-                        return new string[] { "注册新用户时邮箱为必填（将用于找回或重设密码）", "请填写邮箱后重试" };
-                    }
                     if (isKnownIDIgnoreCase)
                     {
                         return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
                     }
-                    string regEmail = passAndEmailInfo[1];
+                    string regEmail = enterHallInfo.email;
                     HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
                     HashSet<string> existingPassCodes = existingPassCodesAndEmails[0];
                     HashSet<string> existingEmails = existingPassCodesAndEmails[1];
@@ -1809,7 +1801,7 @@ namespace TractorServer
                     {
                         return new string[] { "此邮箱已被其他玩家使用", "请另选一个邮箱" };
                     }
-                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, overridePass, regEmail);
+                    clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, overridePass, regEmail, enterHallInfo.clientType);
                     regcodes.Remove(overridePass);
                     GenerateRegistrationCodes(regcodes);
                     CommonMethods.WriteObjectToFile(regcodes, GameRoom.LogsFolder, GameRoom.RegCodesFileName);

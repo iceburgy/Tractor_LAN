@@ -93,7 +93,7 @@ namespace TractorServer
                         }
 
                         string cheating = string.Format("player {0} (with other ID {1}) attempted double observing with IP {2}", playerID, otherID, clientIP);
-                        tractorHost.LogClientInfo(clientIP, playerID, cheating, false);
+                        tractorHost.LogClientInfo(clientIP, playerID, cheating, false, "");
                         log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {

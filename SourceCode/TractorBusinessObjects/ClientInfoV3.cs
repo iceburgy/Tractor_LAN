@@ -30,11 +30,13 @@ namespace Duan.Xiugang.Tractor.Objects
         public List<string> ownedSkinInfo;
         [DataMember]
         public string skinInUse;
+        [DataMember]
+        public string clientType;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
 
-        public ClientInfoV3(string ip, string id, string orp, string pe)
+        public ClientInfoV3(string ip, string id, string orp, string pe, string ct)
         {
             PlayerID = id;
             PlayerEmail = pe;
@@ -46,6 +48,7 @@ namespace Duan.Xiugang.Tractor.Objects
             lastQiandao = DateTime.MinValue;
             ownedSkinInfo = new List<string>() { CommonMethods.defaultSkinInUse };
             skinInUse = CommonMethods.defaultSkinInUse;
+            clientType = ct;
         }
 
         public void logLogin(string ip, string cheating)

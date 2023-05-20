@@ -8,13 +8,14 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class DaojuInfoByPlayer
     {
-        public DaojuInfoByPlayer(int sb, int sbt, DateTime lqd, List<string> osi, string skiu)
+        public DaojuInfoByPlayer(int sb, int sbt, DateTime lqd, List<string> osi, string skiu, string ct)
         {
             this.Shengbi = sb;
             this.ShengbiTotal = sbt;
             this.lastQiandao = lqd;
             this.ownedSkinInfo = osi;
             this.skinInUse = skiu;
+            this.clientType = ct;
         }
         [DataMember]
         public int Shengbi = 0;
@@ -35,5 +36,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public List<string> ownedSkinInfo;
         [DataMember]
         public string skinInUse = CommonMethods.defaultSkinInUse;
+        [DataMember]
+        public string clientType;
     }
 }
