@@ -522,7 +522,6 @@ namespace TractorServer
             if (this.SessionIDGameRoom.ContainsKey(playerID))
             {
                 //断线重连
-                log.Debug(string.Format("player {0} re-entered hall from offline", playerID));
                 string[] reenterMsgs = new string[] { string.Format("玩家【{0}】{1}", playerID, CommonMethods.reenterRoomSignal) };
                 player.NotifyMessage(reenterMsgs);
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
@@ -534,6 +533,7 @@ namespace TractorServer
                     bool entered = gameRoom.PlayerReenterRoom(playerID, clientIP, player, AllowSameIP);
                     if (entered)
                     {
+                        log.Debug(string.Format("player {0} re-entered hall and room {1} from offline as {2}", playerID, gameRoom.CurrentRoomState.RoomID, enterHallInfo.clientType));
                         new Thread(new ThreadStart(() =>
                         {
                             Thread.Sleep(500);
@@ -541,6 +541,10 @@ namespace TractorServer
                             Thread.Sleep(1000);
                             this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
                         })).Start();
+                    }
+                    else
+                    {
+                        log.Debug(string.Format("player {0} attempted to re-entered hall and room {1} from offline as {2} but failed.", playerID, gameRoom.CurrentRoomState.RoomID, gameRoom.CurrentRoomState.RoomID));
                     }
                 }
             }
@@ -634,6 +638,11 @@ namespace TractorServer
                 if (entered)
                 {
                     SessionIDGameRoom[playerID] = gameRoom;
+                    log.Debug(string.Format("player {0} entered room {1}", playerID, gameRoom.CurrentRoomState.RoomID));
+                }
+                else
+                {
+                    log.Debug(string.Format("player {0} attempted to enter room {1} but failed.", playerID, gameRoom.CurrentRoomState.RoomID));
                 }
                 new Thread(new ThreadStart(() =>
                 {
@@ -641,59 +650,6 @@ namespace TractorServer
                     this.UpdateGameHall();
                     this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
                 })).Start();
-            }
-        }
-
-        public void NotifySgcsPlayerUpdated(string playerID, string content)
-        {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            gameRoom.NotifySgcsPlayerUpdated(content);
-        }
-
-        public void NotifyCreateCollectStar(string playerID, string content)
-        {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-            log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
-
-            WebSocketObjects.SGCSState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGCSState>(content);
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            if (!gameRoom.NotifyCreateCollectStar(state))
-            {
-                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
-            }
-        }
-
-        public void NotifyGrabStar(string playerID, string content)
-        {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-            int[] args = CommonMethods.ReadObjectFromString<int[]>(content);
-            int playerIndex = args[0];
-            int starIndex = args[1];
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            gameRoom.NotifyGrabStar(playerIndex, starIndex);
-        }
-
-        public void NotifyEndCollectStar(string playerID, string content)
-        {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-            log.Debug(string.Format("player {0} attempted to end game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
-
-            int playerIndex = int.Parse(content);
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            gameRoom.NotifyEndCollectStar(playerIndex);
-        }
-
-        public void UpdateGobang(string playerID, string content)
-        {
-            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
-
-            WebSocketObjects.SGGBState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGGBState>(content);
-            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-            if (!gameRoom.UpdateGobang(playerID, state))
-            {
-                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
             }
         }
 
@@ -814,11 +770,11 @@ namespace TractorServer
                 string clientIP = PlayerToIP[playerID];
                 if (gameRoom.PlayerExitAndEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID))
                 {
-                    log.Debug(string.Format("player {0} took seat {1} successfully.", playerID, messageObj.posID + 1));
+                    log.Debug(string.Format("player {0} took seat {1} successfully in room {2}", playerID, messageObj.posID + 1, gameRoom.CurrentRoomState.RoomID));
                 }
                 else
                 {
-                    log.Debug(string.Format("player {0} attempted to exited and entered room but failed.", playerID));
+                    log.Debug(string.Format("player {0} attempted to take seat {1} in room {2} but failed.", playerID, messageObj.posID + 1, gameRoom.CurrentRoomState.RoomID));
                 }
                 new Thread(new ThreadStart(() =>
                     {
@@ -908,11 +864,11 @@ namespace TractorServer
                         string clientIP = PlayerToIP[playerID];
                         if (gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, -1))
                         {
-                            log.Debug(string.Format("player {0} exited room and rejoined as observer.", playerID));
+                            log.Debug(string.Format("player {0} exited room {1} and rejoined as observer.", playerID, gameRoom.CurrentRoomState.RoomID));
                         }
                         else
                         {
-                            log.Debug(string.Format("player {0} exited room but failed to rejoin as observer.", playerID));
+                            log.Debug(string.Format("player {0} exited room {1} but failed to rejoin as observer.", playerID, gameRoom.CurrentRoomState.RoomID));
                         }
                     }
                 }
@@ -1971,6 +1927,59 @@ namespace TractorServer
                 }
             }
             return others.ToList();
+        }
+
+        public void NotifySgcsPlayerUpdated(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifySgcsPlayerUpdated(content);
+        }
+
+        public void NotifyCreateCollectStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            log.Debug(string.Format("player {0} attempted to start game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
+
+            WebSocketObjects.SGCSState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGCSState>(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            if (!gameRoom.NotifyCreateCollectStar(state))
+            {
+                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
+            }
+        }
+
+        public void NotifyGrabStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            int[] args = CommonMethods.ReadObjectFromString<int[]>(content);
+            int playerIndex = args[0];
+            int starIndex = args[1];
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifyGrabStar(playerIndex, starIndex);
+        }
+
+        public void NotifyEndCollectStar(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+            log.Debug(string.Format("player {0} attempted to end game: {1}", playerID, WebSocketObjects.SmallGameName_CollectStar));
+
+            int playerIndex = int.Parse(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            gameRoom.NotifyEndCollectStar(playerIndex);
+        }
+
+        public void UpdateGobang(string playerID, string content)
+        {
+            if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
+
+            WebSocketObjects.SGGBState state = CommonMethods.ReadObjectFromString<WebSocketObjects.SGGBState>(content);
+            GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+            if (!gameRoom.UpdateGobang(playerID, state))
+            {
+                this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
+            }
         }
     }
 
