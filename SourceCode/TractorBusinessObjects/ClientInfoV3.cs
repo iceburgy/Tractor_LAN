@@ -32,6 +32,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public string skinInUse;
         [DataMember]
         public string clientType;
+        [DataMember]
+        public DateTime noDongtuUntil;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
@@ -49,6 +51,9 @@ namespace Duan.Xiugang.Tractor.Objects
             ownedSkinInfo = new List<string>() { CommonMethods.defaultSkinInUse };
             skinInUse = CommonMethods.defaultSkinInUse;
             clientType = ct;
+
+            DateTime dtNow = DateTime.Now; ;
+            noDongtuUntil = dtNow.AddTicks(-(dtNow.Ticks % 10000000));
         }
 
         public void logLogin(string ip, string cheating)

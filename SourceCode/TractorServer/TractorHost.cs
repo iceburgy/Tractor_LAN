@@ -314,6 +314,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_SendBroadcast:
                     this.PlayerSendBroadcastWS(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_BuyNoDongtuUntil:
+                    this.PlayerBuyNoDongtuUntilWS(playerID, content);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_PlayerHasCutCards:
                     new Thread(() =>
                     {
@@ -1028,7 +1031,7 @@ namespace TractorServer
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse, clientInfoV3Dict[pid].clientType));
+                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse, clientInfoV3Dict[pid].clientType, clientInfoV3Dict[pid].noDongtuUntil));
             }
             return daojuInfo;
         }
@@ -1203,6 +1206,33 @@ namespace TractorServer
             string message = string.Format("来自玩家【{0}】的广播消息：{1}", playerID, content);
             this.PlayerSendEmojiWorker(playerID, -1, -1, false, message, false, true);
             log.Debug(message);
+        }
+
+        public void PlayerBuyNoDongtuUntilWS(string playerID, string content)
+        {
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+            if (!clientInfoV3Dict.ContainsKey(playerID))
+            {
+                log.Debug(string.Format("fail to find playerID {0} for PlayerBuyNoDongtuUntilWS!", playerID));
+                return;
+            }
+            if (clientInfoV3Dict[playerID].Shengbi < CommonMethods.buyNoDongtuUntilCost)
+            {
+                log.Debug(string.Format("fail to PlayerBuyNoDongtuUntilWS for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}", playerID, CommonMethods.buyNoDongtuUntilCost, clientInfoV3Dict[playerID].Shengbi));
+                return;
+            }
+
+            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.buyNoDongtuUntilCost, log, playerID, string.Format("使用道具【关闭动图】"));
+            clientInfoV3Dict[playerID].noDongtuUntil = DateTime.Now.AddHours(CommonMethods.buyNoDongtuUntilDurationHours);
+            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+            PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, false, true);
+            this.PublishDaojuInfo(daojuInfo);
+            UpdateGameHall();
+
+            string msg = string.Format("玩家【{0}】成功购买道具【关闭动图】，消耗升币：【{1}】", playerID, CommonMethods.buyNoDongtuUntilCost);
+            this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
+            log.Debug(msg);
         }
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker, bool isBroadcast)
