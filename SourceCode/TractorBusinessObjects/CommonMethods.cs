@@ -42,7 +42,7 @@ namespace Duan.Xiugang.Tractor.Objects
         };
         public static int qiangliangkaCost = 10;
         public static int sendBroadcastCost = 10;
-        public static int buyNoDongtuUntilCost = 20;
+        public static int buyNoDongtuUntilCost = 0;
         public static int buyNoDongtuUntilDurationHours = 24;
         public static string defaultSkinInUse = "skin_questionmark";
         public static int gobangBoardSize = 15;

@@ -554,16 +554,16 @@ namespace TractorServer
             else
             {
                 log.Debug(string.Format("player {0} entered hall as {1}", playerID, enterHallInfo.clientType));
-                UpdateGameHall();
+                if (daojuInfo != null)
+                {
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, true);
+                }
             }
 
             new Thread(new ThreadStart(() =>
             {
                 Thread.Sleep(500);
-                if (daojuInfo != null)
-                {
-                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, true);
-                }
+                UpdateGameHall();
             })).Start();
             new Thread(new ThreadStart(() =>
             {
