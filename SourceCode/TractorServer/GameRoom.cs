@@ -335,6 +335,9 @@ namespace TractorServer
             else
             {
                 SwapPlayers(CommonMethods.GetPlayerIndexByID(this.CurrentRoomState.CurrentGameState.Players, playerID), posID);
+                player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
+                ResetAndRestartGame();
+                CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 UpdateGameState();
                 return true;
             }
@@ -2068,7 +2071,7 @@ namespace TractorServer
             else
             {
                 ShuffleCardsWithRNGCsp(this.CardsShoe);
-                //this.CardsShoe.TestSet5MakeTrumpTwiceJoker();
+                //this.CardsShoe.TestSet2();
 
                 //切牌
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList(), "NotifyMessage", new List<object>() { new string[] { "等待玩家切牌：", playersFromStarter[3] } });
