@@ -190,7 +190,7 @@ namespace Duan.Xiugang.Tractor.Player
 
         public void ObservePlayerById(string playerId, string observerId)
         {
-            _tractorHost.ObservePlayerById(playerId, observerId);
+            _tractorHost.ObservePlayerById(playerId, observerId, false);
         }
 
         public void PlayerEnterHall(string playerID)

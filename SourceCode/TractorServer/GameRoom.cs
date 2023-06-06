@@ -62,7 +62,7 @@ namespace TractorServer
         }
 
         #region implement interface ITractorHost
-        public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID)
+        public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID, bool skipUpdateGameState)
         {
             if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
@@ -113,7 +113,7 @@ namespace TractorServer
 
                     player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, false);
                     ObserversProxy.Add(playerID, player);
-                    ObservePlayerById(CurrentRoomState.CurrentGameState.Players[firstActualPlayerIndex].PlayerId, playerID);
+                    ObservePlayerById(CurrentRoomState.CurrentGameState.Players[firstActualPlayerIndex].PlayerId, playerID, skipUpdateGameState);
 
                     if (IsGameOnGoing())
                     {
@@ -126,7 +126,7 @@ namespace TractorServer
                     }
 
                     //Thread.Sleep(2000);
-                    IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
+                    if (!skipUpdateGameState) IPlayerInvoke(playerID, player, "NotifyGameState", new List<object>() { CurrentRoomState.CurrentGameState }, true);
 
                     // gobang state publication if it is on
                     // need delay to create, to allow for some time for client to destroy old UI when exit and observe
@@ -173,7 +173,7 @@ namespace TractorServer
                     CurrentRoomState.CurrentHandState.Rank = 0;
                     CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
                 }
-                UpdateGameState();
+                if (!skipUpdateGameState) UpdateGameState();
 
                 player.NotifyRoomSetting(this.CurrentRoomState.roomSetting, true);
                 // gobang state publication if it is on
@@ -191,7 +191,7 @@ namespace TractorServer
                 {
                     IPlayerInvoke(playerID, ObserversProxy[playerID], "NotifyMessage", new List<object>() { "已在房间里" }, true);
                     string obeserveeId = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.Observers.Contains(playerID)).PlayerId;
-                    ObservePlayerById(obeserveeId, playerID);
+                    ObservePlayerById(obeserveeId, playerID, skipUpdateGameState);
                 }
                 return false;
             }
@@ -305,7 +305,6 @@ namespace TractorServer
             {
                 PlayerQuitWorker(playerID);
             }
-            UpdateGameState();
 
             //如果房主退出，则选择位置最靠前的玩家为房主
             if (playerIDs.Contains(CurrentRoomState.roomSetting.RoomOwner))
@@ -325,7 +324,7 @@ namespace TractorServer
             if (!IsActualPlayer(playerID))
             {
                 RemoveObserver(new List<string>() { playerID });
-                if (this.PlayerEnterRoom(playerID, clientIP, player, allowSameIP, posID))
+                if (this.PlayerEnterRoom(playerID, clientIP, player, allowSameIP, posID, false))
                 {
                     return true;
                 }
@@ -360,7 +359,6 @@ namespace TractorServer
                 List<string> badObs = new List<string>();
                 badObs.Add(playerID);
                 RemoveObserver(badObs);
-                UpdateGameState();
                 return;
             }
 
@@ -1542,6 +1540,7 @@ namespace TractorServer
             CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
             ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            UpdateGameState();
 
             msgs[5] = "随机组队后";
             bool teamChanged = false;
@@ -1606,6 +1605,7 @@ namespace TractorServer
             CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
             ResetAndRestartGame();
             CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            UpdateGameState();
 
             msgs.Add("换座后");
             for (int i = 0; i < 4; i++)
@@ -1880,7 +1880,7 @@ namespace TractorServer
         }
 
         //旁观玩家 by id
-        public void ObservePlayerById(string playerId, string observerId)
+        public void ObservePlayerById(string playerId, string observerId, bool skipUpdateGameState)
         {
             foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
             {
@@ -1897,7 +1897,7 @@ namespace TractorServer
                 }
             }
             //即时更新旁观手牌
-            UpdateGameState();
+            if (!skipUpdateGameState) UpdateGameState();
             if (HandStep.DistributingCards <= this.CurrentRoomState.CurrentHandState.CurrentHandStep &&
                 this.CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing &&
                 !CurrentRoomState.CurrentTrickState.IsStarted() &&
@@ -2506,9 +2506,7 @@ namespace TractorServer
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            UpdateGameState();
             UpdatePlayersCurrentHandState();
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "StartGame", new List<object>() { });
         }
 
         public void ShuffleCurrentGameStatePlayers()

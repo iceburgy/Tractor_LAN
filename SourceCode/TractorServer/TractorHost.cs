@@ -267,7 +267,7 @@ namespace TractorServer
                     this.PlayerToggleIsRobot(playerID);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ObserveNext:
-                    this.ObservePlayerById(content, playerID);
+                    this.ObservePlayerById(content, playerID, false);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ExitRoom:
                     this.PlayerExitRoom(playerID);
@@ -593,7 +593,7 @@ namespace TractorServer
                 {
                     lock (gameRoom)
                     {
-                        bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, posID);
+                        bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, posID, false);
                         if (entered)
                         {
                             SessionIDGameRoom[playerID] = gameRoom;
@@ -637,7 +637,7 @@ namespace TractorServer
             lock (gameRoom)
             {
                 string clientIP = PlayerToIP[playerID];
-                bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID);
+                bool entered = gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID, false);
                 if (entered)
                 {
                     SessionIDGameRoom[playerID] = gameRoom;
@@ -735,9 +735,10 @@ namespace TractorServer
                 {
                     foreach (string ob in obsToMove)
                     {
-                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob);
+                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob, true);
                     }
                 }
+                gameRoom.UpdateGameState();
 
                 log.Debug(string.Format("player {0} exited room.", playerID));
                 new Thread(new ThreadStart(() =>
@@ -855,7 +856,7 @@ namespace TractorServer
                 {
                     foreach (string ob in obsToMove)
                     {
-                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob);
+                        this.ObservePlayerById(firstActualPlayer.PlayerId, ob, true);
                     }
                 }
 
@@ -865,7 +866,7 @@ namespace TractorServer
                     if (player != null)
                     {
                         string clientIP = PlayerToIP[playerID];
-                        if (gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, -1))
+                        if (gameRoom.PlayerEnterRoom(playerID, clientIP, player, AllowSameIP, -1, true))
                         {
                             log.Debug(string.Format("player {0} exited room {1} and rejoined as observer.", playerID, gameRoom.CurrentRoomState.RoomID));
                         }
@@ -875,6 +876,7 @@ namespace TractorServer
                         }
                     }
                 }
+                gameRoom.UpdateGameState();
 
                 new Thread(new ThreadStart(() =>
                 {
@@ -1434,12 +1436,12 @@ namespace TractorServer
         }
 
         //旁观玩家 by id
-        public void ObservePlayerById(string playerId, string observerId)
+        public void ObservePlayerById(string playerId, string observerId, bool skipUpdateGameState)
         {
             if (this.SessionIDGameRoom.ContainsKey(observerId))
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[observerId];
-                gameRoom.ObservePlayerById(playerId, observerId);
+                gameRoom.ObservePlayerById(playerId, observerId, skipUpdateGameState);
                 new Thread(new ThreadStart(() =>
                 {
                     Thread.Sleep(500);

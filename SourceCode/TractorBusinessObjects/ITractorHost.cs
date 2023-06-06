@@ -82,7 +82,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //旁观玩家 by id
         [OperationContract(IsOneWay = true)]
-        void ObservePlayerById(string playerId, string observerId);
+        void ObservePlayerById(string playerId, string observerId, bool skipUpdateGameState);
 
         //保存房间游戏设置
         [OperationContract(IsOneWay = true)]
