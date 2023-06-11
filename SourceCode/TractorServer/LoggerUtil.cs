@@ -38,9 +38,9 @@ namespace TractorServer
             appender.Name = name;
             appender.File = fileName;
             appender.AppendToFile = true;
-            appender.MaxSizeRollBackups = 10;
+            appender.MaxSizeRollBackups = 1000;
             appender.RollingStyle = RollingFileAppender.RollingMode.Size;
-            appender.MaximumFileSize = "2MB";
+            appender.MaximumFileSize = "800KB";
             appender.Layout = patternLayout;
             appender.LockingModel = new FileAppender.MinimalLock();
             appender.StaticLogFileName = true;

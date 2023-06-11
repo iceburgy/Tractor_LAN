@@ -23,6 +23,9 @@ namespace TractorServer
     public class TractorHost : ITractorHost
     {
         public static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public log4net.ILog illegalOperationLogger;
+        public static log4net.ILog transactionLogger;
+
         private readonly string[] RoomNames = new string[] { "1", "2", "3", "4" };
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
@@ -59,6 +62,8 @@ namespace TractorServer
         public System.Timers.Timer timerPingClients;
         public ConcurrentDictionary<string, System.Timers.Timer> playerIDToTimer;
         public ConcurrentDictionary<System.Timers.Timer,string> timerToPlayerID;
+
+        public List<string> ForbidSayings;
 
         // 签到提醒
         public DateTime PreviousDate = DateTime.Now.Date;
@@ -207,6 +212,13 @@ namespace TractorServer
             GenerateRegistrationCodes(regcodes);
             LoadEmailSettings();
 
+            string logIllegalOperationFilePath = string.Format("{0}\\{1}.log", GameRoom.LogsFolder, GameRoom.IllegalOperationLogName);
+            illegalOperationLogger = LoggerUtil.Setup(GameRoom.IllegalOperationLogName, logIllegalOperationFilePath);
+            LoadForbidSayings();
+
+            string transactionLoggerFilePath = string.Format("{0}\\{1}.log", GameRoom.LogsFolder, GameRoom.TransactionLogName);
+            transactionLogger = LoggerUtil.Setup(GameRoom.TransactionLogName, transactionLoggerFilePath);
+
             // setup logger
             AppDomain currentDomain = default(AppDomain);
             currentDomain = AppDomain.CurrentDomain;
@@ -270,6 +282,11 @@ namespace TractorServer
                     this.ObservePlayerById(content, playerID, false);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ExitRoom:
+                    if (string.Equals(content, WebSocketObjects.ExitRoom_REQUEST_TYPE_BootPlayer, StringComparison.OrdinalIgnoreCase))
+                    {
+                        //玩家被房主请出房间
+                        this.PlayerSendEmojiWorker(playerID, -1, -1, false, string.Format("玩家【{0}】被房主请出房间", playerID), true, false);
+                    }
                     this.PlayerExitRoom(playerID);
                     break;
                 case WebSocketObjects.WebSocketMessageType_ExitAndEnterRoom:
@@ -931,7 +948,7 @@ namespace TractorServer
                 }
                 else
                 {
-                    log.Debug(string.Format("玩家【{0}】签到失败！升币【{1}】", playerID, curClientInfo.Shengbi));
+                    illegalOperationLogger.Debug(string.Format("玩家【{0}】签到失败！升币【{1}】", playerID, curClientInfo.Shengbi));
                 }
             }
         }
@@ -964,7 +981,7 @@ namespace TractorServer
                     this.PlayerExitRoom(playerID);
                     return;
                 }
-                clientInfoV3Dict[playerID].transactShengbi(-shengbiCost, log, playerID, string.Format("使用道具【{0}】", content));
+                clientInfoV3Dict[playerID].transactShengbi(-shengbiCost, transactionLogger, playerID, string.Format("使用道具【{0}】", content));
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                 this.PublishDaojuInfo(daojuInfo);
@@ -1005,7 +1022,7 @@ namespace TractorServer
                         log.Debug(string.Format("fail to buy skin {0} for BuyUseSkin due to insufficient shengbi: cost: {1}, shengbi: {2}", skinName, skinInfoToBuyUse.skinCost, curClientInfo.Shengbi));
                         return;
                     }
-                    curClientInfo.transactShengbi(-skinInfoToBuyUse.skinCost, log, playerID, string.Format("购买皮肤【{0}】", skinInfoToBuyUse.skinDesc));
+                    curClientInfo.transactShengbi(-skinInfoToBuyUse.skinCost, transactionLogger, playerID, string.Format("购买皮肤【{0}】", skinInfoToBuyUse.skinDesc));
                     curClientInfo.ownedSkinInfo.Add(skinName);
                 }
 
@@ -1033,7 +1050,15 @@ namespace TractorServer
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
-                daojuInfo.daojuInfoByPlayer.Add(pid, new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi, clientInfoV3Dict[pid].ShengbiTotal, clientInfoV3Dict[pid].lastQiandao, clientInfoV3Dict[pid].ownedSkinInfo, clientInfoV3Dict[pid].skinInUse, clientInfoV3Dict[pid].clientType, clientInfoV3Dict[pid].noDongtuUntil));
+                daojuInfo.daojuInfoByPlayer.Add(pid,
+                    new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi,
+                    clientInfoV3Dict[pid].ShengbiTotal,
+                    clientInfoV3Dict[pid].lastQiandao,
+                    clientInfoV3Dict[pid].ownedSkinInfo,
+                    clientInfoV3Dict[pid].skinInUse,
+                    clientInfoV3Dict[pid].clientType,
+                    clientInfoV3Dict[pid].noDongtuUntil,
+                    clientInfoV3Dict[pid].noChatUntil));
             }
             return daojuInfo;
         }
@@ -1043,7 +1068,7 @@ namespace TractorServer
             Dictionary<string, int> lb = new Dictionary<string, int>();
             foreach (KeyValuePair< string, ClientInfoV3>  entry in clientInfoV3Dict)
             {
-                lb.Add(entry.Key, entry.Value.ShengbiTotal);
+                lb.Add(entry.Key, entry.Value.Shengbi);
             }
             return lb;
         }
@@ -1180,6 +1205,9 @@ namespace TractorServer
             int emojiType = (int)(long)args[0];
             int emojiIndex = (int)(long)args[1];
             string emojiString = (string)args[2];
+
+            if (!this.ValidateChatMessage(playerID, emojiString, emojiType >= 0 ? 0 : CommonMethods.sendChatMessageCost)) return;
+
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
             this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, false);
@@ -1187,27 +1215,71 @@ namespace TractorServer
 
         public void PlayerSendBroadcastWS(string playerID, string content)
         {
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
-            if (!clientInfoV3Dict.ContainsKey(playerID))
-            {
-                log.Debug(string.Format("fail to find playerID {0} for PlayerSendBroadcastWS!", playerID));
-                return;
-            }
-            if (clientInfoV3Dict[playerID].Shengbi < CommonMethods.sendBroadcastCost)
-            {
-                log.Debug(string.Format("fail to PlayerSendBroadcastWS for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}", playerID, CommonMethods.sendBroadcastCost, clientInfoV3Dict[playerID].Shengbi));
-                return;
-            }
-
-            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.sendBroadcastCost, log, playerID, string.Format("使用道具【广播卡】"));
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-            this.PublishDaojuInfo(daojuInfo);
-            UpdateGameHall();
+            if (!this.ValidateChatMessage(playerID, content, CommonMethods.sendBroadcastCost)) return;
 
             string message = string.Format("来自玩家【{0}】的广播消息：{1}", playerID, content);
             this.PlayerSendEmojiWorker(playerID, -1, -1, false, message, false, true);
             log.Debug(message);
+        }
+
+        private bool ValidateChatMessage(string playerID, string chatMsg, int cost)
+        {
+            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+            if (!clientInfoV3Dict.ContainsKey(playerID))
+            {
+                log.Debug(string.Format("fail to find playerID {0} for PlayerSendBroadcastWS!", playerID));
+                return false;
+            }
+
+            DateTime dtNow = DateTime.Now;
+            if (dtNow < clientInfoV3Dict[playerID].noChatUntil)
+            {
+                this.illegalOperationLogger.Debug(string.Format("玩家【{0}】处于禁言中，试图发言：{1}", playerID, chatMsg));
+                return false;
+            }
+
+            if (cost > 0 && clientInfoV3Dict[playerID].Shengbi < cost)
+            {
+                illegalOperationLogger.Debug(string.Format("玩家【{0}】余额不足，cost: {1}, shengbi: {2}，试图发言：{3}", playerID, cost, clientInfoV3Dict[playerID].Shengbi, chatMsg));
+                return false;
+            }
+
+            DaojuInfo daojuInfo;
+            for (int i = 0; i < this.ForbidSayings.Count; i++)
+            {
+                string word = this.ForbidSayings[i];
+                if (chatMsg.Contains(word))
+                {
+                    this.illegalOperationLogger.Debug(string.Format("【{0}】说：{1}", playerID, chatMsg));
+                    int punishmentShengbi = clientInfoV3Dict[playerID].Shengbi / 2;
+                    if (punishmentShengbi < CommonMethods.forbidSayingsPunishmentCost)
+                    {
+                        punishmentShengbi = CommonMethods.forbidSayingsPunishmentCost;
+                    }
+                    clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger,  playerID, string.Format("玩家进行不文明发言"));
+
+                    clientInfoV3Dict[playerID].noChatUntil = DateTime.Now.AddHours(CommonMethods.noChatPunishmentUntilDurationHours);
+
+                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                    daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    this.PublishDaojuInfo(daojuInfo);
+                    UpdateGameHall();
+
+                    string msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，玩家被扣除升币：{1}，禁言{2}小时", playerID, punishmentShengbi, CommonMethods.noChatPunishmentUntilDurationHours);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
+                    log.Debug(msg);
+
+                    return false;
+                }
+            }
+
+            clientInfoV3Dict[playerID].transactShengbi(-cost, transactionLogger, playerID, CommonMethods.transactionNameChat);
+            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+            daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+            this.PublishDaojuInfo(daojuInfo);
+            UpdateGameHall();
+
+            return true;
         }
 
         public void PlayerBuyNoDongtuUntilWS(string playerID, string content)
@@ -1224,7 +1296,7 @@ namespace TractorServer
                 return;
             }
 
-            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.buyNoDongtuUntilCost, log, playerID, string.Format("使用道具【关闭动图】"));
+            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.buyNoDongtuUntilCost, transactionLogger, playerID, string.Format("使用道具【关闭动图】"));
             clientInfoV3Dict[playerID].noDongtuUntil = DateTime.Now.AddHours(CommonMethods.buyNoDongtuUntilDurationHours);
             CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
             DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
@@ -2011,6 +2083,17 @@ namespace TractorServer
             if (!gameRoom.UpdateGobang(playerID, state))
             {
                 this.PlayersProxy[playerID].NotifyMessage(new string[] { "已有其他玩家正在游戏中", "请稍后再试" });
+            }
+        }
+
+        private void LoadForbidSayings()
+        {
+            this.ForbidSayings = new List<string>();
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.ForbidSayingsFileName);
+            bool fileExists = File.Exists(fileName);
+            if (fileExists)
+            {
+                this.ForbidSayings = CommonMethods.ReadObjectFromFile<List<string>>(fileName);
             }
         }
     }

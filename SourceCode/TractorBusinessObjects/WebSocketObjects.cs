@@ -16,6 +16,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_ToggleIsRobot = "ToggleIsRobot";
         public const string WebSocketMessageType_ObserveNext = "ObserveNext";
         public const string WebSocketMessageType_ExitRoom = "ExitRoom";
+        public const string ExitRoom_REQUEST_TYPE_BootPlayer = "BootPlayer";
+
         public const string WebSocketMessageType_ExitAndEnterRoom = "ExitAndEnterRoom";
         public const string WebSocketMessageType_ExitAndObserve = "ExitAndObserve";
         public const string WebSocketMessageType_PlayerMakeTrump = "PlayerMakeTrump";

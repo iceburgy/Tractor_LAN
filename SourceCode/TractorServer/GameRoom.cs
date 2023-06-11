@@ -20,6 +20,9 @@ namespace TractorServer
         public static string EmailSettingsFileName = "emailsettings.json";
         public static string RegCodesFileName = "regcodes.json";
         public static string SkinInfoFileName = "skininfo.json";
+        public static string ForbidSayingsFileName = "forbidSayings.json";
+        public static string IllegalOperationLogName = "illegalOperationHistory";
+        public static string TransactionLogName = "transactionHistory";
         public string BackupGamestateFileName = "backup_gamestate.json";
         public string BackupHandStateFileName = "backup_HandState.json";
         public string BackupTrickStateFileName = "backup_TrickState.json";
@@ -64,6 +67,24 @@ namespace TractorServer
         #region implement interface ITractorHost
         public bool PlayerEnterRoom(string playerID, string clientIP, IPlayer player, bool allowSameIP, int posID, bool skipUpdateGameState)
         {
+            string otherID = string.Empty;
+            if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
+            {
+                foreach (KeyValuePair<string, string> entry in CurrentRoomState.CurrentGameState.PlayerToIP)
+                {
+                    if (string.Equals(entry.Value, clientIP))
+                    {
+                        otherID = entry.Key;
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(otherID) && !(clientIP.StartsWith("127.0") || clientIP.StartsWith("192.168")))
+            {
+                string cheating = string.Format("player {0} (with other ID {1}) attempted to double play with IP {2}", playerID, otherID, clientIP);
+                tractorHost.LogClientInfo(clientIP, playerID, cheating, false, "");
+                this.tractorHost.illegalOperationLogger.Debug(string.Format("observer {0} attempted to double play.", playerID));
+            }
+
             if (!PlayersProxy.Keys.Contains(playerID) && !ObserversProxy.Keys.Contains(playerID))
             {
                 //加入旁观
@@ -81,20 +102,8 @@ namespace TractorServer
                     }
                     //防止双开旁观
                     string msg = string.Format("玩家【{0}】加入旁观", playerID);
-                    if (CurrentRoomState.CurrentGameState.PlayerToIP.ContainsValue(clientIP))
+                    if (!string.IsNullOrEmpty(otherID))
                     {
-                        string otherID = string.Empty;
-                        foreach (KeyValuePair<string, string> entry in CurrentRoomState.CurrentGameState.PlayerToIP)
-                        {
-                            if (string.Equals(entry.Value, clientIP))
-                            {
-                                otherID = entry.Key;
-                            }
-                        }
-
-                        string cheating = string.Format("player {0} (with other ID {1}) attempted double observing with IP {2}", playerID, otherID, clientIP);
-                        tractorHost.LogClientInfo(clientIP, playerID, cheating, false, "");
-                        log.Debug(string.Format("observer {0} attempted double observing.", playerID));
                         if (!allowSameIP)
                         {
                             msg += "？？失败";
@@ -140,6 +149,23 @@ namespace TractorServer
                     })).Start();
 
                     return true;
+                }
+
+                if (!string.IsNullOrEmpty(otherID))
+                {
+                    string msg = string.Format("玩家【{0}】加入房间", playerID);
+                    if (!allowSameIP)
+                    {
+                        msg += "？？失败";
+                        PublishMessage(new string[] { msg });
+                        player.NotifyMessage(new string[] { "已在游戏中", "请勿双开", "", "" });
+                        return false;
+                    }
+                    else
+                    {
+                        msg += "？？";
+                        PublishMessage(new string[] { msg });
+                    }
                 }
 
                 if (CurrentRoomState.CurrentGameState.Players[posID] == null)
@@ -1271,7 +1297,7 @@ namespace TractorServer
                 {
                     winBonus = player.roundWinnerBonusShengbi;
                     player.roundWinnerBonusShengbi = 0;
-                    clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, TractorHost.log, player.PlayerId, bonusType);
+                    clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, TractorHost.transactionLogger, player.PlayerId, bonusType);
                     sb.Append(string.Format("【{0}】", player.PlayerId));
                 }
             }
@@ -1301,7 +1327,7 @@ namespace TractorServer
             Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
             foreach (string w in winners)
             {
-                clientInfoV3Dict[w].transactShengbi(CommonMethods.winnerBonusShengbi, TractorHost.log, w, "获胜");
+                clientInfoV3Dict[w].transactShengbi(CommonMethods.winnerBonusShengbi, TractorHost.transactionLogger, w, "获胜");
                 sb.Append(string.Format("【{0}】", w));
             }
             sb.Append(string.Format("获胜，获得福利：升币+{0}，", CommonMethods.winnerBonusShengbi));
@@ -1309,7 +1335,7 @@ namespace TractorServer
             sb.Append("玩家");
             foreach (string l in losers)
             {
-                clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.log, l, "惜败");
+                clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.transactionLogger, l, "惜败");
                 sb.Append(string.Format("【{0}】", l));
             }
             sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
@@ -1320,6 +1346,10 @@ namespace TractorServer
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
             this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, sb.ToString(), true, true);
+
+            // 播放烟花
+            int emojiIndex = CommonMethods.RandomNext(CommonMethods.winEmojiLength);
+            this.tractorHost.PlayerSendEmojiWorker(winners[0], 5, emojiIndex, true, "", true, false);
         }
 
         private bool CleanupOfflinePlayers()
