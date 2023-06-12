@@ -944,7 +944,7 @@ namespace TractorServer
                     return;
                 }
                 ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
-                bool isSuccess = curClientInfo.performQiandao(log, playerID);
+                bool isSuccess = curClientInfo.performQiandao(transactionLogger, playerID);
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 if (isSuccess)
                 {
@@ -954,7 +954,8 @@ namespace TractorServer
                     PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, others, false, false);
                     PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, true, false);
                     UpdateGameHall();
-                    this.PlayerSendEmojiWorker("", -1, -1, false, string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi), true, true);
+                    string fullMsg = string.Format("玩家【{0}】签到成功，获得福利：升币+{1}", playerID, CommonMethods.qiandaoBonusShengbi);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
                 }
                 else
                 {
@@ -987,7 +988,6 @@ namespace TractorServer
                     log.Debug(string.Format("fail to UsedShengbi for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}!", playerID, shengbiCost, clientInfoV3Dict[playerID].Shengbi));
                     string warningMsg = string.Format("玩家【{0}】使用道具【抢亮卡】出现异常，游戏已终止", playerID);
                     this.PlayerSendEmojiWorker(playerID, -1, -1, false, warningMsg, true, false);
-                    log.Debug(warningMsg);
                     this.PlayerExitRoom(playerID);
                     return;
                 }
@@ -999,7 +999,6 @@ namespace TractorServer
 
                 string msg = string.Format("玩家【{0}】成功触发道具效果【{1}】，消耗升币：【{2}】", playerID, CommonMethods.daojuToDisplayName[content], shengbiCost);
                 this.PlayerSendEmojiWorker(playerID, -1, -1, false, msg, true, false);
-                log.Debug(msg);
             }
         }
 
@@ -1046,7 +1045,6 @@ namespace TractorServer
                 {
                     string msg = string.Format("玩家【{0}】成功解锁新皮肤【{1}】，消耗升币：【{2}】", playerID, skinInfoToBuyUse.skinDesc, skinInfoToBuyUse.skinCost);
                     this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
-                    log.Debug(msg);
                 }
             }
         }
@@ -1230,7 +1228,6 @@ namespace TractorServer
 
             string message = string.Format("来自玩家【{0}】的广播消息：{1}", playerID, content);
             this.PlayerSendEmojiWorker(playerID, -1, -1, false, message, false, true);
-            log.Debug(message);
         }
 
         private bool ValidateChatMessage(string playerID, string chatMsg, int cost)
@@ -1278,7 +1275,6 @@ namespace TractorServer
 
                     string msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，玩家被扣除升币：{1}，禁言{2}小时", playerID, punishmentShengbi, CommonMethods.noChatPunishmentUntilDurationHours);
                     this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
-                    log.Debug(msg);
 
                     return false;
                 }
@@ -1344,11 +1340,16 @@ namespace TractorServer
 
             string msg = string.Format("玩家【{0}】成功购买道具【关闭动图】，消耗升币：【{1}】", playerID, CommonMethods.buyNoDongtuUntilCost);
             this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
-            log.Debug(msg);
         }
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker, bool isBroadcast)
         {
+            if (!string.IsNullOrEmpty(msgString))
+            {
+                string logPrefix = noSpeaker ? CommonMethods.systemMsgPrefix : string.Format("【{0}】说：", playerID);
+                log.Debug(string.Format("{0}{1}", logPrefix, msgString));
+            }
+
             if (isBroadcast)
             {
                 IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyEmoji", new List<object>() { playerID, emojiType, emojiIndex, isCenter, msgString, false });
@@ -1365,11 +1366,6 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PublishEmoji(playerID, emojiType, emojiIndex, isCenter, msgString, noSpeaker);
-            }
-
-            if (!noSpeaker)
-            {
-                log.Debug(string.Format("【{0}】说：{1}", playerID, msgString));
             }
         }
 

@@ -52,6 +52,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string defaultSkinInUse = "skin_questionmark";
         public static int gobangBoardSize = 15;
         public static int gobangWinCount = 5;
+        public static string systemMsgPrefix = "【系统消息】：";
 
         public static string NotifyStateType_ObservePlayerById = "ObservePlayerById";
 

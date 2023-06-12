@@ -1308,7 +1308,8 @@ namespace TractorServer
             DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
-            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, sb.ToString(), true, false);
+            string fullMsg = sb.ToString();
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, fullMsg, true, false);
             PlayerEntity p0 = this.CurrentRoomState.CurrentGameState.Players[0];
             PlayerEntity p1 = this.CurrentRoomState.CurrentGameState.Players[1];
             if (p0 != null)
@@ -1346,7 +1347,8 @@ namespace TractorServer
             DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
             this.tractorHost.PublishDaojuInfo(daojuInfo);
             this.tractorHost.UpdateGameHall();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, sb.ToString(), true, true);
+            string fullMsg = sb.ToString();
+            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
 
             // 播放烟花
             int emojiIndex = CommonMethods.RandomNext(CommonMethods.winEmojiLength);
