@@ -36,6 +36,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public DateTime noDongtuUntil;
         [DataMember]
         public DateTime noChatUntil;
+        [DataMember]
+        public int ChatQuota;
 
         private const string datePatt = @"yyyy/MM/dd-HH:mm:ss";
         private const int maxLoginHistory = 10;
@@ -58,6 +60,7 @@ namespace Duan.Xiugang.Tractor.Objects
             DateTime dtNowTrimmed = dtNow.AddTicks(-(dtNow.Ticks % 10000000));
             noDongtuUntil = dtNowTrimmed;
             noChatUntil = dtNowTrimmed;
+            ChatQuota = CommonMethods.dailyChatQuota;
         }
 
         public void logLogin(string ip, string cheating)

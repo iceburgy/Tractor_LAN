@@ -66,7 +66,7 @@ namespace TractorServer
         public List<string> ForbidSayings;
 
         // 签到提醒
-        public DateTime PreviousDate = DateTime.Now.Date;
+        public HostStatus hostStatus;
 
         public TractorHost()
         {
@@ -218,6 +218,8 @@ namespace TractorServer
 
             string transactionLoggerFilePath = string.Format("{0}\\{1}.log", GameRoom.LogsFolder, GameRoom.TransactionLogName);
             transactionLogger = LoggerUtil.Setup(GameRoom.TransactionLogName, transactionLoggerFilePath);
+
+            LoadHostStatus();
 
             // setup logger
             AppDomain currentDomain = default(AppDomain);
@@ -394,13 +396,21 @@ namespace TractorServer
 
             // 签到提醒
             DateTime nowDate = DateTime.Now.Date;
-            if (nowDate > this.PreviousDate)
+            if (nowDate > this.hostStatus.PreviousDate)
             {
-                this.PreviousDate = nowDate;
+                this.hostStatus.PreviousDate = nowDate;
+                CommonMethods.WriteObjectToFile(this.hostStatus, GameRoom.LogsFolder, GameRoom.HostStatusFileName);
+
                 this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！（房间内可直接从设置页面签到）", true, true);
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+                {
+                    entry.Value.ChatQuota = CommonMethods.dailyChatQuota;
+                }
                 DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                 PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), true, false);
+                UpdateGameHall();
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
             }
 
             foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
@@ -1058,7 +1068,8 @@ namespace TractorServer
                     clientInfoV3Dict[pid].skinInUse,
                     clientInfoV3Dict[pid].clientType,
                     clientInfoV3Dict[pid].noDongtuUntil,
-                    clientInfoV3Dict[pid].noChatUntil));
+                    clientInfoV3Dict[pid].noChatUntil,
+                    clientInfoV3Dict[pid].ChatQuota));
             }
             return daojuInfo;
         }
@@ -1238,7 +1249,7 @@ namespace TractorServer
                 return false;
             }
 
-            if (cost > 0 && clientInfoV3Dict[playerID].Shengbi < cost)
+            if (cost > 0 && clientInfoV3Dict[playerID].ChatQuota + clientInfoV3Dict[playerID].Shengbi < cost)
             {
                 illegalOperationLogger.Debug(string.Format("玩家【{0}】余额不足，cost: {1}, shengbi: {2}，试图发言：{3}", playerID, cost, clientInfoV3Dict[playerID].Shengbi, chatMsg));
                 return false;
@@ -1273,11 +1284,38 @@ namespace TractorServer
                 }
             }
 
-            clientInfoV3Dict[playerID].transactShengbi(-cost, transactionLogger, playerID, CommonMethods.transactionNameChat);
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-            this.PublishDaojuInfo(daojuInfo);
-            UpdateGameHall();
+            if (cost > 0)
+            {
+                int remainingFee = cost;
+                if (clientInfoV3Dict[playerID].ChatQuota > 0)
+                {
+                    int oldCQ = clientInfoV3Dict[playerID].ChatQuota;
+                    int feeCoveredByQuota;
+                    if (clientInfoV3Dict[playerID].ChatQuota >= remainingFee)
+                    {
+                        feeCoveredByQuota = remainingFee;
+                        clientInfoV3Dict[playerID].ChatQuota -= remainingFee;
+                        remainingFee = 0;
+                    }
+                    else
+                    {
+                        feeCoveredByQuota = clientInfoV3Dict[playerID].ChatQuota;
+                        remainingFee -= clientInfoV3Dict[playerID].ChatQuota;
+                        clientInfoV3Dict[playerID].ChatQuota = 0;
+                    }
+                    transactionLogger.Debug(string.Format("聊天卡交易记录：玩家：【{0}】，类型：【{1}】，金额：【{2}】，之前【{3}】，之后【{4}】", playerID, CommonMethods.transactionNameChat, -feeCoveredByQuota, oldCQ, clientInfoV3Dict[playerID].ChatQuota));
+                }
+
+                if (remainingFee > 0)
+                {
+                    clientInfoV3Dict[playerID].transactShengbi(-remainingFee, transactionLogger, playerID, CommonMethods.transactionNameChat);
+                }
+
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                this.PublishDaojuInfo(daojuInfo);
+                UpdateGameHall();
+            }
 
             return true;
         }
@@ -2094,6 +2132,21 @@ namespace TractorServer
             if (fileExists)
             {
                 this.ForbidSayings = CommonMethods.ReadObjectFromFile<List<string>>(fileName);
+            }
+        }
+
+        private void LoadHostStatus()
+        {
+            string fileName = string.Format("{0}\\{1}", GameRoom.LogsFolder, GameRoom.HostStatusFileName);
+            bool fileExists = File.Exists(fileName);
+            if (fileExists)
+            {
+                this.hostStatus = CommonMethods.ReadObjectFromFile<HostStatus>(fileName);
+            }
+            else
+            {
+                this.hostStatus = new HostStatus();
+                CommonMethods.WriteObjectToFile(this.hostStatus, GameRoom.LogsFolder, GameRoom.HostStatusFileName);
             }
         }
     }

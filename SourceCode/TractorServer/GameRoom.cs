@@ -23,6 +23,7 @@ namespace TractorServer
         public static string ForbidSayingsFileName = "forbidSayings.json";
         public static string IllegalOperationLogName = "illegalOperationHistory";
         public static string TransactionLogName = "transactionHistory";
+        public static string HostStatusFileName = "hostStatus.json";
         public string BackupGamestateFileName = "backup_gamestate.json";
         public string BackupHandStateFileName = "backup_HandState.json";
         public string BackupTrickStateFileName = "backup_TrickState.json";
