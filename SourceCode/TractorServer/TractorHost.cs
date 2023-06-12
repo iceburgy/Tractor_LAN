@@ -1248,7 +1248,7 @@ namespace TractorServer
             for (int i = 0; i < this.ForbidSayings.Count; i++)
             {
                 string word = this.ForbidSayings[i];
-                if (chatMsg.Contains(word))
+                if (chatMsg.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     this.illegalOperationLogger.Debug(string.Format("【{0}】说：{1}", playerID, chatMsg));
                     int punishmentShengbi = clientInfoV3Dict[playerID].Shengbi / 2;
@@ -1256,7 +1256,7 @@ namespace TractorServer
                     {
                         punishmentShengbi = CommonMethods.forbidSayingsPunishmentCost;
                     }
-                    clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger,  playerID, string.Format("玩家进行不文明发言"));
+                    clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger, playerID, string.Format("玩家进行不文明发言"));
 
                     clientInfoV3Dict[playerID].noChatUntil = DateTime.Now.AddHours(CommonMethods.noChatPunishmentUntilDurationHours);
 
