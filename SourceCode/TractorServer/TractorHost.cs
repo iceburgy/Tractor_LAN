@@ -26,7 +26,7 @@ namespace TractorServer
         public log4net.ILog illegalOperationLogger;
         public static log4net.ILog transactionLogger;
 
-        private readonly string[] RoomNames = new string[] { "1", "2", "3", "4" };
+        private readonly string[] RoomNames;
         internal static GameConfig gameConfig;
         internal int MaxRoom = 0;
         internal bool AllowSameIP = false;
@@ -75,6 +75,11 @@ namespace TractorServer
             try
             {
                 MaxRoom = (int)myreader.GetValue(KeyMaxRoom, typeof(int));
+                this.RoomNames = new string[MaxRoom];
+                for (int i = 0; i < MaxRoom; i++)
+                {
+                    this.RoomNames[i] = string.Format("{0}", i + 1);
+                }
                 AllowSameIP = (bool)myreader.GetValue(KeyAllowSameIP, typeof(bool));
                 Webport = (string)myreader.GetValue(KeyWebport, typeof(string));
                 WebportTls = (string)myreader.GetValue(KeyWebportTls, typeof(string));
