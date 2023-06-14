@@ -771,6 +771,7 @@ namespace TractorServer
                     }
                 }
                 gameRoom.UpdateGameState();
+                gameRoom.UpdatePlayersCurrentHandState();
 
                 log.Debug(string.Format("player {0} exited room.", playerID));
                 new Thread(new ThreadStart(() =>
@@ -909,6 +910,7 @@ namespace TractorServer
                     }
                 }
                 gameRoom.UpdateGameState();
+                gameRoom.UpdatePlayersCurrentHandState();
 
                 new Thread(new ThreadStart(() =>
                 {

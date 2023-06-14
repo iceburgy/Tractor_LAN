@@ -2539,7 +2539,6 @@ namespace TractorServer
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
             }
-            UpdatePlayersCurrentHandState();
         }
 
         public void ShuffleCurrentGameStatePlayers()
