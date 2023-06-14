@@ -403,19 +403,22 @@ namespace TractorServer
             DateTime nowDate = DateTime.Now.Date;
             if (nowDate > this.hostStatus.PreviousDate)
             {
-                this.hostStatus.PreviousDate = nowDate;
-                CommonMethods.WriteObjectToFile(this.hostStatus, GameRoom.LogsFolder, GameRoom.HostStatusFileName);
-
-                this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！（房间内可直接从设置页面签到）", true, true);
-                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
-                foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+                lock (this)
                 {
-                    entry.Value.ChatQuota = CommonMethods.dailyChatQuota;
+                    this.hostStatus.PreviousDate = nowDate;
+                    CommonMethods.WriteObjectToFile(this.hostStatus, GameRoom.LogsFolder, GameRoom.HostStatusFileName);
+
+                    this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！（房间内可直接从设置页面签到）", true, true);
+                    Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                    foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
+                    {
+                        entry.Value.ChatQuota = CommonMethods.dailyChatQuota;
+                    }
+                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), true, false);
+                    UpdateGameHall();
+                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 }
-                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, PlayersProxy.Keys.ToList<string>(), true, false);
-                UpdateGameHall();
-                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
             }
 
             foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
@@ -1239,114 +1242,144 @@ namespace TractorServer
 
         private bool ValidateChatMessage(string playerID, string chatMsg, int cost)
         {
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
-            if (!clientInfoV3Dict.ContainsKey(playerID))
+            lock (this)
             {
-                log.Debug(string.Format("fail to find playerID {0} for PlayerSendBroadcastWS!", playerID));
-                return false;
-            }
-
-            DateTime dtNow = DateTime.Now;
-            if (dtNow < clientInfoV3Dict[playerID].noChatUntil)
-            {
-                this.illegalOperationLogger.Debug(string.Format("玩家【{0}】处于禁言中，试图发言：{1}", playerID, chatMsg));
-                return false;
-            }
-
-            if (cost > 0 && clientInfoV3Dict[playerID].ChatQuota + clientInfoV3Dict[playerID].Shengbi < cost)
-            {
-                illegalOperationLogger.Debug(string.Format("玩家【{0}】余额不足，cost: {1}, shengbi: {2}，试图发言：{3}", playerID, cost, clientInfoV3Dict[playerID].Shengbi, chatMsg));
-                return false;
-            }
-
-            DaojuInfo daojuInfo;
-            for (int i = 0; i < this.ForbidSayings.Count; i++)
-            {
-                string word = this.ForbidSayings[i];
-                if (chatMsg.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
                 {
-                    this.illegalOperationLogger.Debug(string.Format("【{0}】说：{1}", playerID, chatMsg));
-                    int punishmentShengbi = clientInfoV3Dict[playerID].Shengbi / 2;
-                    if (punishmentShengbi < CommonMethods.forbidSayingsPunishmentCost)
-                    {
-                        punishmentShengbi = CommonMethods.forbidSayingsPunishmentCost;
-                    }
-                    clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger, playerID, string.Format("玩家进行不文明发言"));
+                    log.Debug(string.Format("fail to find playerID {0} for PlayerSendBroadcastWS!", playerID));
+                    return false;
+                }
 
-                    clientInfoV3Dict[playerID].noChatUntil = DateTime.Now.AddHours(CommonMethods.noChatPunishmentUntilDurationHours);
+                DateTime dtNow = DateTime.Now;
+                if (dtNow < clientInfoV3Dict[playerID].noChatUntil)
+                {
+                    this.illegalOperationLogger.Debug(string.Format("玩家【{0}】处于禁言中，试图发言：{1}", playerID, chatMsg));
+                    return false;
+                }
+
+                if (cost > 0 && clientInfoV3Dict[playerID].ChatQuota + clientInfoV3Dict[playerID].Shengbi < cost)
+                {
+                    illegalOperationLogger.Debug(string.Format("玩家【{0}】余额不足，cost: {1}, shengbi: {2}，试图发言：{3}", playerID, cost, clientInfoV3Dict[playerID].Shengbi, chatMsg));
+                    return false;
+                }
+
+                DaojuInfo daojuInfo;
+                for (int i = 0; i < this.ForbidSayings.Count; i++)
+                {
+                    string word = this.ForbidSayings[i];
+                    if (chatMsg.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        this.illegalOperationLogger.Debug(string.Format("【{0}】说：{1}", playerID, chatMsg));
+                        string msg = string.Empty;
+                        if (clientInfoV3Dict[playerID].forbidSayingWarned < CommonMethods.forbidSayingMaxWarnTimes)
+                        {
+                            // 提醒
+                            string reminderNote = string.Empty;
+                            clientInfoV3Dict[playerID].forbidSayingWarned++;
+                            switch (clientInfoV3Dict[playerID].forbidSayingWarned)
+                            {
+                                case 1:
+                                    reminderNote = "初次";
+                                    break;
+                                case 2:
+                                    reminderNote = "再次";
+                                    break;
+                                case 3:
+                                    reminderNote = "最后一次";
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，这是{1}提醒，不进行罚分，请大家文明发言，谢谢", playerID, reminderNote);
+                        }
+                        else
+                        {
+                            // 罚分
+                            int punishmentShengbi = clientInfoV3Dict[playerID].Shengbi / 2;
+                            if (punishmentShengbi < CommonMethods.forbidSayingsPunishmentCost)
+                            {
+                                punishmentShengbi = CommonMethods.forbidSayingsPunishmentCost;
+                            }
+                            clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger, playerID, string.Format("玩家进行不文明发言"));
+                            clientInfoV3Dict[playerID].noChatUntil = DateTime.Now.AddHours(CommonMethods.noChatPunishmentUntilDurationHours);
+                            daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                            this.PublishDaojuInfo(daojuInfo);
+                            UpdateGameHall();
+                            msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，玩家被扣除升币：{1}，禁言{2}小时", playerID, punishmentShengbi, CommonMethods.noChatPunishmentUntilDurationHours);
+                        }
+
+                        CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+
+                        this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
+                        return false;
+                    }
+                }
+
+                if (cost > 0)
+                {
+                    int remainingFee = cost;
+                    if (clientInfoV3Dict[playerID].ChatQuota > 0)
+                    {
+                        int oldCQ = clientInfoV3Dict[playerID].ChatQuota;
+                        int feeCoveredByQuota;
+                        if (clientInfoV3Dict[playerID].ChatQuota >= remainingFee)
+                        {
+                            feeCoveredByQuota = remainingFee;
+                            clientInfoV3Dict[playerID].ChatQuota -= remainingFee;
+                            remainingFee = 0;
+                        }
+                        else
+                        {
+                            feeCoveredByQuota = clientInfoV3Dict[playerID].ChatQuota;
+                            remainingFee -= clientInfoV3Dict[playerID].ChatQuota;
+                            clientInfoV3Dict[playerID].ChatQuota = 0;
+                        }
+                        transactionLogger.Debug(string.Format("聊天卡交易记录：玩家：【{0}】，类型：【{1}】，金额：【{2}】，之前【{3}】，之后【{4}】", playerID, CommonMethods.transactionNameChat, -feeCoveredByQuota, oldCQ, clientInfoV3Dict[playerID].ChatQuota));
+                    }
+
+                    if (remainingFee > 0)
+                    {
+                        clientInfoV3Dict[playerID].transactShengbi(-remainingFee, transactionLogger, playerID, CommonMethods.transactionNameChat);
+                    }
 
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                     daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                     this.PublishDaojuInfo(daojuInfo);
                     UpdateGameHall();
-
-                    string msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，玩家被扣除升币：{1}，禁言{2}小时", playerID, punishmentShengbi, CommonMethods.noChatPunishmentUntilDurationHours);
-                    this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
-
-                    return false;
                 }
             }
-
-            if (cost > 0)
-            {
-                int remainingFee = cost;
-                if (clientInfoV3Dict[playerID].ChatQuota > 0)
-                {
-                    int oldCQ = clientInfoV3Dict[playerID].ChatQuota;
-                    int feeCoveredByQuota;
-                    if (clientInfoV3Dict[playerID].ChatQuota >= remainingFee)
-                    {
-                        feeCoveredByQuota = remainingFee;
-                        clientInfoV3Dict[playerID].ChatQuota -= remainingFee;
-                        remainingFee = 0;
-                    }
-                    else
-                    {
-                        feeCoveredByQuota = clientInfoV3Dict[playerID].ChatQuota;
-                        remainingFee -= clientInfoV3Dict[playerID].ChatQuota;
-                        clientInfoV3Dict[playerID].ChatQuota = 0;
-                    }
-                    transactionLogger.Debug(string.Format("聊天卡交易记录：玩家：【{0}】，类型：【{1}】，金额：【{2}】，之前【{3}】，之后【{4}】", playerID, CommonMethods.transactionNameChat, -feeCoveredByQuota, oldCQ, clientInfoV3Dict[playerID].ChatQuota));
-                }
-
-                if (remainingFee > 0)
-                {
-                    clientInfoV3Dict[playerID].transactShengbi(-remainingFee, transactionLogger, playerID, CommonMethods.transactionNameChat);
-                }
-
-                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                this.PublishDaojuInfo(daojuInfo);
-                UpdateGameHall();
-            }
-
             return true;
         }
 
         public void PlayerBuyNoDongtuUntilWS(string playerID, string content)
         {
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
-            if (!clientInfoV3Dict.ContainsKey(playerID))
+            lock (this)
             {
-                log.Debug(string.Format("fail to find playerID {0} for PlayerBuyNoDongtuUntilWS!", playerID));
-                return;
-            }
-            if (clientInfoV3Dict[playerID].Shengbi < CommonMethods.buyNoDongtuUntilCost)
-            {
-                log.Debug(string.Format("fail to PlayerBuyNoDongtuUntilWS for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}", playerID, CommonMethods.buyNoDongtuUntilCost, clientInfoV3Dict[playerID].Shengbi));
-                return;
-            }
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
+                {
+                    log.Debug(string.Format("fail to find playerID {0} for PlayerBuyNoDongtuUntilWS!", playerID));
+                    return;
+                }
+                if (clientInfoV3Dict[playerID].Shengbi < CommonMethods.buyNoDongtuUntilCost)
+                {
+                    log.Debug(string.Format("fail to PlayerBuyNoDongtuUntilWS for player {0} due to insufficient shengbi: cost: {1}, shengbi: {2}", playerID, CommonMethods.buyNoDongtuUntilCost, clientInfoV3Dict[playerID].Shengbi));
+                    return;
+                }
 
-            clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.buyNoDongtuUntilCost, transactionLogger, playerID, string.Format("使用道具【关闭动图】"));
-            clientInfoV3Dict[playerID].noDongtuUntil = DateTime.Now.AddHours(CommonMethods.buyNoDongtuUntilDurationHours);
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-            DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-            PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, false, true);
-            this.PublishDaojuInfo(daojuInfo);
-            UpdateGameHall();
+                clientInfoV3Dict[playerID].transactShengbi(-CommonMethods.buyNoDongtuUntilCost, transactionLogger, playerID, string.Format("使用道具【关闭动图】"));
+                clientInfoV3Dict[playerID].noDongtuUntil = DateTime.Now.AddHours(CommonMethods.buyNoDongtuUntilDurationHours);
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                PublishDaojuInfoWithSpecificPlayersStatusUpdate(daojuInfo, new List<string> { playerID }, false, true);
+                this.PublishDaojuInfo(daojuInfo);
+                UpdateGameHall();
 
-            string msg = string.Format("玩家【{0}】成功购买道具【关闭动图】，消耗升币：【{1}】", playerID, CommonMethods.buyNoDongtuUntilCost);
-            this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
+                string msg = string.Format("玩家【{0}】成功购买道具【关闭动图】，消耗升币：【{1}】", playerID, CommonMethods.buyNoDongtuUntilCost);
+                this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
+            }
         }
 
         public void PlayerSendEmojiWorker(string playerID, int emojiType, int emojiIndex, bool isCenter, string msgString, bool noSpeaker, bool isBroadcast)

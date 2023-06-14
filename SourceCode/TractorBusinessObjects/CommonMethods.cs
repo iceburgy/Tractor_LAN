@@ -46,6 +46,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public static int forbidSayingsPunishmentCost = 200;
         public static int buyNoDongtuUntilCost = 0;
         public static int buyNoDongtuUntilDurationHours = 24;
+        public static int forbidSayingMaxWarnTimes = 3;
         public static int noChatPunishmentUntilDurationHours = 24;
         public static string transactionNameChat = "·¢ËÍÏûÏ¢";
         public static int dailyChatQuota = 20;

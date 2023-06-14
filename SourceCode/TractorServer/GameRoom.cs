@@ -1278,81 +1278,87 @@ namespace TractorServer
 
         private void IssueRoundoverBonus()
         {
-            bool isDefenderWin = CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(this.CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId);
-            int winBonus = 0;
-            StringBuilder sb = new StringBuilder();
-            string bonusType = "";
-            if (isDefenderWin)
+            lock (this)
             {
-                bonusType = "守庄成功";
-            }
-            else
-            {
-                bonusType = "攻庄成功";
-            }
-            sb.Append(string.Format("【{0}】，玩家", bonusType));
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
-            foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player.roundWinnerBonusShengbi > 0)
+                bool isDefenderWin = CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(this.CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId);
+                int winBonus = 0;
+                StringBuilder sb = new StringBuilder();
+                string bonusType = "";
+                if (isDefenderWin)
                 {
-                    winBonus = player.roundWinnerBonusShengbi;
-                    player.roundWinnerBonusShengbi = 0;
-                    clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, TractorHost.transactionLogger, player.PlayerId, bonusType);
-                    sb.Append(string.Format("【{0}】", player.PlayerId));
+                    bonusType = "守庄成功";
                 }
-            }
-            sb.Append(string.Format("获得福利：升币+{0}", winBonus));
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                else
+                {
+                    bonusType = "攻庄成功";
+                }
+                sb.Append(string.Format("【{0}】，玩家", bonusType));
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
+                foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
+                {
+                    if (player.roundWinnerBonusShengbi > 0)
+                    {
+                        winBonus = player.roundWinnerBonusShengbi;
+                        player.roundWinnerBonusShengbi = 0;
+                        clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, TractorHost.transactionLogger, player.PlayerId, bonusType);
+                        sb.Append(string.Format("【{0}】", player.PlayerId));
+                    }
+                }
+                sb.Append(string.Format("获得福利：升币+{0}", winBonus));
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
 
-            DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
-            this.tractorHost.PublishDaojuInfo(daojuInfo);
-            this.tractorHost.UpdateGameHall();
-            string fullMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, fullMsg, true, false);
-            PlayerEntity p0 = this.CurrentRoomState.CurrentGameState.Players[0];
-            PlayerEntity p1 = this.CurrentRoomState.CurrentGameState.Players[1];
-            if (p0 != null)
-            {
-                TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p0.PlayerId, CommonMethods.GetNumberString(p0.Rank)));
-            }
-            if (p1 != null)
-            {
-                TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p1.PlayerId, CommonMethods.GetNumberString(p1.Rank)));
+                DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
+                this.tractorHost.PublishDaojuInfo(daojuInfo);
+                this.tractorHost.UpdateGameHall();
+                string fullMsg = sb.ToString();
+                this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.CurrentHandState.Starter, -1, -1, false, fullMsg, true, false);
+                PlayerEntity p0 = this.CurrentRoomState.CurrentGameState.Players[0];
+                PlayerEntity p1 = this.CurrentRoomState.CurrentGameState.Players[1];
+                if (p0 != null)
+                {
+                    TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p0.PlayerId, CommonMethods.GetNumberString(p0.Rank)));
+                }
+                if (p1 != null)
+                {
+                    TractorHost.log.Debug(string.Format("玩家【{0}】打【{1}】", p1.PlayerId, CommonMethods.GetNumberString(p1.Rank)));
+                }
             }
         }
 
         private void IssueGameoverBonus(List<string> winners, List<string> losers)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("玩家");
-            Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
-            foreach (string w in winners)
+            lock (this)
             {
-                clientInfoV3Dict[w].transactShengbi(CommonMethods.winnerBonusShengbi, TractorHost.transactionLogger, w, "获胜");
-                sb.Append(string.Format("【{0}】", w));
+                StringBuilder sb = new StringBuilder();
+                sb.Append("玩家");
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
+                foreach (string w in winners)
+                {
+                    clientInfoV3Dict[w].transactShengbi(CommonMethods.winnerBonusShengbi, TractorHost.transactionLogger, w, "获胜");
+                    sb.Append(string.Format("【{0}】", w));
+                }
+                sb.Append(string.Format("获胜，获得福利：升币+{0}，", CommonMethods.winnerBonusShengbi));
+
+                sb.Append("玩家");
+                foreach (string l in losers)
+                {
+                    clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.transactionLogger, l, "惜败");
+                    sb.Append(string.Format("【{0}】", l));
+                }
+                sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
+
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+
+                DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
+                this.tractorHost.PublishDaojuInfo(daojuInfo);
+                this.tractorHost.UpdateGameHall();
+                string fullMsg = sb.ToString();
+                this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
+
+                // 播放烟花
+                int emojiIndex = CommonMethods.RandomNext(CommonMethods.winEmojiLength);
+                this.tractorHost.PlayerSendEmojiWorker(winners[0], 5, emojiIndex, true, "", true, false);
             }
-            sb.Append(string.Format("获胜，获得福利：升币+{0}，", CommonMethods.winnerBonusShengbi));
-
-            sb.Append("玩家");
-            foreach (string l in losers)
-            {
-                clientInfoV3Dict[l].transactShengbi(CommonMethods.loserBonusShengbi, TractorHost.transactionLogger, l, "惜败");
-                sb.Append(string.Format("【{0}】", l));
-            }
-            sb.Append(string.Format("惜败，获得福利：升币+{0}", CommonMethods.loserBonusShengbi));
-
-            CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-
-            DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
-            this.tractorHost.PublishDaojuInfo(daojuInfo);
-            this.tractorHost.UpdateGameHall();
-            string fullMsg = sb.ToString();
-            this.tractorHost.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
-
-            // 播放烟花
-            int emojiIndex = CommonMethods.RandomNext(CommonMethods.winEmojiLength);
-            this.tractorHost.PlayerSendEmojiWorker(winners[0], 5, emojiIndex, true, "", true, false);
         }
 
         private bool CleanupOfflinePlayers()

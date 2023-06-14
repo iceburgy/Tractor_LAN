@@ -35,6 +35,8 @@ namespace Duan.Xiugang.Tractor.Objects
         [DataMember]
         public DateTime noDongtuUntil;
         [DataMember]
+        public int forbidSayingWarned;
+        [DataMember]
         public DateTime noChatUntil;
         [DataMember]
         public int ChatQuota;
@@ -61,6 +63,7 @@ namespace Duan.Xiugang.Tractor.Objects
             noDongtuUntil = dtNowTrimmed;
             noChatUntil = dtNowTrimmed;
             ChatQuota = CommonMethods.dailyChatQuota;
+            forbidSayingWarned = 0;
         }
 
         public void logLogin(string ip, string cheating)
