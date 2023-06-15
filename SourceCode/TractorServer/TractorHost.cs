@@ -408,7 +408,7 @@ namespace TractorServer
                     this.hostStatus.PreviousDate = nowDate;
                     CommonMethods.WriteObjectToFile(this.hostStatus, GameRoom.LogsFolder, GameRoom.HostStatusFileName);
 
-                    this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！（房间内可直接从设置页面签到）", true, true);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, "新的一天开始啦，快去签到吧！", true, true);
                     Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                     foreach (KeyValuePair<string, ClientInfoV3> entry in clientInfoV3Dict)
                     {
