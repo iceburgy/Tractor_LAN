@@ -597,11 +597,9 @@ namespace TractorServer
 
             new Thread(new ThreadStart(() =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(250);
                 UpdateGameHall();
-            })).Start();
-            new Thread(new ThreadStart(() =>
-            {
+                Thread.Sleep(250);
                 this.UpdateOnlinePlayerList(playerID, true);
             })).Start();
 
@@ -1064,6 +1062,19 @@ namespace TractorServer
             Dictionary<string, SkinInfo> fullSkinInfo = this.LoadSkinInfo(clientInfoV3Dict);
             Dictionary<string, int> shengbiLeadingBoard = this.BuildshengbiLeadingBoard(clientInfoV3Dict);
             List<string> names = PlayersProxy.Keys.ToList<string>();
+
+            // add offline players
+            foreach (GameRoom gameRoom in this.GameRooms)
+            {
+                foreach (PlayerEntity player in gameRoom.CurrentRoomState.CurrentGameState.Players)
+                {
+                    if (player != null && player.IsOffline && !names.Contains(player.PlayerId))
+                    {
+                        names.Add(player.PlayerId);
+                    }
+                }
+            }
+
             DaojuInfo daojuInfo = new DaojuInfo(fullSkinInfo, shengbiLeadingBoard, new Dictionary<string, DaojuInfoByPlayer>());
             foreach (string pid in names)
             {
