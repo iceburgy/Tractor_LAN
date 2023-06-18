@@ -56,8 +56,8 @@ namespace TractorServer
         // in milliseconds, allow for 2 seconds to perform clean up before ping again next time
         // timeout configuration NetTcpBinding_ITractorHost sendTimeout only works for non-oneway methods
         // for oneway methods, timeout is defaulted to 20 seconds
-        public int PingInterval = 12000;
-        public int PingTimeout = 10000;
+        public int PingInterval = 17000;
+        public int PingTimeout = 15000;
 
         public System.Timers.Timer timerPingClients;
         public ConcurrentDictionary<string, System.Timers.Timer> playerIDToTimer;
