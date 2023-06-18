@@ -42,7 +42,7 @@ namespace Duan.Xiugang.Tractor.Objects
         };
         public static int qiangliangkaCost = 10;
         public static int sendBroadcastCost = 10;
-        public static int sendChatMessageCost = 1;
+        public static int sendChatMessageCost = 0;
         public static int forbidSayingsPunishmentCost = 200;
         public static int buyNoDongtuUntilCost = 0;
         public static int buyNoDongtuUntilDurationHours = 24;
