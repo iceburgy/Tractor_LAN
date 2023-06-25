@@ -58,7 +58,7 @@ namespace Duan.Xiugang.Tractor.Objects
             skinInUse = CommonMethods.defaultSkinInUse;
             clientType = ct;
 
-            DateTime dtNow = DateTime.Now;
+            DateTime dtNow = DateTime.Now.AddDays(-1);
             DateTime dtNowTrimmed = dtNow.AddTicks(-(dtNow.Ticks % 10000000));
             noDongtuUntil = dtNowTrimmed;
             noChatUntil = dtNowTrimmed;
