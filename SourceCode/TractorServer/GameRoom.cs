@@ -41,7 +41,6 @@ namespace TractorServer
         public Dictionary<string, IPlayer> PlayersProxy { get; set; }
         public Dictionary<string, IPlayer> ObserversProxy { get; set; }
         private ServerLocalCache serverLocalCache;
-        private bool isGameOver;
         private bool isGameRestarted;
         private bool shouldKeepCardsShoeFromRestore = false;
         public GameRoom(int roomID, string roomName, TractorHost host)
@@ -326,7 +325,7 @@ namespace TractorServer
                 }
             }
 
-            if (needsRestart && !this.isGameOver) ResetAndRestartGame();
+            if (needsRestart) ResetAndRestartGame();
 
             foreach (string playerID in playerIDs)
             {
@@ -1245,7 +1244,6 @@ namespace TractorServer
                     if (isGameOver)
                     {
                         PublishMessage(new string[] { sb.ToString(), "获胜！", "点击就绪重新开始游戏" });
-                        this.isGameOver = true;
                     }
                     else if (TractorHost.gameConfig.IsFullDebug && IsAllOnline())
                     {
@@ -1956,7 +1954,6 @@ namespace TractorServer
         public void RestartGame(int curRank)
         {
             curRankDC = curRank;
-            this.isGameOver = false;
             log.Debug("restart game with current set rank: " + CommonMethods.GetNumberString(curRank));
 
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
@@ -2013,8 +2010,6 @@ namespace TractorServer
 
         public void StartNextHand(PlayerEntity nextStarter)
         {
-            this.isGameOver = false;
-
             UpdateGameState();
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Starter = nextStarter.PlayerId;

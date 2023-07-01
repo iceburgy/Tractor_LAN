@@ -1939,6 +1939,10 @@ namespace TractorServer
                         return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
                     }
                     string regEmail = enterHallInfo.email;
+                    if (!CommonMethods.IsValidEmail(regEmail))
+                    {
+                        return new string[] { "注册新用户失败：邮箱地址无效", "请确认后重试" };
+                    }
                     HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
                     HashSet<string> existingPassCodes = existingPassCodesAndEmails[0];
                     HashSet<string> existingEmails = existingPassCodesAndEmails[1];
