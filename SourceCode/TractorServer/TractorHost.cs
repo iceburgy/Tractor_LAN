@@ -1527,6 +1527,7 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.TeamUp();
+                this.PlayerSendEmojiWorker(playerId, -1, -1, false, "房主发动了技能【随机组队】", true, false);
                 new Thread(new ThreadStart(() =>
                 {
                     Thread.Sleep(500);
@@ -1579,6 +1580,7 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerId];
                 gameRoom.ResumeGameFromFile();
+                this.PlayerSendEmojiWorker(playerId, -1, -1, false, "房主发动了技能【继续上盘牌局】", true, false);
             }
         }
 

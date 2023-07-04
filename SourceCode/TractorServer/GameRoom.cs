@@ -1630,6 +1630,7 @@ namespace TractorServer
 
             int nextSeat = (curSeat + offset) % 4;
             msgs.Add("换座前");
+            this.tractorHost.PlayerSendEmojiWorker(playerID, -1, -1, false, string.Format("房主发动了技能【换座】，成功与玩家【{0}】互换了座位", CurrentRoomState.CurrentGameState.Players[nextSeat].PlayerId), true, false);
             for (int i = 0; i < 4; i++)
             {
                 msgs.Add(CurrentRoomState.CurrentGameState.Players[i].PlayerId);
@@ -2615,6 +2616,8 @@ namespace TractorServer
 
             //save setting to file
             SaveRoomSettingToFile();
+
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.roomSetting.RoomOwner, -1, -1, false, "房主修改了房间设置", true, false);
         }
     }
 }
