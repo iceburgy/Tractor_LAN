@@ -8,7 +8,8 @@ namespace Duan.Xiugang.Tractor.Objects
     [Serializable]
     public class PlayerEntity
     {
-        // place holder for tracking rank crement for calculating shengbi
+        // place holder for tracking rank increment, and bonus shengbi
+        public int rankToAdd;
         public int roundWinnerBonusShengbi;
 
         [DataMember]

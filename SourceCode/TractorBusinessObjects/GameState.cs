@@ -146,6 +146,7 @@ namespace Duan.Xiugang.Tractor.Objects
         private void UpdatePlayerRoundWinnerBonusShengbi(int rankToAdd, PlayerEntity player, int affenderAddition)
         {
             int maxRankToAdd = Math.Min(rankToAdd, 13 - player.Rank);
+            player.rankToAdd = maxRankToAdd;
             player.roundWinnerBonusShengbi = (maxRankToAdd + affenderAddition) * CommonMethods.roundWinnerBonusShengbi;
         }
 

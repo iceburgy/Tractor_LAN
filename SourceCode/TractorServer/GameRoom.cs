@@ -1156,17 +1156,7 @@ namespace TractorServer
                         this.replayEntity.CurrentHandState.ScoreCards = CurrentRoomState.CurrentHandState.ScoreCards;
                         this.replayEntity.CurrentHandState.ScorePunishment = CurrentRoomState.CurrentHandState.ScorePunishment;
                     }
-                    //log score details
                     int scoreLast8Cards = CurrentRoomState.CurrentHandState.ScoreLast8CardsBase * CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier;
-                    log.Debug("score from score cards: " + (CurrentRoomState.CurrentHandState.Score - scoreLast8Cards - CurrentRoomState.CurrentHandState.ScorePunishment));
-                    string scoreFromLast8Cards="score from last 8 cards: " + scoreLast8Cards;
-                    if (CurrentRoomState.CurrentHandState.ScoreLast8CardsBase > 0)
-                    {
-                        scoreFromLast8Cards += (string.Format("【{0}x{1}】", CurrentRoomState.CurrentHandState.ScoreLast8CardsBase, CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier));
-                    }
-                    log.Debug(scoreFromLast8Cards);
-                    log.Debug("score from dump punishment: " + CurrentRoomState.CurrentHandState.ScorePunishment);
-                    log.Debug("score total: " + CurrentRoomState.CurrentHandState.Score);
                     PublishStartTimer(2);
                     Thread.Sleep(2000 + 1000);
 
@@ -1177,20 +1167,38 @@ namespace TractorServer
                     {
                         foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
                         {
-                        	if (p == null) continue;
+                            if (p == null) continue;
                             p.IsReadyToStart = false;
                             p.IsRobot = false;
                         }
                     }
                     CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
                     CurrentRoomState.CurrentGameState.startNextHandStarter = CurrentRoomState.CurrentGameState.NextRank(CurrentRoomState);
-                    IssueRoundoverBonus();
+
+                    // gather score information and log score details
+                    int winPoints = CurrentRoomState.CurrentHandState.Score - scoreLast8Cards - CurrentRoomState.CurrentHandState.ScorePunishment;
+                    string last8ScoreDetails = "";
+                    if (CurrentRoomState.CurrentHandState.ScoreLast8CardsBase > 0)
+                    {
+                        last8ScoreDetails = string.Format("【{0}x{1}】",
+                            CurrentRoomState.CurrentHandState.ScoreLast8CardsBase,
+                        CurrentRoomState.CurrentHandState.ScoreLast8CardsMultiplier);
+                    }
+                    string scoreMsg = string.Format("上分：{0}，底分：{1}{2}，罚分：{3}，总分：{4}",
+                        winPoints,
+                        scoreLast8Cards,
+                        last8ScoreDetails,
+                        CurrentRoomState.CurrentHandState.ScorePunishment,
+                        CurrentRoomState.CurrentHandState.Score);
+                    log.Debug(scoreMsg);
+
+                    bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
+                    IssueRoundoverBonus(scoreMsg, isGameOver);
 
                     //检查是否本轮游戏结束
                     StringBuilder sb = null;
                     List<string> winners = new List<string>();
                     List<string> losers = new List<string>();
-                    bool isGameOver = CurrentRoomState.CurrentGameState.startNextHandStarter.Rank >= 13;
                     if (isGameOver)
                     {
                         sb = new StringBuilder();
@@ -1253,7 +1261,7 @@ namespace TractorServer
                             Thread.Sleep(3000);
                             StartNextHand(CurrentRoomState.CurrentGameState.startNextHandStarter);
                         });
-                        threadStartNextHand.Start();                        
+                        threadStartNextHand.Start();
                         return;
                     }
                     CleanupOfflinePlayers();
@@ -1274,13 +1282,11 @@ namespace TractorServer
             CheckOfflinePlayers();
         }
 
-        private void IssueRoundoverBonus()
+        private void IssueRoundoverBonus(string scoreMsg, bool isGameOver)
         {
             lock (this)
             {
                 bool isDefenderWin = CurrentRoomState.CurrentGameState.ArePlayersInSameTeam(this.CurrentRoomState.CurrentHandState.Starter, CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId);
-                int winBonus = 0;
-                StringBuilder sb = new StringBuilder();
                 string bonusType = "";
                 if (isDefenderWin)
                 {
@@ -1290,19 +1296,49 @@ namespace TractorServer
                 {
                     bonusType = "攻庄成功";
                 }
-                sb.Append(string.Format("【{0}】，玩家", bonusType));
+
+                int winBonus = 0;
+                StringBuilder sb = new StringBuilder();
+                sb.Append(scoreMsg);
+
+                sb.Append("，玩家");
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.tractorHost.LoadClientInfoV3();
+                int rankToAdd = -1;
+                string rankToAddStr = "无人升级";
+                int nextRank = -1;
                 foreach (PlayerEntity player in this.CurrentRoomState.CurrentGameState.Players)
                 {
                     if (player.roundWinnerBonusShengbi > 0)
                     {
+                        if (rankToAdd < 0)
+                        {
+                            rankToAdd = player.rankToAdd;
+                            nextRank = player.Rank;
+                        }
                         winBonus = player.roundWinnerBonusShengbi;
                         player.roundWinnerBonusShengbi = 0;
                         clientInfoV3Dict[player.PlayerId].transactShengbi(winBonus, TractorHost.transactionLogger, player.PlayerId, bonusType);
                         sb.Append(string.Format("【{0}】", player.PlayerId));
                     }
                 }
-                sb.Append(string.Format("获得福利：升币+{0}", winBonus));
+                sb.Append(bonusType);
+
+                if (rankToAdd > 0)
+                {
+                    rankToAddStr = string.Format("升{0}级", rankToAdd);
+                }
+                sb.Append(string.Format("，获得福利：升币+{0}，{1}", winBonus, rankToAddStr));
+
+                if (!isGameOver)
+                {
+                    string nextStarterStr = string.Format("下盘玩家【{0}】打{1}", CurrentRoomState.CurrentGameState.startNextHandStarter.PlayerId, CommonMethods.GetNumberString(nextRank));
+                    sb.Append(string.Format("，{0}", nextStarterStr));
+                }
+                else
+                {
+                    sb.Append("，获胜");
+                }
+
                 CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
 
                 DaojuInfo daojuInfo = this.tractorHost.buildPlayerToShengbi(clientInfoV3Dict);
