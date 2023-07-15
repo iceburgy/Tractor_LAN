@@ -156,9 +156,9 @@ namespace Duan.Xiugang.Tractor.Objects
         {
         }
 
-        public void NotifyStartTimer(int timerLength)
+        public void NotifyStartTimer(int timerLength, string playerID)
         {
-            var args = new List<object>() { timerLength };
+            var args = new List<object>() { timerLength, playerID };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyStartTimer, "", args);
         }
 

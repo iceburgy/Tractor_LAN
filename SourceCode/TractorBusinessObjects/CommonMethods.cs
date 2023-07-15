@@ -465,6 +465,15 @@ namespace Duan.Xiugang.Tractor.Objects
             return true;
         }
 
+        public static PlayerEntity GetPlayerByID(List<PlayerEntity> Players, string playerID)
+        {
+            foreach (PlayerEntity player in Players)
+            {
+                if (player == null || string.Equals(player.PlayerId, playerID, StringComparison.OrdinalIgnoreCase)) return player;
+            }
+            return null;
+        }
+
         public static bool SomeoneBecomesReady(List<PlayerEntity> oldOnes, List<PlayerEntity> newOnes)
         {
             for (int i = 0; i < 4; i++)

@@ -1425,6 +1425,8 @@ namespace Duan.Xiugang.Tractor
             msgs.Add(string.Format("允许分数小于等于X时革命：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards >= 0 ? this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewScoreCards.ToString() : "否"));
             msgs.Add(string.Format("允许主牌小于等于X张时革命：{0}", this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards >= 0 ? this.ThisPlayer.CurrentRoomSetting.AllowRiotWithTooFewTrumpCards.ToString() : "否"));
             msgs.Add(string.Format("断线重连等待时长：{0}秒", this.ThisPlayer.CurrentRoomSetting.secondsToWaitForReenter));
+            msgs.Add(string.Format("出牌时限：{0}秒", this.ThisPlayer.CurrentRoomSetting.secondsToShowCards));
+            msgs.Add(string.Format("埋底时限：{0}秒", this.ThisPlayer.CurrentRoomSetting.secondsToDiscardCards));
 
             List<int> mandRanks = this.ThisPlayer.CurrentRoomSetting.GetManditoryRanks();
             string[] mandRanksStr = mandRanks.Select(x => CommonMethods.cardNumToValue[x].ToString()).ToArray();

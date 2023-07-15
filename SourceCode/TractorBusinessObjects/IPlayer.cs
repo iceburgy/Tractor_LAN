@@ -30,7 +30,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //广播倒计时
         [OperationContract(IsOneWay = true)]
-        void NotifyStartTimer(int timerLength);
+        void NotifyStartTimer(int timerLength, string playerID);
 
         [OperationContract(IsOneWay = true)]
         void GetDistributedCard(int number);

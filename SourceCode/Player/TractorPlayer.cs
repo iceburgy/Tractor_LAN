@@ -305,7 +305,7 @@ namespace Duan.Xiugang.Tractor.Player
                 NotifyEmojiEvent(playerID, emojiType, emojiIndex, isCenter, msgString);
         }
 
-        public void NotifyStartTimer(int timerLength)
+        public void NotifyStartTimer(int timerLength, string playerID)
         {
             if (NotifyStartTimerEvent != null)
                 NotifyStartTimerEvent(timerLength);

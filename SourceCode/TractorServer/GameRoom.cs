@@ -289,24 +289,53 @@ namespace TractorServer
                 CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
                 cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
                 cts.Learder = serverLocalCache.lastLeader;
+                //先发第一次，让短线重连的玩家收到上一轮的CurrentTrickState，以重画已出的牌
                 player.NotifyCurrentTrickState(cts);
             }
             else
             {
-                UpdatePlayerCurrentTrickState();
+                player.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
             }
 
             Thread.Sleep(2000);
             UpdateGameState();
+
+            //再发一次，让短线重连的玩家收到最新的CurrentTrickState
             if (!CurrentRoomState.CurrentTrickState.IsStarted())
             {
-                UpdatePlayerCurrentTrickState();
+                player.NotifyCurrentTrickState(CurrentRoomState.CurrentTrickState);
             }
 
             PublishMessage(new string[] { string.Format("玩家【{0}】断线重连成功", playerID) });
-            PublishStartTimer(0);
-            //加一秒缓冲时间，让客户端倒计时完成
-            Thread.Sleep(0 + 1000);
+
+            if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
+            {
+                //玩家埋底倒计时
+                string nextPlayerID = CurrentRoomState.CurrentHandState.Last8Holder;
+                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                if (CurrentRoomState.roomSetting.secondsToDiscardCards > 0 && string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                {
+                    PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, playerID);
+                }
+                else
+                {
+                    PublishStartTimerByPlayer(0, playerID);
+                }
+            }
+            else
+            {
+                //玩家出牌倒计时
+                string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
+                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                if (CurrentRoomState.roomSetting.secondsToShowCards > 0 && string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                {
+                    PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, playerID);
+                }
+                else
+                {
+                    PublishStartTimerByPlayer(0, playerID);
+                }
+            }
 
             return true;
         }
@@ -511,9 +540,9 @@ namespace TractorServer
                     {
                         msgs[i] = string.Format("玩家【{0}】已离线", playerID);
                         i++;
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToWaitForReenter, playerID);
                     }
                     PublishMessage(msgs);
-                    PublishStartTimer(CurrentRoomState.roomSetting.secondsToWaitForReenter);
                 });
                 threadUpdateGameState.Start();
             }
@@ -998,6 +1027,9 @@ namespace TractorServer
         //player discard last 8 cards
         public void StoreDiscardedCards(int[] cards)
         {
+            //玩家埋底倒计时-完成
+            PublishStartTimerByPlayer(0, CurrentRoomState.CurrentHandState.Last8Holder);
+
             CurrentRoomState.CurrentHandState.DiscardedCards = cards;
             CurrentRoomState.CurrentHandState.CurrentHandStep = HandStep.DiscardingLast8CardsFinished;
             foreach (var card in cards)
@@ -1094,6 +1126,10 @@ namespace TractorServer
         public void PlayerShowCards(CurrentTrickState currentTrickState)
         {
             string lastestPlayer = currentTrickState.LatestPlayerShowedCard();
+
+            //玩家出牌倒计时-完成
+            PublishStartTimerByPlayer(0, lastestPlayer);
+
             CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
             StringBuilder logMsg = new StringBuilder();
             logMsg.Append("Player " + lastestPlayer + " showed cards: ");
@@ -1278,6 +1314,16 @@ namespace TractorServer
                     SaveGameStateToFile();
                 }
                 UpdatePlayerCurrentTrickState();
+                //玩家出牌倒计时
+                if (CurrentRoomState.roomSetting.secondsToShowCards > 0)
+                {
+                    string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
+                    PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                    if (!nextPlayer.IsOffline)
+                    {
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, nextPlayerID);
+                    }
+                }
             }
             CheckOfflinePlayers();
         }
@@ -1877,6 +1923,33 @@ namespace TractorServer
 
             restoredMsg.Add("继续牌局【成功】");
             PublishMessage(restoredMsg.ToArray());
+
+            if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
+            {
+                //玩家埋底倒计时
+                if (CurrentRoomState.roomSetting.secondsToDiscardCards > 0)
+                {
+                    string nextPlayerID = CurrentRoomState.CurrentHandState.Last8Holder;
+                    PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                    if (!nextPlayer.IsOffline)
+                    {
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, nextPlayerID);
+                    }
+                }
+            }
+            else
+            {
+                //玩家出牌倒计时
+                if (CurrentRoomState.roomSetting.secondsToShowCards > 0)
+                {
+                    string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
+                    PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                    if (!nextPlayer.IsOffline)
+                    {
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, nextPlayerID);
+                    }
+                }
+            }
         }
 
         //读取房间游戏设置
@@ -2312,10 +2385,10 @@ namespace TractorServer
                 for (int i = 0; i < 8; i++)
                 {
                     var card = last8Cards[i];
-                    if(!string.IsNullOrEmpty(IPlayerInvoke(CurrentRoomState.CurrentHandState.Last8Holder, last8Holder, "GetDistributedCard", new List<object>() { card }, true))) return true;
+                    if (!string.IsNullOrEmpty(IPlayerInvoke(CurrentRoomState.CurrentHandState.Last8Holder, last8Holder, "GetDistributedCard", new List<object>() { card }, true))) return true;
                     //旁观：发牌
                     PlayerEntity pe = CurrentRoomState.CurrentGameState.Players.Single(p => p != null && p.PlayerId == CurrentRoomState.CurrentHandState.Last8Holder);
-                    if(IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { card })) return true;
+                    if (IPlayerInvokeForAll(ObserversProxy, pe.Observers.ToList<string>(), "GetDistributedCard", new List<object>() { card })) return true;
                     CurrentRoomState.CurrentHandState.PlayerHoldingCards[CurrentRoomState.CurrentHandState.Last8Holder].AddCard(card);
                 }
             }
@@ -2337,6 +2410,15 @@ namespace TractorServer
 
             SaveGameStateToFile();
 
+            //玩家埋底倒计时
+            if (CurrentRoomState.roomSetting.secondsToDiscardCards > 0)
+            {
+                string nextPlayerID = CurrentRoomState.CurrentHandState.Last8Holder;
+                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+
+                PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, nextPlayerID);
+            }
+
             return false;
         }
 
@@ -2354,6 +2436,16 @@ namespace TractorServer
             CurrentRoomState.CurrentTrickState.Trump = CurrentRoomState.CurrentHandState.Trump;
             CurrentRoomState.CurrentTrickState.Rank = CurrentRoomState.CurrentHandState.Rank;
             UpdatePlayerCurrentTrickState();
+            //玩家出牌倒计时
+            if (CurrentRoomState.roomSetting.secondsToShowCards > 0)
+            {
+                string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
+                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                if (!nextPlayer.IsOffline)
+                {
+                    PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, nextPlayerID);
+                }
+            }
         }
 
         //计算被扣底牌的分数，然后加到CurrentHandState.Score
@@ -2489,8 +2581,13 @@ namespace TractorServer
 
         public void PublishStartTimer(int timerLength)
         {
-            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
-            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength });
+            this.PublishStartTimerByPlayer(timerLength, string.Empty);
+        }
+
+        public void PublishStartTimerByPlayer(int timerLength, string playerID)
+        {
+            IPlayerInvokeForAll(PlayersProxy, PlayersProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength, playerID });
+            IPlayerInvokeForAll(ObserversProxy, ObserversProxy.Keys.ToList<string>(), "NotifyStartTimer", new List<object>() { timerLength, playerID });
         }
 
         public void ShowAllHandCards()
