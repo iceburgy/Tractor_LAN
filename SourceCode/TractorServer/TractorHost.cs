@@ -1275,59 +1275,6 @@ namespace TractorServer
                     return false;
                 }
 
-                DaojuInfo daojuInfo;
-                for (int i = 0; i < this.ForbidSayings.Count; i++)
-                {
-                    string word = this.ForbidSayings[i];
-                    if (chatMsg.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        this.illegalOperationLogger.Debug(string.Format("【{0}】说：{1}", playerID, chatMsg));
-                        string msg = string.Empty;
-                        if (clientInfoV3Dict[playerID].forbidSayingWarned < CommonMethods.forbidSayingMaxWarnTimes)
-                        {
-                            // 提醒
-                            string reminderNote = string.Empty;
-                            clientInfoV3Dict[playerID].forbidSayingWarned++;
-                            switch (clientInfoV3Dict[playerID].forbidSayingWarned)
-                            {
-                                case 1:
-                                    reminderNote = "初次";
-                                    break;
-                                case 2:
-                                    reminderNote = "再次";
-                                    break;
-                                case 3:
-                                    reminderNote = "最后一次";
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，这是{1}提醒，不进行罚分，请大家文明发言，谢谢", playerID, reminderNote);
-                        }
-                        else
-                        {
-                            // 罚分
-                            int punishmentShengbi = clientInfoV3Dict[playerID].Shengbi / 2;
-                            if (punishmentShengbi < CommonMethods.forbidSayingsPunishmentCost)
-                            {
-                                punishmentShengbi = CommonMethods.forbidSayingsPunishmentCost;
-                            }
-                            clientInfoV3Dict[playerID].transactShengbi(-punishmentShengbi, illegalOperationLogger, playerID, string.Format("玩家进行不文明发言"));
-                            clientInfoV3Dict[playerID].noChatUntil = DateTime.Now.AddHours(CommonMethods.noChatPunishmentUntilDurationHours);
-                            daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                            this.PublishDaojuInfo(daojuInfo);
-                            UpdateGameHall();
-                            msg = string.Format("来自玩家【{0}】的发言包含不文明词汇，已被屏蔽，玩家被扣除升币：{1}，禁言{2}小时", playerID, punishmentShengbi, CommonMethods.noChatPunishmentUntilDurationHours);
-                        }
-
-                        CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-
-                        this.PlayerSendEmojiWorker("", -1, -1, false, msg, true, true);
-                        return false;
-                    }
-                }
-
                 if (cost > 0)
                 {
                     int remainingFee = cost;
@@ -1356,7 +1303,7 @@ namespace TractorServer
                     }
 
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                    daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
                     this.PublishDaojuInfo(daojuInfo);
                     UpdateGameHall();
                 }
