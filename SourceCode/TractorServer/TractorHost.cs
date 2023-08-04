@@ -1832,6 +1832,7 @@ namespace TractorServer
                         string actualPlayerID = findPlayerIDByEmail(clientInfoV3Dict, playerEmail);
                         if (string.IsNullOrEmpty(actualPlayerID))
                         {
+                            illegalOperationLogger.Debug(string.Format("找回用户名, 用户邮箱输入有误, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                             return new string[] { "用户邮箱输入有误", "请确认后重试" };
                         }
 
@@ -1843,6 +1844,7 @@ namespace TractorServer
                         }
                         catch (Exception)
                         {
+                            illegalOperationLogger.Debug(string.Format("找回用户名, 用户邮箱输无误, 但发送邮件失败, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                             return new string[] { "用户邮箱输无误", "但发送邮件失败", "请稍后重试" };
                         }
                     }
@@ -1850,12 +1852,14 @@ namespace TractorServer
                     // 找回密码
                     if (!isKnownIDExact)
                     {
+                        illegalOperationLogger.Debug(string.Format("找回密码, 用户名输入有误, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "用户名或用户邮箱输入有误", "请确认后重试" };
                     }
                     ClientInfoV3 info = clientInfoV3Dict[playerID];
                     string playerExpectedEmail = info.PlayerEmail;
                     if (!string.Equals(playerEmail, playerExpectedEmail, StringComparison.OrdinalIgnoreCase))
                     {
+                        illegalOperationLogger.Debug(string.Format("找回密码, 用户邮箱输入有误, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "用户名或用户邮箱输入有误", "请确认后重试!" };
                     }
 
@@ -1867,6 +1871,7 @@ namespace TractorServer
                     }
                     catch (Exception)
                     {
+                        illegalOperationLogger.Debug(string.Format("找回密码, 用户名和用户邮箱输无误, 但发送邮件失败, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "用户名和用户邮箱输无误", "但发送邮件失败", "请稍后重试" };
                     }
                 }
@@ -1877,19 +1882,23 @@ namespace TractorServer
                 {
                     if (playerID.Length > CommonMethods.playerIDMaxLength)
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 用户名过长, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "注册新用户失败：用户名过长", string.Format("请勿超过{0}个字符", CommonMethods.playerIDMaxLength) };
                     }
                     if (!regcodes.Contains(overridePass))
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 邀请码无效, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "注册新用户失败：邀请码无效", "请确认后重试" };
                     }
                     if (isKnownIDIgnoreCase)
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 此玩家昵称已被注册, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "此玩家昵称已被注册（不论大小写）", "请另选一个昵称" };
                     }
                     string regEmail = enterHallInfo.email;
                     if (!CommonMethods.IsValidEmail(regEmail))
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 邮箱地址无效, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "注册新用户失败：邮箱地址无效", "请确认后重试" };
                     }
                     HashSet<string>[] existingPassCodesAndEmails = loadExistingPassCodesAndEmails();
@@ -1897,6 +1906,7 @@ namespace TractorServer
                     HashSet<string> existingEmails = existingPassCodesAndEmails[1];
                     if (existingEmails.Contains(regEmail, StringComparer.OrdinalIgnoreCase))
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 此邮箱已被其他玩家使用, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "此邮箱已被其他玩家使用", "请另选一个邮箱" };
                     }
                     clientInfoV3Dict[playerID] = new ClientInfoV3(clientIP, playerID, overridePass, regEmail, enterHallInfo.clientType);
@@ -1913,6 +1923,7 @@ namespace TractorServer
                     }
                     catch (Exception)
                     {
+                        illegalOperationLogger.Debug(string.Format("使用邀请码注册新用户, 新用户注册成功, 但发送邮件失败, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                         return new string[] { "新用户注册成功", "但发送邮件失败", "请确认您的邮箱为有效地址" };
                     }
                 }
@@ -1920,19 +1931,23 @@ namespace TractorServer
                 // 普通登录
                 if (!isKnownIDExact && isKnownIDIgnoreCase)
                 {
+                    illegalOperationLogger.Debug(string.Format("登录失败, 用户名存在但大小不匹配, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                     return new string[] { "登录失败", "请确认用户名及密码正确无误!" };
                 }
                 if (!isKnownIDExact)
                 {
+                    illegalOperationLogger.Debug(string.Format("登录失败, 用户名不存在, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                     return new string[] { "登录失败", "请确认用户名及密码正确无误" };
                 }
                 ClientInfoV3 clientInfoV3 = clientInfoV3Dict[playerID];
                 if (string.IsNullOrEmpty(overridePass) || !string.Equals(overridePass, clientInfoV3.overridePass))
                 {
+                    illegalOperationLogger.Debug(string.Format("登录失败, 密码错误, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                     return new string[] { "登录失败", "请确认用户名及密码正确无误." };
                 }
                 if (string.IsNullOrEmpty(clientInfoV3.PlayerEmail))
                 {
+                    illegalOperationLogger.Debug(string.Format("登录失败, 该用户尚未绑定邮箱, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
                     return new string[] { "该用户尚未绑定邮箱（将用于找回或重设密码）", "请在登录页面中输入邮箱进行绑定后再重新登录" };
                 }
                 return new string[] { CommonMethods.loginSuccessFlag, clientInfoV3.overridePass, clientInfoV3.PlayerEmail };
