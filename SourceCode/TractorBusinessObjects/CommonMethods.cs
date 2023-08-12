@@ -15,6 +15,7 @@ namespace Duan.Xiugang.Tractor.Objects
     /// </summary>
     public static class CommonMethods
     {
+        public static string PlayerClientType_tljapp = "PlayerClientType_tljapp";
         public static string replaySeparator = "===";
         public static string recoverLoginPassFlag = "RecoverLoginPass";
         public static string loginSuccessFlag = "LoginSuccess";

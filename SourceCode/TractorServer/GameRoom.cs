@@ -437,6 +437,7 @@ namespace TractorServer
                     CurrentRoomState.CurrentGameState.Players[i].Rank = 0;
                     CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
                     CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                    CurrentRoomState.CurrentGameState.Players[i].IsQiangliang = false;
                     CurrentRoomState.CurrentGameState.Players[i].Team = GameTeam.None;
                     if (CurrentRoomState.CurrentGameState.Players[i].PlayerId == playerID)
                     {
@@ -520,6 +521,7 @@ namespace TractorServer
                             CurrentRoomState.CurrentGameState.Players[i].IsOffline = true;
                             CurrentRoomState.CurrentGameState.Players[i].OfflineSince = DateTime.Now;
                             CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                            CurrentRoomState.CurrentGameState.Players[i].IsQiangliang = false;
                             offlinePlayerIDs.Add(playerID);
                             log.Debug(playerID + " went offline.");
 
@@ -606,6 +608,19 @@ namespace TractorServer
             }
             UpdateGameState();
             CheckOfflinePlayers();
+        }
+
+        public void PlayerToggleIsQiangliang(string playerID)
+        {
+            foreach (PlayerEntity p in CurrentRoomState.CurrentGameState.Players)
+            {
+                if (p != null && p.PlayerId == playerID)
+                {
+                    p.IsQiangliang = !p.IsQiangliang;
+                    break;
+                }
+            }
+            UpdateGameState();
         }
 
         public void NotifySgcsPlayerUpdated(string content)
@@ -945,6 +960,7 @@ namespace TractorServer
                 if (p == null) continue;
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
+                p.IsQiangliang = false;
             }
 
             StringBuilder sb = null;
@@ -1206,6 +1222,7 @@ namespace TractorServer
                             if (p == null) continue;
                             p.IsReadyToStart = false;
                             p.IsRobot = false;
+                            p.IsQiangliang = false;
                         }
                     }
                     CurrentRoomState.CurrentGameState.nextRestartID = GameState.START_NEXT_HAND;
@@ -1789,6 +1806,7 @@ namespace TractorServer
             {
                 CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
                 CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                CurrentRoomState.CurrentGameState.Players[i].IsQiangliang = false;
             }
 
             UpdateGameState();
@@ -1858,6 +1876,7 @@ namespace TractorServer
                 p.IsOffline = false;
                 p.IsReadyToStart = true;
                 p.IsRobot = false;
+                p.IsQiangliang = false;
                 p.Observers.Clear();
                 HashSet<string> obs = CurrentRoomState.CurrentGameState.Players[i].Observers;
                 if (obs.Count > 0)
@@ -1911,6 +1930,7 @@ namespace TractorServer
             {
                 CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = true;
                 CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                CurrentRoomState.CurrentGameState.Players[i].IsQiangliang = false;
             }
 
             PublishMessage(new string[] { CommonMethods.resumeGameSignal });
@@ -2013,6 +2033,7 @@ namespace TractorServer
                 CurrentRoomState.CurrentGameState.Players[i].Rank = beginRank;
                 CurrentRoomState.CurrentGameState.Players[i].IsReadyToStart = false;
                 CurrentRoomState.CurrentGameState.Players[i].IsRobot = false;
+                CurrentRoomState.CurrentGameState.Players[i].IsQiangliang = false;
             }
             CurrentRoomState.CurrentHandState = new CurrentHandState(CurrentRoomState.CurrentGameState);
             CurrentRoomState.CurrentHandState.Rank = beginRank;
@@ -2226,12 +2247,14 @@ namespace TractorServer
                 }
 
                 PlayersProxy[playersFromStarter[3]].CutCardShoeCards();
+                PublishStartTimerByPlayer(5, playersFromStarter[3]);
             }
             return false;
         }
 
         public void PlayerHasCutCards(string cutInfo)
         {
+            PublishStartTimerByPlayer(0, playersFromStarter[3]);
             string[] cutInfos;
             if (string.IsNullOrEmpty(cutInfo))
             {
@@ -2674,6 +2697,7 @@ namespace TractorServer
                 p.Rank = 0;
                 p.IsReadyToStart = false;
                 p.IsRobot = false;
+                p.IsQiangliang = false;
             }
         }
 

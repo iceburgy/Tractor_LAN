@@ -9,11 +9,11 @@ namespace Duan.Xiugang.Tractor.Objects
 {
     public class WebSocketObjects
     {
-        public const string PlayerClientType_tljapp = "PlayerClientType_tljapp";
         public const string WebSocketMessageType_PlayerEnterHall = "PlayerEnterHall";
         public const string WebSocketMessageType_PlayerEnterRoom = "PlayerEnterRoom";
         public const string WebSocketMessageType_ReadyToStart = "ReadyToStart";
         public const string WebSocketMessageType_ToggleIsRobot = "ToggleIsRobot";
+        public const string WebSocketMessageType_ToggleIsQiangliang = "ToggleIsQiangliang";
         public const string WebSocketMessageType_ObserveNext = "ObserveNext";
         public const string WebSocketMessageType_ExitRoom = "ExitRoom";
         public const string ExitRoom_REQUEST_TYPE_BootPlayer = "BootPlayer";

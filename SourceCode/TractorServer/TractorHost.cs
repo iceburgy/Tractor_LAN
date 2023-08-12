@@ -285,6 +285,9 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_ToggleIsRobot:
                     this.PlayerToggleIsRobot(playerID);
                     break;
+                case WebSocketObjects.WebSocketMessageType_ToggleIsQiangliang:
+                    this.PlayerToggleIsQiangliang(playerID);
+                    break;
                 case WebSocketObjects.WebSocketMessageType_ObserveNext:
                     this.ObservePlayerById(content, playerID, false);
                     break;
@@ -601,6 +604,11 @@ namespace TractorServer
                 UpdateGameHall();
                 Thread.Sleep(250);
                 this.UpdateOnlinePlayerList(playerID, true);
+
+                if (!string.Equals(enterHallInfo.clientType, CommonMethods.PlayerClientType_tljapp, StringComparison.OrdinalIgnoreCase))
+                {
+                    player.NotifyMessage(new string[] { "您当前使用的是怀旧版", "该版本现已停更且会不定期下架", "游戏中将会出现各种问题", "请即时切换到最新版以保证游戏正常运行" });
+                }
             })).Start();
 
             new Thread(new ThreadStart(() =>
@@ -1220,6 +1228,15 @@ namespace TractorServer
             {
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
                 gameRoom.PlayerToggleIsRobot(playerID);
+            }
+        }
+
+        public void PlayerToggleIsQiangliang(string playerID)
+        {
+            if (this.SessionIDGameRoom.ContainsKey(playerID))
+            {
+                GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                gameRoom.PlayerToggleIsQiangliang(playerID);
             }
         }
 

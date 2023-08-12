@@ -31,6 +31,9 @@ namespace Duan.Xiugang.Tractor.Objects
         public bool IsRobot { get; set; }
 
         [DataMember]
+        public bool IsQiangliang { get; set; }
+
+        [DataMember]
         public bool IsOffline { get; set; }
 
         [DataMember]
