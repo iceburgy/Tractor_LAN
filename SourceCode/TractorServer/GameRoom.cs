@@ -311,29 +311,35 @@ namespace TractorServer
             if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8Cards)
             {
                 //玩家埋底倒计时
-                string nextPlayerID = CurrentRoomState.CurrentHandState.Last8Holder;
-                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
-                if (CurrentRoomState.roomSetting.secondsToDiscardCards > 0 && string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                if (CurrentRoomState.roomSetting.secondsToDiscardCards > 0)
                 {
-                    PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, playerID);
-                }
-                else
-                {
-                    PublishStartTimerByPlayer(0, playerID);
+                    string nextPlayerID = CurrentRoomState.CurrentHandState.Last8Holder;
+                    PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                    if (string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                    {
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, playerID);
+                    }
+                    else
+                    {
+                        PublishStartTimerByPlayer(0, playerID);
+                    }
                 }
             }
             else
             {
                 //玩家出牌倒计时
-                string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
-                PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
-                if (CurrentRoomState.roomSetting.secondsToShowCards > 0 && string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                if (CurrentRoomState.roomSetting.secondsToShowCards > 0)
                 {
-                    PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, playerID);
-                }
-                else
-                {
-                    PublishStartTimerByPlayer(0, playerID);
+                    string nextPlayerID = this.CurrentRoomState.CurrentTrickState.NextPlayer();
+                    PlayerEntity nextPlayer = CommonMethods.GetPlayerByID(this.CurrentRoomState.CurrentGameState.Players, nextPlayerID);
+                    if (string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
+                    {
+                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, playerID);
+                    }
+                    else
+                    {
+                        PublishStartTimerByPlayer(0, playerID);
+                    }
                 }
             }
 
