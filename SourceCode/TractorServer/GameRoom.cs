@@ -1116,6 +1116,12 @@ namespace TractorServer
         {
             lock (CurrentRoomState.CurrentHandState)
             {
+                //too late
+                if (CurrentRoomState.CurrentHandState.CurrentHandStep >= HandStep.DistributingLast8Cards)
+                {
+                    log.Debug(string.Format("player attempted to make trump but too late: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
+                    return;
+                }
                 //invalid user;
                 if (PlayersProxy[trumpMaker] == null)
                     return;
