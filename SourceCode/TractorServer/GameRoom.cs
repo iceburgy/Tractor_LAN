@@ -586,6 +586,7 @@ namespace TractorServer
                     {
                         case GameState.RESTART_GAME:
                             CleanupCaches();
+                            CheckRoomSettingRandomTeamUp();
                             RestartGame(CurrentRoomState.CurrentHandState.Rank);
                             break;
                         case GameState.RESTART_CURRENT_HAND:
@@ -599,6 +600,15 @@ namespace TractorServer
                             break;
                     }
                 }
+            }
+        }
+
+        private void CheckRoomSettingRandomTeamUp()
+        {
+            if (this.CurrentRoomState.roomSetting.RandomTeamUp)
+            {
+                this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.roomSetting.RoomOwner, -1, -1, false, "房间设置【随机组队】触发成功", true, false);
+                this.TeamUp(false);
             }
         }
 
@@ -1654,7 +1664,7 @@ namespace TractorServer
         }
 
         //随机组队
-        public void TeamUp()
+        public void TeamUp(bool shouldRestart)
         {
             bool isValid = true;
             foreach (PlayerEntity player in CurrentRoomState.CurrentGameState.Players)
@@ -1675,10 +1685,13 @@ namespace TractorServer
             //create team randomly
             string[] oldTeams = new string[4];
             string[] msgs = new string[10];
+            StringBuilder chatsb = new StringBuilder();
             msgs[0] = "随机组队前";
+            chatsb.Append("随机组队前");
             for (int i = 0; i < 4; i++)
             {
                 msgs[i + 1] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                chatsb.Append(string.Format("【{0}】", CurrentRoomState.CurrentGameState.Players[i].PlayerId));
                 oldTeams[i] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
             }
 
@@ -1687,19 +1700,30 @@ namespace TractorServer
             CurrentRoomState.CurrentGameState.Players[2].Team = GameTeam.VerticalTeam;
             CurrentRoomState.CurrentGameState.Players[1].Team = GameTeam.HorizonTeam;
             CurrentRoomState.CurrentGameState.Players[3].Team = GameTeam.HorizonTeam;
-            ResetAndRestartGame();
-            CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            if (shouldRestart)
+            {
+                ResetAndRestartGame();
+                CurrentRoomState.CurrentGameState.nextRestartID = GameState.RESTART_GAME;
+            }
             UpdateGameState();
 
             msgs[5] = "随机组队后";
+            chatsb.Append("随机组队后");
             bool teamChanged = false;
             for (int i = 0; i < 4; i++)
             {
                 msgs[i + 6] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
+                chatsb.Append(string.Format("【{0}】", CurrentRoomState.CurrentGameState.Players[i].PlayerId));
                 if (oldTeams[i] != CurrentRoomState.CurrentGameState.Players[i].PlayerId) teamChanged = true;
             }
             if (!teamChanged) msgs[5] += "，组队未变，可再次尝试！";
             PublishMessage(msgs);
+            this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.roomSetting.RoomOwner, -1, -1, false, chatsb.ToString(), true, false);
+            new Thread(new ThreadStart(() =>
+            {
+                Thread.Sleep(500);
+                this.tractorHost.UpdateGameHall();
+            })).Start();
         }
 
         //换座

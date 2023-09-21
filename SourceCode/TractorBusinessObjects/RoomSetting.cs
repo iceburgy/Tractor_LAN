@@ -37,6 +37,8 @@ namespace Duan.Xiugang.Tractor.Objects
         public int secondsToShowCards;
         [DataMember]
         public int secondsToDiscardCards;
+        [DataMember]
+        public bool RandomTeamUp;
 
         public override bool Equals(object obj)
         {
@@ -70,6 +72,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if (AllowSurrender != rs.AllowSurrender) return false;
             if (AllowRobotMakeTrump != rs.AllowRobotMakeTrump) return false;
             if (!ManditoryRanks.SequenceEqual(rs.ManditoryRanks)) return false;
+            if (RandomTeamUp != rs.RandomTeamUp) return false;
 
             return true;
         }
