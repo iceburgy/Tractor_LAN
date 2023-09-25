@@ -43,20 +43,35 @@ namespace Duan.Xiugang.Tractor.Objects
                 allSuitCards[currentTractors[i]] -= 2;
                 leadingPairs.Remove(currentTractors[i]);
             }
-            //对子
+            //对子：先跳过常主
             var currentPairs = currentCards.GetPairs((int)leadingSuit);
             for (int i = 0; i < leadingPairs.Count && i < currentPairs.Count && selectedCards.Count < leadingCardsCp.Count; i++)
             {
-                if (selectedCards.Contains((int)currentPairs[i])) continue;
+                if (allSuitCards[(int)currentPairs[i]] <= 0 || i % 13 == currentCards.Rank || i >= 52) continue;
                 selectedCards.Add((int)currentPairs[i]);
                 selectedCards.Add((int)currentPairs[i]);
                 allSuitCards[(int)currentPairs[i]] -= 2;
             }
-            //单张先跳过对子
+            //对子
+            for (int i = 0; i < leadingPairs.Count && i < currentPairs.Count && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                if (allSuitCards[(int)currentPairs[i]] <= 0) continue;
+                selectedCards.Add((int)currentPairs[i]);
+                selectedCards.Add((int)currentPairs[i]);
+                allSuitCards[(int)currentPairs[i]] -= 2;
+            }
+            //单张先跳过对子、常主
             var currentSuitCards = currentCards.GetSuitCardsWithJokerAndRank((int)leadingSuit);
             for (int i = 0; i < currentSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
-                if (currentPairs.Contains(currentSuitCards[i]) || allSuitCards[(int)currentSuitCards[i]] <= 0) continue;
+                if (allSuitCards[(int)currentSuitCards[i]] <= 0 || i % 13 == currentCards.Rank || i >= 52) continue;
+                selectedCards.Add(currentSuitCards[i]);
+                allSuitCards[(int)currentSuitCards[i]]--;
+            }
+            //单张先跳过对子
+            for (int i = 0; i < currentSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                if (allSuitCards[(int)currentSuitCards[i]] <= 0) continue;
                 selectedCards.Add(currentSuitCards[i]);
                 allSuitCards[(int)currentSuitCards[i]]--;
             }
@@ -100,7 +115,17 @@ namespace Duan.Xiugang.Tractor.Objects
                 selectedCards.Add(i);
                 allSuitCards[i]--;
             }
-            //被迫选主牌
+            //被迫选主牌对子：先跳过常主
+            for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                if (i % 13 == currentCards.Rank || i >= 52) continue;
+                while (allSuitCards[i] > 0 && selectedCards.Count < leadingCardsCp.Count)
+                {
+                    selectedCards.Add(i);
+                    allSuitCards[i]--;
+                }
+            }
+            //被迫选主牌对子
             for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
                 while (allSuitCards[i] > 0 && selectedCards.Count < leadingCardsCp.Count)
