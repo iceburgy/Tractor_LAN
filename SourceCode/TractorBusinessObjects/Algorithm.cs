@@ -86,14 +86,21 @@ namespace Duan.Xiugang.Tractor.Objects
                     allSuitCards[i]--;
                 }
             }
-            //其他花色的牌先跳过对子
+            //被迫选主牌：先跳过对子，和常主
+            for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
+            {
+                if (allSuitCards[i] <= 0 || allSuitCards[i] == 2 || i % 13 == currentCards.Rank || i >= 52) continue;
+                selectedCards.Add(i);
+                allSuitCards[i]--;
+            }
+            //被迫选主牌跳过对子
             for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
                 if (allSuitCards[i] <= 0 || allSuitCards[i] == 2) continue;
                 selectedCards.Add(i);
                 allSuitCards[i]--;
             }
-            //其他花色的牌
+            //被迫选主牌
             for (int i = 0; i < allSuitCards.Length && selectedCards.Count < leadingCardsCp.Count; i++)
             {
                 while (allSuitCards[i] > 0 && selectedCards.Count < leadingCardsCp.Count)
@@ -332,6 +339,16 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 selectedCards.Add(goodCard);
                 if (selectedCards.Count == 8) return;
+            }
+
+            //如果副牌总共不到8张，那就埋主
+            while (selectedCards.Count < 8)
+            {
+                int minMaster = currentCards.GetMinMasterCards((int)currentCards.Trump);
+                if (minMaster >= 0)
+                {
+                    selectedCards.Add(minMaster);
+                }
             }
         }
 
