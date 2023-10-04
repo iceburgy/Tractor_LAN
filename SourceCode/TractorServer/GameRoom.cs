@@ -548,7 +548,6 @@ namespace TractorServer
                     {
                         msgs[i] = string.Format("玩家【{0}】已离线", playerID);
                         i++;
-                        PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToWaitForReenter, playerID);
                     }
                     PublishMessage(msgs);
                 });
@@ -623,7 +622,6 @@ namespace TractorServer
                 }
             }
             UpdateGameState();
-            CheckOfflinePlayers();
         }
 
         public void PlayerToggleIsQiangliang(string playerID)
@@ -1364,7 +1362,6 @@ namespace TractorServer
                     }
                 }
             }
-            CheckOfflinePlayers();
         }
 
         private void IssueRoundoverBonus(string scoreMsg, bool isGameOver)
@@ -1501,59 +1498,6 @@ namespace TractorServer
                 return true;
             }
             return false;
-        }
-
-        private void CheckOfflinePlayers()
-        {
-            List<string> badPlayers = new List<string>();
-            List<PlayerEntity> offlinePlayers = new List<PlayerEntity>();
-            foreach (var player in this.CurrentRoomState.CurrentGameState.Players)
-            {
-                if (player == null || !player.IsOffline) continue;
-                // 如果是最后一圈，直接托管
-                bool isLastTrick = this.CurrentRoomState.CurrentHandState.PlayerHoldingCards[this.CurrentRoomState.CurrentTrickState.Learder].Count <= 1;
-                if (!isLastTrick && (DateTime.Now - player.OfflineSince).TotalSeconds <= CurrentRoomState.roomSetting.secondsToWaitForReenter) continue; //玩家断线后有一定时间断线重连，否则自动托管
-                if (CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.Playing ||
-                    CurrentRoomState.CurrentHandState.CurrentHandStep == HandStep.DiscardingLast8CardsFinished)
-                {
-                    if (CurrentRoomState.CurrentTrickState.NextPlayer() != player.PlayerId) continue;
-                    if (CurrentRoomState.CurrentTrickState.ShowedCards[player.PlayerId].Count > 0) continue;
-                    offlinePlayers.Add(player);
-                }
-                else
-                {
-                    badPlayers.Add(player.PlayerId);
-                }
-            }
-
-            foreach (var player in offlinePlayers)
-            {
-                List<int> SelectedCards = new List<int>();
-                CurrentPoker currentPoker = CurrentRoomState.CurrentHandState.PlayerHoldingCards[player.PlayerId];
-                if (CurrentRoomState.CurrentTrickState.IsStarted())
-                {
-                    //托管代打 - 跟出
-                    Algorithm.MustSelectedCards(SelectedCards, CurrentRoomState.CurrentTrickState, currentPoker);
-                }
-                else
-                {
-                    //托管代打 - 先手
-                    Algorithm.ShouldSelectedCards(SelectedCards, CurrentRoomState.CurrentTrickState, currentPoker);
-                }
-                if (!TryToRobotPlayOffline(player.PlayerId, SelectedCards, currentPoker))
-                {
-                    badPlayers.Add(player.PlayerId);
-                    break;
-                }
-            }
-
-            if (badPlayers.Count > 0)
-            {
-                foreach (string bp in badPlayers)
-                {
-                    this.tractorHost.handlePlayerDisconnect(bp);
-                }
-            }
         }
 
         // return true if succeedful, else false
