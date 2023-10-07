@@ -1652,14 +1652,11 @@ namespace TractorServer
 
             msgs[5] = "随机组队后";
             chatsb.Append("随机组队后");
-            bool teamChanged = false;
             for (int i = 0; i < 4; i++)
             {
                 msgs[i + 6] = CurrentRoomState.CurrentGameState.Players[i].PlayerId;
                 chatsb.Append(string.Format("【{0}】", CurrentRoomState.CurrentGameState.Players[i].PlayerId));
-                if (oldTeams[i] != CurrentRoomState.CurrentGameState.Players[i].PlayerId) teamChanged = true;
             }
-            if (!teamChanged) msgs[5] += "，组队未变，可再次尝试！";
             PublishMessage(msgs);
             this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.roomSetting.RoomOwner, -1, -1, false, chatsb.ToString(), true, false);
             new Thread(new ThreadStart(() =>
