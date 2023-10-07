@@ -606,7 +606,6 @@ namespace TractorServer
         {
             if (this.CurrentRoomState.roomSetting.RandomTeamUp)
             {
-                this.tractorHost.PlayerSendEmojiWorker(this.CurrentRoomState.roomSetting.RoomOwner, -1, -1, false, "房间设置【随机组队】触发成功", true, false);
                 this.TeamUp(false);
             }
         }
