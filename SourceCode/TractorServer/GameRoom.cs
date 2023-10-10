@@ -319,10 +319,6 @@ namespace TractorServer
                     {
                         PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToDiscardCards, playerID);
                     }
-                    else
-                    {
-                        PublishStartTimerByPlayer(0, playerID);
-                    }
                 }
             }
             else
@@ -335,10 +331,6 @@ namespace TractorServer
                     if (string.Equals(nextPlayerID, playerID, StringComparison.OrdinalIgnoreCase) && !nextPlayer.IsOffline)
                     {
                         PublishStartTimerByPlayer(CurrentRoomState.roomSetting.secondsToShowCards, playerID);
-                    }
-                    else
-                    {
-                        PublishStartTimerByPlayer(0, playerID);
                     }
                 }
             }
