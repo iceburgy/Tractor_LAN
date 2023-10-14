@@ -683,17 +683,17 @@ namespace TractorServer
                 {
                     SessionIDGameRoom[playerID] = gameRoom;
                     log.Debug(string.Format("player {0} entered room {1}", playerID, gameRoom.CurrentRoomState.RoomID));
-                    new Thread(new ThreadStart(() =>
-                    {
-                        Thread.Sleep(500);
-                        this.UpdateGameHall();
-                        this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
-                    })).Start();
                 }
                 else
                 {
                     log.Debug(string.Format("player {0} attempted to enter room {1} but failed.", playerID, gameRoom.CurrentRoomState.RoomID));
                 }
+                new Thread(new ThreadStart(() =>
+                {
+                    Thread.Sleep(500);
+                    this.UpdateGameHall();
+                    this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
+                })).Start();
             }
         }
 
