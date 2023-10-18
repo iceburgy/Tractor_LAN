@@ -813,6 +813,7 @@ namespace TractorServer
                 if (!this.SessionIDGameRoom.ContainsKey(playerID)) return;
 
                 GameRoom gameRoom = this.SessionIDGameRoom[playerID];
+                bool isFromObserver = gameRoom.ObserversProxy.ContainsKey(playerID);
                 string clientIP = PlayerToIP[playerID];
                 if (gameRoom.PlayerExitAndEnterRoom(playerID, clientIP, player, AllowSameIP, messageObj.posID))
                 {
@@ -826,6 +827,7 @@ namespace TractorServer
                     {
                         Thread.Sleep(500);
                         this.UpdateGameHall();
+                        if (isFromObserver) this.UpdateGameRoomPlayerList(playerID, true, gameRoom.CurrentRoomState.roomSetting.RoomName);
                     })).Start();
             }
         }
