@@ -229,12 +229,6 @@ namespace TractorServer
                 CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing;
         }
 
-        public bool IsGameStarted()
-        {
-            return HandStep.DistributingCards <= CurrentRoomState.CurrentHandState.CurrentHandStep &&
-                CurrentRoomState.CurrentHandState.CurrentHandStep <= HandStep.Playing;
-        }
-
         private bool IsRoomFull()
         {
             return this.CurrentRoomState.CurrentGameState.Players.Where(p => p != null).Count() == 4;

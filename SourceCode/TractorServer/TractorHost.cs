@@ -1255,7 +1255,7 @@ namespace TractorServer
             int emojiIndex = (int)(long)args[1];
             string emojiString = (string)args[2];
 
-            if (!this.ValidateChatMessage(playerID, emojiString, emojiType >= 0 ? -1 : CommonMethods.sendChatMessageCost)) return;
+            if (!this.ValidateChatMessage(playerID, emojiString, emojiType >= 0 ? 0 : CommonMethods.sendChatMessageCost)) return;
 
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
@@ -1286,20 +1286,6 @@ namespace TractorServer
                 {
                     this.illegalOperationLogger.Debug(string.Format("玩家【{0}】处于禁言中，试图发言：{1}", playerID, chatMsg));
                     return false;
-                }
-
-                // not sending pre-select message, then only allowed during out side of a game
-                if (cost >= 0)
-                {
-                    if (this.SessionIDGameRoom.ContainsKey(playerID))
-                    {
-                        GameRoom gameRoom = this.SessionIDGameRoom[playerID];
-                        if (gameRoom.IsGameStarted())
-                        {
-                            this.illegalOperationLogger.Debug(string.Format("玩家【{0}】处于游戏中，试图发言：{1}", playerID, chatMsg));
-                            return false;
-                        }
-                    }
                 }
 
                 if (cost > 0 && clientInfoV3Dict[playerID].ChatQuota + clientInfoV3Dict[playerID].Shengbi < cost)
