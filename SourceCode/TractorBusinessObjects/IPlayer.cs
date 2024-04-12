@@ -71,7 +71,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
         ///     更新游戏游戏大厅状态
         [OperationContract(IsOneWay = true)]
-        void NotifyGameHall(List<RoomState> roomStates, List<string> names);
+        void NotifyGameHall(List<RoomState> roomStates, List<string> names, List<YuezhanInfo> YuezhanInfos);
 
         /// <summary>
         ///     甩牌检查结果

@@ -558,7 +558,7 @@ namespace Duan.Xiugang.Tractor.Player
             }
         }
 
-        public void NotifyGameHall(List<RoomState> roomStates, List<string> names)
+        public void NotifyGameHall(List<RoomState> roomStates, List<string> names, List<YuezhanInfo> YuezhanInfos)
         {
             if (GameHallUpdatedEvent != null)
             {

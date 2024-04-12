@@ -43,6 +43,7 @@ namespace TractorServer
         public string KeyIsFullDebug = "isFullDebug";
         public EmailSettings emailSettings;
 
+        public List<YuezhanInfo> YuezhanInfos{ get; set; }
         public Dictionary<string, string> PlayerToIP;
         public Dictionary<string, IPlayer> PlayersProxy;
         public List<GameRoom> GameRooms { get; set; }
@@ -94,6 +95,7 @@ namespace TractorServer
 
             PlayerToIP = new Dictionary<string, string>();
             PlayersProxy = new Dictionary<string, IPlayer>();
+            YuezhanInfos = new List<YuezhanInfo>();
             GameRooms = new List<GameRoom>();
             RoomStates = new List<RoomState>();
             for (int i = 0; i < this.MaxRoom; i++)
@@ -377,9 +379,58 @@ namespace TractorServer
                 case WebSocketObjects.WebSocketMessageType_BuyUseSkin:
                     this.BuyUseSkin(playerID, content);
                     break;
+                case WebSocketObjects.WebSocketMessageType_SendJoinOrQuitYuezhan:
+                    this.PlayerSendJoinOrQuitYuezhanWS(playerID, content);
+                    break;
                 default:
                     break;
             }
+        }
+
+        public void PlayerSendJoinOrQuitYuezhanWS(string playerID, string content)
+        {
+            YuezhanInfo yzInfoInput = CommonMethods.ReadObjectFromString<YuezhanInfo>(content);
+            if (yzInfoInput == null)
+            {
+                log.Debug(string.Format("failed to unmarshal PlayerSendJoinOrQuitYuezhanWS: {0}", content));
+                return;
+            }
+
+            bool isFound = false;
+            int toDeleteIndex = -1;
+            for (int i = 0; i < this.YuezhanInfos.Count; i++)
+            {
+                YuezhanInfo yzInfo = this.YuezhanInfos[i];
+                if (string.Equals(yzInfo.owner, yzInfoInput.owner, StringComparison.OrdinalIgnoreCase))
+                {
+                    isFound = true;
+                    if (yzInfo.participants.Contains(playerID))
+                    {
+                        yzInfo.participants.Remove(playerID);
+                        if (yzInfo.participants.Count == 0)
+                        {
+                            toDeleteIndex = i;
+                        }
+                    }
+                    else
+                    {
+                        yzInfo.participants.Add(playerID);
+                    }
+                    break;
+                }
+            }
+
+            if (toDeleteIndex >= 0)
+            {
+                this.YuezhanInfos.RemoveAt(toDeleteIndex);
+            }
+
+            if (!isFound)
+            {
+                this.YuezhanInfos.Add(yzInfoInput);
+
+            }
+            UpdateGameHall();
         }
 
         #region timer to ping clients
@@ -403,7 +454,8 @@ namespace TractorServer
             }
 
             // 签到提醒
-            DateTime nowDate = DateTime.Now.Date;
+            DateTime nowDateTime = DateTime.Now;
+            DateTime nowDate = nowDateTime.Date;
             if (nowDate > this.hostStatus.PreviousDate)
             {
                 lock (this)
@@ -422,6 +474,33 @@ namespace TractorServer
                     UpdateGameHall();
                     CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
                 }
+            }
+
+            // 清理约战
+            List<int> toDeleteIndices = new List<int>();
+            for (int i = 0; i < this.YuezhanInfos.Count; i++)
+            {
+                YuezhanInfo yzInfo = this.YuezhanInfos[i];
+                DateTime yzDueDate;
+                if (DateTime.TryParse(yzInfo.dueDate, out yzDueDate))
+                {
+                    if (yzDueDate < nowDateTime)
+                    {
+                        toDeleteIndices.Add(i);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unable to parse yzInfo.dueDate: " + yzInfo.dueDate);
+                }
+            }
+            if (toDeleteIndices.Count > 0)
+            {
+                for (int i = toDeleteIndices.Count - 1; i >= 0; i--)
+                {
+                    this.YuezhanInfos.RemoveAt(toDeleteIndices[i]);
+                }
+                UpdateGameHall();
             }
 
             foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
@@ -1613,7 +1692,7 @@ namespace TractorServer
                         namesToCall.Add(name);
                     }
                 }
-                IPlayerInvokeForAll(PlayersProxy, names, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall });
+                IPlayerInvokeForAll(PlayersProxy, names, "NotifyGameHall", new List<object>() { this.RoomStates, namesToCall, this.YuezhanInfos });
             }
         }
 

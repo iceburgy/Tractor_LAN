@@ -105,9 +105,9 @@ namespace Duan.Xiugang.Tractor.Objects
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyEmoji, "", args);
         }
 
-        public void NotifyGameHall(List<RoomState> roomStates, List<string> names)
+        public void NotifyGameHall(List<RoomState> roomStates, List<string> names, List<YuezhanInfo> YuezhanInfos)
         {
-            var args = new List<object>() { roomStates, names };
+            var args = new List<object>() { roomStates, names, YuezhanInfos };
             NotifyFinalHandler(WebSocketObjects.WebSocketMessageType_NotifyGameHall, "", args);
         }
 

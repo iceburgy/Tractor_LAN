@@ -41,6 +41,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public const string WebSocketMessageType_UsedShengbi = "UsedShengbi";
         public const string WebSocketMessageType_BuyUseSkin = "BuyUseSkin";
         public const string WebSocketMessageType_UpdateGobang = "UpdateGobang";
+        public const string WebSocketMessageType_SendJoinOrQuitYuezhan = "SendJoinOrQuitYuezhan";
 
         public const string WebSocketMessageType_NotifyGameHall = "NotifyGameHall";
         public const string WebSocketMessageType_NotifyOnlinePlayerList = "NotifyOnlinePlayerList";
