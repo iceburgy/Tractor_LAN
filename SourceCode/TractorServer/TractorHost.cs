@@ -390,51 +390,54 @@ namespace TractorServer
 
         public void PlayerSendJoinOrQuitYuezhanWS(string playerID, string content)
         {
-            YuezhanInfo yzInfoInput = CommonMethods.ReadObjectFromString<YuezhanInfo>(content);
-            if (yzInfoInput == null)
+            lock (this)
             {
-                log.Debug(string.Format("failed to unmarshal PlayerSendJoinOrQuitYuezhanWS: {0}", content));
-                return;
-            }
-
-            bool isFound = false;
-            int toDeleteIndex = -1;
-            for (int i = 0; i < this.YuezhanInfos.Count; i++)
-            {
-                YuezhanInfo yzInfo = this.YuezhanInfos[i];
-                if (string.Equals(yzInfo.owner, yzInfoInput.owner, StringComparison.OrdinalIgnoreCase))
+                YuezhanInfo yzInfoInput = CommonMethods.ReadObjectFromString<YuezhanInfo>(content);
+                if (yzInfoInput == null)
                 {
-                    isFound = true;
-                    if (yzInfo.participants.Contains(playerID))
-                    {
-                        yzInfo.participants.Remove(playerID);
-                        log.Debug(string.Format("player {0} left yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
-                        if (yzInfo.participants.Count == 0)
-                        {
-                            toDeleteIndex = i;
-                        }
-                    }
-                    else
-                    {
-                        yzInfo.participants.Add(playerID);
-                        log.Debug(string.Format("player {0} joined yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
-                    }
-                    break;
+                    log.Debug(string.Format("failed to unmarshal PlayerSendJoinOrQuitYuezhanWS: {0}", content));
+                    return;
                 }
-            }
 
-            if (toDeleteIndex >= 0)
-            {
-                log.Debug(string.Format("{0}'s yuezhan turned empty and was deleted: {1}", this.YuezhanInfos[toDeleteIndex].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndex])));
-                this.YuezhanInfos.RemoveAt(toDeleteIndex);
-            }
+                bool isFound = false;
+                int toDeleteIndex = -1;
+                for (int i = 0; i < this.YuezhanInfos.Count; i++)
+                {
+                    YuezhanInfo yzInfo = this.YuezhanInfos[i];
+                    if (string.Equals(yzInfo.owner, yzInfoInput.owner, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isFound = true;
+                        if (yzInfo.participants.Contains(playerID))
+                        {
+                            yzInfo.participants.Remove(playerID);
+                            log.Debug(string.Format("player {0} left yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
+                            if (yzInfo.participants.Count == 0)
+                            {
+                                toDeleteIndex = i;
+                            }
+                        }
+                        else
+                        {
+                            yzInfo.participants.Add(playerID);
+                            log.Debug(string.Format("player {0} joined yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
+                        }
+                        break;
+                    }
+                }
 
-            if (!isFound)
-            {
-                this.YuezhanInfos.Add(yzInfoInput);
-                log.Debug(string.Format("player {0} created yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfoInput)));
+                if (toDeleteIndex >= 0)
+                {
+                    log.Debug(string.Format("{0}'s yuezhan turned empty and was deleted: {1}", this.YuezhanInfos[toDeleteIndex].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndex])));
+                    this.YuezhanInfos.RemoveAt(toDeleteIndex);
+                }
+
+                if (!isFound)
+                {
+                    this.YuezhanInfos.Add(yzInfoInput);
+                    log.Debug(string.Format("player {0} created yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfoInput)));
+                }
+                UpdateGameHall();
             }
-            UpdateGameHall();
         }
 
         #region timer to ping clients
@@ -481,31 +484,34 @@ namespace TractorServer
             }
 
             // 清理约战
-            List<int> toDeleteIndices = new List<int>();
-            for (int i = 0; i < this.YuezhanInfos.Count; i++)
+            lock (this)
             {
-                YuezhanInfo yzInfo = this.YuezhanInfos[i];
-                DateTime yzDueDate;
-                if (DateTime.TryParse(yzInfo.dueDate, out yzDueDate))
+                List<int> toDeleteIndices = new List<int>();
+                for (int i = 0; i < this.YuezhanInfos.Count; i++)
                 {
-                    if (yzDueDate < nowDateTime)
+                    YuezhanInfo yzInfo = this.YuezhanInfos[i];
+                    DateTime yzDueDate;
+                    if (DateTime.TryParse(yzInfo.dueDate, out yzDueDate))
                     {
-                        toDeleteIndices.Add(i);
+                        if (yzDueDate < nowDateTime)
+                        {
+                            toDeleteIndices.Add(i);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unable to parse yzInfo.dueDate: " + yzInfo.dueDate);
                     }
                 }
-                else
+                if (toDeleteIndices.Count > 0)
                 {
-                    Console.WriteLine("Unable to parse yzInfo.dueDate: " + yzInfo.dueDate);
+                    for (int i = toDeleteIndices.Count - 1; i >= 0; i--)
+                    {
+                        log.Debug(string.Format("{0}'s yuezhan expired and was deleted: {1}", this.YuezhanInfos[toDeleteIndices[i]].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndices[i]])));
+                        this.YuezhanInfos.RemoveAt(toDeleteIndices[i]);
+                    }
+                    UpdateGameHall();
                 }
-            }
-            if (toDeleteIndices.Count > 0)
-            {
-                for (int i = toDeleteIndices.Count - 1; i >= 0; i--)
-                {
-                    log.Debug(string.Format("{0}'s yuezhan expired and was deleted: {1}", this.YuezhanInfos[toDeleteIndices[i]].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndices[i]])));
-                    this.YuezhanInfos.RemoveAt(toDeleteIndices[i]);
-                }
-                UpdateGameHall();
             }
 
             foreach (KeyValuePair<string, System.Timers.Timer> entry in playerIDToTimer)
