@@ -14,6 +14,7 @@ using System.Timers;
 using System.Collections.Concurrent;
 using System.Net.Mail;
 using System.Net;
+using Newtonsoft.Json;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -407,6 +408,7 @@ namespace TractorServer
                     if (yzInfo.participants.Contains(playerID))
                     {
                         yzInfo.participants.Remove(playerID);
+                        log.Debug(string.Format("player {0} left yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
                         if (yzInfo.participants.Count == 0)
                         {
                             toDeleteIndex = i;
@@ -415,6 +417,7 @@ namespace TractorServer
                     else
                     {
                         yzInfo.participants.Add(playerID);
+                        log.Debug(string.Format("player {0} joined yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfo)));
                     }
                     break;
                 }
@@ -422,13 +425,14 @@ namespace TractorServer
 
             if (toDeleteIndex >= 0)
             {
+                log.Debug(string.Format("{0}'s yuezhan turned empty and was deleted: {1}", this.YuezhanInfos[toDeleteIndex].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndex])));
                 this.YuezhanInfos.RemoveAt(toDeleteIndex);
             }
 
             if (!isFound)
             {
                 this.YuezhanInfos.Add(yzInfoInput);
-
+                log.Debug(string.Format("player {0} created yuezhan: {1}", playerID, JsonConvert.SerializeObject(yzInfoInput)));
             }
             UpdateGameHall();
         }
@@ -498,6 +502,7 @@ namespace TractorServer
             {
                 for (int i = toDeleteIndices.Count - 1; i >= 0; i--)
                 {
+                    log.Debug(string.Format("{0}'s yuezhan expired and was deleted: {1}", this.YuezhanInfos[toDeleteIndices[i]].owner, JsonConvert.SerializeObject(this.YuezhanInfos[toDeleteIndices[i]])));
                     this.YuezhanInfos.RemoveAt(toDeleteIndices[i]);
                 }
                 UpdateGameHall();
