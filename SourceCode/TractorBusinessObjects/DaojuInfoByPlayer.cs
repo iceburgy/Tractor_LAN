@@ -8,7 +8,7 @@ namespace Duan.Xiugang.Tractor.Objects
     [DataContract]
     public class DaojuInfoByPlayer
     {
-        public DaojuInfoByPlayer(int sb, int sbt, DateTime lqd, List<string> osi, string skiu, string ct, DateTime ndtu, DateTime ncu, int cq)
+        public DaojuInfoByPlayer(int sb, int sbt, DateTime lqd, List<string> osi, string skiu, string ct, DateTime ndtu, DateTime ncu, int cq, DateTime ols)
         {
             this.Shengbi = sb;
             this.ShengbiTotal = sbt;
@@ -19,6 +19,7 @@ namespace Duan.Xiugang.Tractor.Objects
             this.noDongtuUntil = ndtu.AddTicks(-(ndtu.Ticks % 10000000));
             this.noChatUntil = ncu.AddTicks(-(ncu.Ticks % 10000000));
             this.ChatQuota = cq;
+            this.onlineSince = ols.AddTicks(-(ndtu.Ticks % 10000000));
         }
         [DataMember]
         public int Shengbi = 0;
@@ -47,5 +48,7 @@ namespace Duan.Xiugang.Tractor.Objects
         public DateTime noChatUntil;
         [DataMember]
         public int ChatQuota;
+        [DataMember]
+        public DateTime onlineSince;
     }
 }

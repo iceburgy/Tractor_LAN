@@ -46,6 +46,7 @@ namespace TractorServer
 
         public List<YuezhanInfo> YuezhanInfos{ get; set; }
         public Dictionary<string, string> PlayerToIP;
+        public Dictionary<string, OnlineBonusInfo> PlayerToOnlineBonusInfo;
         public Dictionary<string, IPlayer> PlayersProxy;
         public List<GameRoom> GameRooms { get; set; }
         public List<RoomState> RoomStates { get; set; }
@@ -95,6 +96,7 @@ namespace TractorServer
             }
 
             PlayerToIP = new Dictionary<string, string>();
+            PlayerToOnlineBonusInfo = new Dictionary<string, OnlineBonusInfo>();
             PlayersProxy = new Dictionary<string, IPlayer>();
             YuezhanInfos = new List<YuezhanInfo>();
             GameRooms = new List<GameRoom>();
@@ -151,6 +153,7 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
+                            ProcessOnlineBonusInfo(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -209,6 +212,7 @@ namespace TractorServer
                                 return;
                             }
                             this.PlayersProxy.Add(messageObj.playerID, playerProxy);
+                            ProcessOnlineBonusInfo(messageObj.playerID);
                         }
 
                         WSMessageHandler(messageObj.messageType, messageObj.playerID, messageObj.content);
@@ -236,6 +240,50 @@ namespace TractorServer
             currentDomain.FirstChanceException += GlobalFirstChanceExceptionHandler;
             // Handler for exceptions in threads behind forms.
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
+        }
+
+        private void ProcessOnlineBonusInfo(string playerID)
+        {
+            DateTime now = DateTime.Now;
+            // 如果是新登录玩家，或者玩家离线已经超时，则重置在线记录
+            if (!PlayerToOnlineBonusInfo.ContainsKey(playerID) || PlayerToOnlineBonusInfo[playerID].OfflineSince < now.AddMinutes(-1 * CommonMethods.OnlineBonusToleranceMunites))
+            {
+                if (PlayerToOnlineBonusInfo.ContainsKey(playerID))
+                {
+                    PlayerToOnlineBonusInfo.Remove(playerID);
+                }
+                this.PlayerToOnlineBonusInfo.Add(playerID, new OnlineBonusInfo());
+                return;
+            }
+            // 否则将玩家视为一直保持在线状态
+            PlayerToOnlineBonusInfo[playerID].OfflineSince = now.AddYears(1);
+        }
+
+        public void AwardOnlineBonus(string playerID)
+        {
+            DateTime now = DateTime.Now;
+            // 如果玩家保持在线达到奖励要求，则颁发奖励
+            if (PlayerToOnlineBonusInfo.ContainsKey(playerID) && PlayerToOnlineBonusInfo[playerID].OnlineSince < now.AddMinutes(-1 * (CommonMethods.OnlineBonusMunitesRequired - CommonMethods.OnlineBonusMunitesRequiredBuffer)))
+            {
+                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                if (!clientInfoV3Dict.ContainsKey(playerID))
+                {
+                    log.Debug(string.Format("fail to find playerID {0} for qiandao!", playerID));
+                    return;
+                }
+                ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
+                curClientInfo.transactShengbi(CommonMethods.OnlineBonusShengbi, transactionLogger, playerID, "在线奖励");
+                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                PublishDaojuInfo(daojuInfo);
+                UpdateGameHall();
+                string fullMsg = string.Format("玩家【{0}】保持在线【{1}】分钟，获取在线奖励：升币+{2}", playerID, CommonMethods.OnlineBonusMunitesRequired, CommonMethods.OnlineBonusShengbi);
+                this.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
+
+                PlayerToOnlineBonusInfo[playerID] = new OnlineBonusInfo();
+                return;
+            }
+            illegalOperationLogger.Debug(string.Format("玩家【{0}】获取在线奖励失败！升币【{1}】", playerID, CommonMethods.OnlineBonusShengbi));
         }
 
         // returns if needs restart
@@ -382,6 +430,9 @@ namespace TractorServer
                     break;
                 case WebSocketObjects.WebSocketMessageType_SendJoinOrQuitYuezhan:
                     this.PlayerSendJoinOrQuitYuezhanWS(playerID, content);
+                    break;
+                case WebSocketObjects.WebSocketMessageType_SendAwardOnlineBonus:
+                    this.AwardOnlineBonus(playerID);
                     break;
                 default:
                     break;
@@ -1179,6 +1230,11 @@ namespace TractorServer
             foreach (string pid in names)
             {
                 if (!clientInfoV3Dict.ContainsKey(pid)) continue;
+                DateTime onlineSince = DateTime.Now;
+                if (this.PlayerToOnlineBonusInfo.ContainsKey(pid))
+                {
+                    onlineSince = this.PlayerToOnlineBonusInfo[pid].OnlineSince;
+                }
                 daojuInfo.daojuInfoByPlayer.Add(pid,
                     new DaojuInfoByPlayer(clientInfoV3Dict[pid].Shengbi,
                     clientInfoV3Dict[pid].ShengbiTotal,
@@ -1188,7 +1244,8 @@ namespace TractorServer
                     clientInfoV3Dict[pid].clientType,
                     clientInfoV3Dict[pid].noDongtuUntil,
                     clientInfoV3Dict[pid].noChatUntil,
-                    clientInfoV3Dict[pid].ChatQuota));
+                    clientInfoV3Dict[pid].ChatQuota,
+                    onlineSince));
             }
             return daojuInfo;
         }
@@ -1228,6 +1285,10 @@ namespace TractorServer
                 timerToPlayerID.TryRemove(timer, out temp);
             }
             PlayerToIP.Remove(playerID);
+            if (PlayerToOnlineBonusInfo.ContainsKey(playerID))
+            {
+                PlayerToOnlineBonusInfo[playerID].OfflineSince = DateTime.Now;
+            }
             if (PlayersProxy.ContainsKey(playerID))
             {
                 PlayersProxy[playerID].Close();
@@ -1349,7 +1410,7 @@ namespace TractorServer
 
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
-            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, false);
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, emojiType >= 0 ? false : true);
         }
 
         public void PlayerSendBroadcastWS(string playerID, string content)

@@ -42,7 +42,7 @@ namespace Duan.Xiugang.Tractor.Objects
             { usedShengbiType_Qiangliangka, "抢亮卡" }
         };
         public static int qiangliangkaCost = 10;
-        public static int sendBroadcastCost = 10;
+        public static int sendBroadcastCost = 0;
         public static int sendChatMessageCost = 0;
         public static int forbidSayingsPunishmentCost = 200;
         public static int buyNoDongtuUntilCost = 0;
@@ -57,6 +57,13 @@ namespace Duan.Xiugang.Tractor.Objects
         public static string systemMsgPrefix = "【系统消息】：";
 
         public static string NotifyStateType_ObservePlayerById = "ObservePlayerById";
+
+        // 如果玩家离线时间不超过此限制，那么再次登陆后则视为一直保持在线
+        public static int OnlineBonusToleranceMunites = 5;
+        // 如果玩家玩家保持在线达60分钟，则颁发奖励（理论上为一小时，但启用一个5分钟的容错空间）
+        public static int OnlineBonusMunitesRequired = 60;
+        public static int OnlineBonusMunitesRequiredBuffer = 5;
+        public static int OnlineBonusShengbi= 1;
 
         public static Random random = new Random();
         public static string RandomString(int lower, int upper)
