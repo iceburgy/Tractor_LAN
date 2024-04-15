@@ -265,6 +265,8 @@ namespace TractorServer
             // 如果玩家保持在线达到奖励要求，则颁发奖励
             if (PlayerToOnlineBonusInfo.ContainsKey(playerID) && PlayerToOnlineBonusInfo[playerID].OnlineSince < now.AddMinutes(-1 * (CommonMethods.OnlineBonusMunitesRequired - CommonMethods.OnlineBonusMunitesRequiredBuffer)))
             {
+                PlayerToOnlineBonusInfo[playerID] = new OnlineBonusInfo();
+
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 if (!clientInfoV3Dict.ContainsKey(playerID))
                 {
@@ -280,7 +282,6 @@ namespace TractorServer
                 string fullMsg = string.Format("玩家【{0}】保持在线【{1}】分钟，获取在线奖励：升币+{2}", playerID, CommonMethods.OnlineBonusMunitesRequired, CommonMethods.OnlineBonusShengbi);
                 this.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
 
-                PlayerToOnlineBonusInfo[playerID] = new OnlineBonusInfo();
                 return;
             }
             illegalOperationLogger.Debug(string.Format("玩家【{0}】获取在线奖励失败！升币【{1}】", playerID, CommonMethods.OnlineBonusShengbi));
