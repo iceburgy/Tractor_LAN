@@ -261,30 +261,33 @@ namespace TractorServer
 
         public void AwardOnlineBonus(string playerID)
         {
-            DateTime now = DateTime.Now;
-            // 如果玩家保持在线达到奖励要求，则颁发奖励
-            if (PlayerToOnlineBonusInfo.ContainsKey(playerID) && PlayerToOnlineBonusInfo[playerID].OnlineSince < now.AddMinutes(-1 * (CommonMethods.OnlineBonusMunitesRequired - CommonMethods.OnlineBonusMunitesRequiredBuffer)))
+            lock (this)
             {
-                PlayerToOnlineBonusInfo[playerID] = new OnlineBonusInfo();
-
-                Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
-                if (!clientInfoV3Dict.ContainsKey(playerID))
+                DateTime now = DateTime.Now;
+                // 如果玩家保持在线达到奖励要求，则颁发奖励
+                if (PlayerToOnlineBonusInfo.ContainsKey(playerID) && PlayerToOnlineBonusInfo[playerID].OnlineSince < now.AddMinutes(-1 * (CommonMethods.OnlineBonusMunitesRequired - CommonMethods.OnlineBonusMunitesRequiredBuffer)))
                 {
-                    log.Debug(string.Format("fail to find playerID {0} for qiandao!", playerID));
+                    PlayerToOnlineBonusInfo[playerID] = new OnlineBonusInfo();
+
+                    Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
+                    if (!clientInfoV3Dict.ContainsKey(playerID))
+                    {
+                        log.Debug(string.Format("fail to find playerID {0} for qiandao!", playerID));
+                        return;
+                    }
+                    ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
+                    curClientInfo.transactShengbi(CommonMethods.OnlineBonusShengbi, transactionLogger, playerID, "在线奖励");
+                    CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
+                    DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
+                    PublishDaojuInfo(daojuInfo);
+                    UpdateGameHall();
+                    string fullMsg = string.Format("玩家【{0}】保持在线【{1}】分钟，获取在线奖励：升币+{2}", playerID, CommonMethods.OnlineBonusMunitesRequired, CommonMethods.OnlineBonusShengbi);
+                    this.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
+
                     return;
                 }
-                ClientInfoV3 curClientInfo = clientInfoV3Dict[playerID];
-                curClientInfo.transactShengbi(CommonMethods.OnlineBonusShengbi, transactionLogger, playerID, "在线奖励");
-                CommonMethods.WriteObjectToFile(clientInfoV3Dict, GameRoom.LogsFolder, GameRoom.ClientinfoV3FileName);
-                DaojuInfo daojuInfo = this.buildPlayerToShengbi(clientInfoV3Dict);
-                PublishDaojuInfo(daojuInfo);
-                UpdateGameHall();
-                string fullMsg = string.Format("玩家【{0}】保持在线【{1}】分钟，获取在线奖励：升币+{2}", playerID, CommonMethods.OnlineBonusMunitesRequired, CommonMethods.OnlineBonusShengbi);
-                this.PlayerSendEmojiWorker("", -1, -1, false, fullMsg, true, true);
-
-                return;
+                illegalOperationLogger.Debug(string.Format("玩家【{0}】获取在线奖励失败！升币【{1}】", playerID, CommonMethods.OnlineBonusShengbi));
             }
-            illegalOperationLogger.Debug(string.Format("玩家【{0}】获取在线奖励失败！升币【{1}】", playerID, CommonMethods.OnlineBonusShengbi));
         }
 
         // returns if needs restart
