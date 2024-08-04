@@ -1126,6 +1126,15 @@ namespace TractorServer
                     return;
                 if (trumpExposingPoker > CurrentRoomState.CurrentHandState.TrumpExposingPoker)
                 {
+                    string trumpChangeType = "亮主";
+                    if (trumpMaker == CurrentRoomState.CurrentHandState.TrumpMaker)
+                    {
+                        trumpChangeType = "加固亮主";
+                    }
+                    else if (!string.IsNullOrEmpty(CurrentRoomState.CurrentHandState.TrumpMaker))
+                    {
+                        trumpChangeType = "反主";
+                    }
                     CurrentRoomState.CurrentHandState.TrumpExposingPoker = trumpExposingPoker;
                     CurrentRoomState.CurrentHandState.TrumpMaker = trumpMaker;
                     CurrentRoomState.CurrentHandState.Trump = trump;
@@ -1133,6 +1142,8 @@ namespace TractorServer
 
                     //log who made what trump
                     log.Debug(string.Format("player made trump: {0} {1} {2} {3}", trumpMaker, trumpExposingPoker.ToString(), trump.ToString(), CommonMethods.GetNumberString(CurrentRoomState.CurrentHandState.Rank)));
+                    string msg = string.Format("玩家【{0}】【{1}】：【{2}】", trumpMaker, trumpChangeType, CommonMethods.GetSuitNameByTrumpExposingPokerInChinese(trump, trumpExposingPoker));
+                    this.tractorHost.PlayerSendEmojiWorker(trumpMaker, -1, -1, false, msg, true, false);
 
                     TrumpState tempLastTrumState = new TrumpState();
                     tempLastTrumState.TrumpExposingPoker = CurrentRoomState.CurrentHandState.TrumpExposingPoker;

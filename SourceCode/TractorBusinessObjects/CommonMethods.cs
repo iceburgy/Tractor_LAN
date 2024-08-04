@@ -533,5 +533,38 @@ namespace Duan.Xiugang.Tractor.Objects
                 return false;
             }
         }
+        public static string GetSuitNameByTrumpExposingPokerInChinese(Suit s, TrumpExposingPoker t)
+        {
+            string suitName = "未知";
+            switch (s)
+            {
+                case Suit.Heart:
+                    suitName = "红桃";
+                    break;
+                case Suit.Spade:
+                    suitName = "黑桃";
+                    break;
+                case Suit.Diamond:
+                    suitName = "方片";
+                    break;
+                case Suit.Club:
+                    suitName = "草花";
+                    break;
+                case Suit.Joker:
+                    if (t == TrumpExposingPoker.PairBlackJoker)
+                    {
+                        suitName = "小王";
+                    }
+                    else
+                    {
+                        suitName = "大王";
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return suitName;
+        }
     }
 }

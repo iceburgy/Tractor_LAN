@@ -1414,7 +1414,7 @@ namespace TractorServer
 
             bool isCenter = false;
             if (args.Count >= 4) isCenter = (bool)args[3];
-            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, emojiType >= 0 ? false : true);
+            this.PlayerSendEmojiWorker(playerID, emojiType, emojiIndex, isCenter, emojiString, false, false);
         }
 
         public void PlayerSendBroadcastWS(string playerID, string content)
