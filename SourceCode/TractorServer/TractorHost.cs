@@ -436,7 +436,6 @@ namespace TractorServer
                     this.PlayerSendJoinOrQuitYuezhanWS(playerID, content);
                     break;
                 case WebSocketObjects.WebSocketMessageType_SendAwardOnlineBonus:
-                    this.AwardOnlineBonus(playerID);
                     break;
                 default:
                     break;
