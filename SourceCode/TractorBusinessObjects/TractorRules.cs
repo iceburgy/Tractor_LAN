@@ -20,14 +20,14 @@ namespace Duan.Xiugang.Tractor.Objects
         {
 
             //玩家选择牌之后剩下的牌
-            var leftCardsCp = (CurrentPoker) currentCards.Clone();
+            var leftCardsCp = (CurrentPoker)currentCards.Clone();
             foreach (int card in selectedCards)
             {
                 leftCardsCp.RemoveCard(card);
             }
 
             var showingCardsCp = new CurrentPoker();
-            showingCardsCp.TrumpInt = (int) currentCards.Trump;
+            showingCardsCp.TrumpInt = (int)currentCards.Trump;
             showingCardsCp.Rank = currentCards.Rank;
             foreach (int showingCard in selectedCards)
             {
@@ -36,7 +36,7 @@ namespace Duan.Xiugang.Tractor.Objects
             //showingCardsCp.Sort();
 
             var leadingCardsCp = new CurrentPoker();
-            leadingCardsCp.TrumpInt = (int) currentCards.Trump;
+            leadingCardsCp.TrumpInt = (int)currentCards.Trump;
             leadingCardsCp.Rank = currentCards.Rank;
             foreach (int card in currentTrickState.LeadingCards)
             {
@@ -51,24 +51,24 @@ namespace Duan.Xiugang.Tractor.Objects
                 {
                     if (selectedCards.Count == 1) //如果是单张牌
                     {
-                        return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                        return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
                     }
                     if (selectedCards.Count == 2 && (showingCardsCp.GetPairs().Count == 1)) //如果是一对
                     {
-                        return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                        return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
                     }
                     if ((showingCardsCp.GetTractorOfAnySuit().Count > 1) &&
-                        selectedCards.Count == showingCardsCp.GetTractorOfAnySuit().Count*2) //如果是拖拉机
+                        selectedCards.Count == showingCardsCp.GetTractorOfAnySuit().Count * 2) //如果是拖拉机
                     {
-                        return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                        return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
                     }
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.TryToDump};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.TryToDump };
                 }
             }
 
             //牌的数量
             if (currentTrickState.LeadingCards.Count != selectedCards.Count)
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
 
             //得到第一个家伙出的花色
             Suit leadingSuit = currentTrickState.LeadingSuit;
@@ -79,11 +79,11 @@ namespace Duan.Xiugang.Tractor.Objects
             //如果出的牌混合的，则判断手中是否还剩出的花色，如果剩,false;如果不剩;true
             if (showingCardsCp.IsMixed())
             {
-                if (leftCardsCp.HasSomeCards((int) leadingSuit))
+                if (leftCardsCp.HasSomeCards((int)leadingSuit))
                 {
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
                 }
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
 
             //出的牌的花色
@@ -97,32 +97,32 @@ namespace Duan.Xiugang.Tractor.Objects
             if (mysuit != leadingSuit)
             {
                 //而且确实没有此花色
-                if (leftCardsCp.HasSomeCards((int) leadingSuit))
+                if (leftCardsCp.HasSomeCards((int)leadingSuit))
                 {
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
                 }
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
 
             //别人如果出对，我也应该出对
             int leadingCardsPairs = leadingCardsCp.GetPairs().Count;
             int selectedCardsPairs = showingCardsCp.GetPairs().Count;
-            int holdingCardsPairs = currentCards.GetPairs((int) leadingSuit).Count;
+            int holdingCardsPairs = currentCards.GetPairs((int)leadingSuit).Count;
 
 
             //2.如果别人出拖拉机，我如果有，也应该出拖拉机
             if (leadingCardsCp.HasTractors())
             {
-                if ((!showingCardsCp.HasTractors()) && (currentCards.GetTractor((int) leadingSuit) > -1))
+                if ((!showingCardsCp.HasTractors()) && (currentCards.GetTractor((int)leadingSuit) > -1))
                 {
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
                 }
                 if ((selectedCardsPairs < leadingCardsPairs) && (holdingCardsPairs > selectedCardsPairs))
-                    //出的对比第一个玩家少，而且没有出所有的对
+                //出的对比第一个玩家少，而且没有出所有的对
                 {
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
                 }
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
 
 
@@ -131,13 +131,13 @@ namespace Duan.Xiugang.Tractor.Objects
                 //如果对出的不够多，而且没有出所有的对
                 if ((holdingCardsPairs > selectedCardsPairs) && (selectedCardsPairs < leadingCardsPairs))
                 {
-                    return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                    return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
                 }
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
 
 
-            return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+            return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Duan.Xiugang.Tractor.Objects
             var mustShowCardsForDumpingFail = new List<int>();
             CurrentPoker holdingCardsCp = playerHoldingCards.Values.FirstOrDefault();
             if (holdingCardsCp == null)
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Unknown};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Unknown };
             var selectedCardsCp = new CurrentPoker(selectedCards, holdingCardsCp.TrumpInt, holdingCardsCp.Rank);
             int selectedCardSuit = CommonMethods.GetSuit(selectedCards[0], selectedCardsCp.TrumpInt,
                 selectedCardsCp.Rank);
@@ -165,19 +165,19 @@ namespace Duan.Xiugang.Tractor.Objects
 
             if (selectedCards.Count == 1) //如果是单张牌
             {
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
             if (selectedCards.Count == 2 && (selectedCardsCp.GetPairs().Count == 1)) //如果是一对
             {
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
-            if (tractor.Count > 1 && selectedCards.Count == tractor.Count*2) //如果是拖拉机
+            if (tractor.Count > 1 && selectedCards.Count == tractor.Count * 2) //如果是拖拉机
             {
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Valid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Valid };
             }
             if (selectedCardsCp.IsMixed())
             {
-                return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.Invalid};
+                return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.Invalid };
             }
 
             while (tractor.Count > 1)
@@ -222,7 +222,7 @@ namespace Duan.Xiugang.Tractor.Objects
 
                 for (int i = 0; i < list0.Count; i++)
                 {
-                    var myMax = (int) list0[i];
+                    var myMax = (int)list0[i];
                     selectedCardsCp.RemoveCard(myMax);
                     selectedCardsCp.RemoveCard(myMax);
 
@@ -233,7 +233,7 @@ namespace Duan.Xiugang.Tractor.Objects
                             ArrayList list = keyValue.Value.GetPairs(selectedCardSuit);
                             if (list.Count == 0)
                                 continue;
-                            var max = (int) list[list.Count - 1];
+                            var max = (int)list[list.Count - 1];
 
                             if (!CommonMethods.CompareTo(myMax, max, trump, rank, selectedCardSuit) && max > -1)
                             {
@@ -275,7 +275,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
                 }
             }
-            return new ShowingCardsValidationResult {ResultType = ShowingCardsValidationResultType.DumpingSuccess};
+            return new ShowingCardsValidationResult { ResultType = ShowingCardsValidationResultType.DumpingSuccess };
         }
 
         //确定下一次该谁出牌
@@ -285,19 +285,19 @@ namespace Duan.Xiugang.Tractor.Objects
             Suit trump = trickState.Trump;
             var trumpInt = (int)trickState.Trump;
             int rank = trickState.Rank;
-            cp[0] = new CurrentPoker(trickState.ShowedCards[trickState.Learder], trumpInt, rank);
+            cp[0] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder), trumpInt, rank);
             string nextPlayer1 = trickState.NextPlayer(trickState.Learder);
-            cp[1] = new CurrentPoker(trickState.ShowedCards[nextPlayer1], trumpInt, rank);
+            cp[1] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1), trumpInt, rank);
             string nextPlayer2 = trickState.NextPlayer(nextPlayer1);
-            cp[2] = new CurrentPoker(trickState.ShowedCards[nextPlayer2], trumpInt, rank);
+            cp[2] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2), trumpInt, rank);
             string nextPlayer3 = trickState.NextPlayer(nextPlayer2);
-            cp[3] = new CurrentPoker(trickState.ShowedCards[nextPlayer3], trumpInt, rank);
+            cp[3] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3), trumpInt, rank);
             //cp[0].Sort();
             //cp[1].Sort();
             //cp[2].Sort();
             //cp[3].Sort();
 
-            int leadingCardsCount = trickState.ShowedCards[trickState.Learder].Count;
+            int leadingCardsCount = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count;
             int winderNumber = 0;
             var leadingSuit = (int)trickState.LeadingSuit;
 
@@ -374,11 +374,11 @@ namespace Duan.Xiugang.Tractor.Objects
             //甩多个单张牌
             else if ((leadingCardsCount > 1) && (cp[0].GetPairs().Count == 0))
             {
-                int maxCard = CommonMethods.GetMaxCard(trickState.ShowedCards[trickState.Learder], trump, rank);
-                int tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer1], trump, rank);
+                int maxCard = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder), trump, rank);
+                int tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1), trump, rank);
 
                 if (cp[1].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                    trickState.ShowedCards[trickState.Learder].Count)
+                    CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                 {
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
@@ -388,9 +388,9 @@ namespace Duan.Xiugang.Tractor.Objects
                 }
 
                 if (cp[2].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                    trickState.ShowedCards[trickState.Learder].Count)
+                    CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                 {
-                    tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer2], trump, rank);
+                    tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2), trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 2;
@@ -398,9 +398,9 @@ namespace Duan.Xiugang.Tractor.Objects
                     }
                 }
                 if (cp[3].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                    trickState.ShowedCards[trickState.Learder].Count)
+                    CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                 {
-                    tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer3], trump, rank);
+                    tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3), trump, rank);
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 3;
@@ -476,21 +476,21 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             else if (leadingCardsCount == 1) //如果是单张牌
             {
-                int maxCard = trickState.ShowedCards[trickState.Learder][0];
-                int tmpMax = trickState.ShowedCards[nextPlayer1][0];
+                int maxCard = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder)[0];
+                int tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1)[0];
                 if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                 {
                     winderNumber = 1;
                     maxCard = tmpMax;
                 }
 
-                tmpMax = trickState.ShowedCards[nextPlayer2][0];
+                tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2)[0];
                 if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                 {
                     winderNumber = 2;
                     maxCard = tmpMax;
                 }
-                tmpMax = trickState.ShowedCards[nextPlayer3][0];
+                tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3)[0];
                 if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                 {
                     winderNumber = 3;
@@ -525,19 +525,19 @@ namespace Duan.Xiugang.Tractor.Objects
             Suit trump = trickState.Trump;
             var trumpInt = (int)trickState.Trump;
             int rank = trickState.Rank;
-            cp[0] = new CurrentPoker(trickState.ShowedCards[trickState.Learder], trumpInt, rank);
+            cp[0] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder), trumpInt, rank);
             string nextPlayer1 = trickState.NextPlayer(trickState.Learder);
-            cp[1] = new CurrentPoker(trickState.ShowedCards[nextPlayer1], trumpInt, rank);
+            cp[1] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1), trumpInt, rank);
             string nextPlayer2 = trickState.NextPlayer(nextPlayer1);
-            cp[2] = new CurrentPoker(trickState.ShowedCards[nextPlayer2], trumpInt, rank);
+            cp[2] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2), trumpInt, rank);
             string nextPlayer3 = trickState.NextPlayer(nextPlayer2);
-            cp[3] = new CurrentPoker(trickState.ShowedCards[nextPlayer3], trumpInt, rank);
+            cp[3] = new CurrentPoker(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3), trumpInt, rank);
             //cp[0].Sort();
             //cp[1].Sort();
             //cp[2].Sort();
             //cp[3].Sort();
 
-            int leadingCardsCount = trickState.ShowedCards[trickState.Learder].Count;
+            int leadingCardsCount = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count;
             int winderNumber = 0;
             var leadingSuit = (int)trickState.LeadingSuit;
 
@@ -547,7 +547,7 @@ namespace Duan.Xiugang.Tractor.Objects
             if ((leadingTractor.Count > 1) && (cp[0].Count > leadingTractor.Count * 2)) //甩拖拉机
             {
                 int maxCard = leadingTractor[0];
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
                     List<int> tractor1 = cp[1].GetTractor(trump);
                     if (tractor1.Count >= leadingTractor.Count &&
@@ -561,7 +561,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
                     List<int> tractor2 = cp[2].GetTractor(trump);
                     if (tractor2.Count >= leadingTractor.Count &&
@@ -575,7 +575,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
                     List<int> tractor3 = cp[3].GetTractor(trump);
                     if (tractor3.Count >= leadingTractor.Count &&
@@ -593,7 +593,7 @@ namespace Duan.Xiugang.Tractor.Objects
             else if ((2 < leadingCardsCount) && (cp[0].GetPairs().Count > 0) && leadingTractor.Count < 2)
             {
                 int maxCard = CommonMethods.GetMaxCard(cp[0].GetPairs(), trump, rank);
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
                     if (cp[1].GetPairs().Count >= cp[0].GetPairs().Count && (!cp[1].IsMixed()))
                     {
@@ -605,7 +605,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
                     if (cp[2].GetPairs().Count >= cp[0].GetPairs().Count && (!cp[2].IsMixed()))
                     {
@@ -617,7 +617,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
                     if (cp[3].GetPairs().Count >= cp[0].GetPairs().Count && (!cp[3].IsMixed()))
                     {
@@ -632,13 +632,13 @@ namespace Duan.Xiugang.Tractor.Objects
             //甩多个单张牌
             else if ((leadingCardsCount > 1) && (cp[0].GetPairs().Count == 0))
             {
-                int maxCard = CommonMethods.GetMaxCard(trickState.ShowedCards[trickState.Learder], trump, rank);
+                int maxCard = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder), trump, rank);
                 int tmpMax = 0;
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
-                    tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer1], trump, rank);
+                    tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1), trump, rank);
                     if (cp[1].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                        trickState.ShowedCards[trickState.Learder].Count)
+                        CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                     {
                         if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                         {
@@ -647,12 +647,12 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
                     if (cp[2].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                        trickState.ShowedCards[trickState.Learder].Count)
+                        CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                     {
-                        tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer2], trump, rank);
+                        tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2), trump, rank);
                         if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                         {
                             winderNumber = 2;
@@ -660,12 +660,12 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
                     if (cp[3].GetSuitCardsWithJokerAndRank(trumpInt).Count() ==
-                        trickState.ShowedCards[trickState.Learder].Count)
+                        CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder).Count)
                     {
-                        tmpMax = CommonMethods.GetMaxCard(trickState.ShowedCards[nextPlayer3], trump, rank);
+                        tmpMax = CommonMethods.GetMaxCard(CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3), trump, rank);
                         if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                         {
                             winderNumber = 3;
@@ -681,11 +681,11 @@ namespace Duan.Xiugang.Tractor.Objects
                 List<int> tractor1 = null;
                 List<int> tractor2 = null;
                 List<int> tractor3 = null;
-                if (trickState.ShowedCards[nextPlayer1].Count > 0) tractor1 = cp[1].GetTractorOfAnySuit();
-                if (trickState.ShowedCards[nextPlayer2].Count > 0) tractor2 = cp[2].GetTractorOfAnySuit();
-                if (trickState.ShowedCards[nextPlayer3].Count > 0) tractor3 = cp[3].GetTractorOfAnySuit();
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0) tractor1 = cp[1].GetTractorOfAnySuit();
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0) tractor2 = cp[2].GetTractorOfAnySuit();
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0) tractor3 = cp[3].GetTractorOfAnySuit();
                 int maxCard = tractor0[0];
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
                     if (tractor1.Count >= tractor0.Count)
                     {
@@ -697,7 +697,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
                     if (tractor2.Count >= tractor0.Count)
                     {
@@ -709,7 +709,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
                     if (tractor3.Count >= tractor0.Count)
                     {
@@ -725,7 +725,7 @@ namespace Duan.Xiugang.Tractor.Objects
             else if (cp[0].GetPairs().Count == 1 && (leadingCardsCount == 2)) //如果有一个对
             {
                 var maxCard = (int)cp[0].GetPairs()[0];
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
                     if (cp[1].GetPairs().Count > 0)
                     {
@@ -737,7 +737,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
                     if (cp[2].GetPairs().Count > 0)
                     {
@@ -749,7 +749,7 @@ namespace Duan.Xiugang.Tractor.Objects
                         }
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
                     if (cp[3].GetPairs().Count > 0)
                     {
@@ -763,29 +763,29 @@ namespace Duan.Xiugang.Tractor.Objects
             }
             else if (leadingCardsCount == 1) //如果是单张牌
             {
-                int maxCard = trickState.ShowedCards[trickState.Learder][0];
+                int maxCard = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, trickState.Learder)[0];
                 int tmpMax = 0;
-                if (trickState.ShowedCards[nextPlayer1].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1).Count > 0)
                 {
-                    tmpMax = trickState.ShowedCards[nextPlayer1][0];
+                    tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer1)[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 1;
                         maxCard = tmpMax;
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer2].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2).Count > 0)
                 {
-                    tmpMax = trickState.ShowedCards[nextPlayer2][0];
+                    tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer2)[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 2;
                         maxCard = tmpMax;
                     }
                 }
-                if (trickState.ShowedCards[nextPlayer3].Count > 0)
+                if (CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3).Count > 0)
                 {
-                    tmpMax = trickState.ShowedCards[nextPlayer3][0];
+                    tmpMax = CommonMethods.GetShowedCardsByPlayerID(trickState.ShowedCards, nextPlayer3)[0];
                     if (!CommonMethods.CompareTo(maxCard, tmpMax, trumpInt, rank, leadingSuit))
                     {
                         winderNumber = 3;

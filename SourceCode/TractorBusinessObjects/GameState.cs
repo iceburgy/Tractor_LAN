@@ -189,7 +189,7 @@ namespace Duan.Xiugang.Tractor.Objects
             //处理J到底
             if (CurrentRoomState.roomSetting.AllowJToBottom && CurrentRoomState.CurrentHandState.Rank == 9)
             {
-                var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Winner];
+                var cards = CommonMethods.GetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards, CurrentRoomState.CurrentTrickState.Winner);
                 var cardscp = new CurrentPoker(cards, (int)CurrentRoomState.CurrentHandState.Trump,
                                                CurrentRoomState.CurrentHandState.Rank);
 

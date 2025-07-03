@@ -13,17 +13,20 @@ namespace Duan.Xiugang.Tractor.Objects
         //第一个出牌的玩家
         public CurrentTrickState()
         {
-            ShowedCards = new Dictionary<string, List<int>>();
+            ShowedCards = new List<ShowedCardKeyValue>();
             serverLocalCache = new ServerLocalCache();
         }
 
         public CurrentTrickState(List<string> playeIds, ServerLocalCache slc)
         {
             serverLocalCache = slc;
-            ShowedCards = new Dictionary<string, List<int>>();
+            ShowedCards = new List<ShowedCardKeyValue>();
             foreach (string playeId in playeIds)
             {
-                ShowedCards.Add(playeId, new List<int>());
+                ShowedCardKeyValue newEntry = new ShowedCardKeyValue();
+                newEntry.PlayerID = playeId;
+                newEntry.Cards = new List<int>();
+                ShowedCards.Add(newEntry);
             }
         }
 
@@ -35,11 +38,11 @@ namespace Duan.Xiugang.Tractor.Objects
 
         //player ID and cards
         [DataMember]
-        public Dictionary<string, List<int>> ShowedCards { get; set; }
+        public List<ShowedCardKeyValue> ShowedCards { get; set; }
 
         [DataMember]
         public ServerLocalCache serverLocalCache { get; set; }
-        
+
         [DataMember]
         public Suit Trump { get; set; }
 
@@ -52,7 +55,7 @@ namespace Duan.Xiugang.Tractor.Objects
             {
                 if (IsStarted())
                 {
-                    return ShowedCards[Learder];
+                    return CommonMethods.GetShowedCardsByPlayerID(ShowedCards, Learder);
                 }
                 return new List<int>();
             }
@@ -76,9 +79,10 @@ namespace Duan.Xiugang.Tractor.Objects
             get
             {
                 int points = 0;
-                foreach (var cardsList in ShowedCards.Values)
+                for (int i = 0; i < ShowedCards.Count; i++)
                 {
-                    foreach (int card in cardsList)
+                    ShowedCardKeyValue keyValue = ShowedCards[i];
+                    foreach (int card in keyValue.Cards)
                     {
                         if (card % 13 == 3)
                             points += 5;
@@ -97,9 +101,11 @@ namespace Duan.Xiugang.Tractor.Objects
             get
             {
                 List<int> scorecards = new List<int>();
-                foreach (var cardsList in ShowedCards.Values)
+
+                for (int i = 0; i < ShowedCards.Count; i++)
                 {
-                    foreach (int card in cardsList)
+                    ShowedCardKeyValue keyValue = ShowedCards[i];
+                    foreach (int card in keyValue.Cards)
                     {
                         if (card % 13 == 3 || card % 13 == 8 || card % 13 == 11)
                             scorecards.Add(card);
@@ -116,26 +122,27 @@ namespace Duan.Xiugang.Tractor.Objects
         public string NextPlayer()
         {
             string playerId = "";
-            if (ShowedCards[Learder].Count == 0)
+            if (CommonMethods.GetShowedCardsByPlayerID(ShowedCards, Learder).Count == 0)
                 playerId = Learder;
 
             else
             {
                 bool afterLeader = false;
                 //find next player to show card after learder
-                foreach (var showedCard in ShowedCards)
+                for (int i = 0; i < ShowedCards.Count; i++)
                 {
-                    if (showedCard.Key != Learder && afterLeader == false)
+                    ShowedCardKeyValue keyValue = ShowedCards[i];
+                    if (keyValue.PlayerID != Learder && afterLeader == false)
                         continue;
-                    if (showedCard.Key == Learder) // search from learder
+                    if (keyValue.PlayerID == Learder) // search from learder
                     {
                         afterLeader = true;
                     }
                     if (afterLeader)
                     {
-                        if (showedCard.Value.Count == 0)
+                        if (keyValue.Cards.Count == 0)
                         {
-                            playerId = showedCard.Key;
+                            playerId = keyValue.PlayerID;
                             break;
                         }
                     }
@@ -143,13 +150,14 @@ namespace Duan.Xiugang.Tractor.Objects
 
                 if (string.IsNullOrEmpty(playerId))
                 {
-                    foreach (var showedCard in ShowedCards)
+                    for (int i = 0; i < ShowedCards.Count; i++)
                     {
-                        if (showedCard.Key != Learder)
+                        ShowedCardKeyValue keyValue = ShowedCards[i];
+                        if (keyValue.PlayerID != Learder)
                         {
-                            if (showedCard.Value.Count == 0)
+                            if (keyValue.Cards.Count == 0)
                             {
-                                playerId = showedCard.Key;
+                                playerId = keyValue.PlayerID;
                                 break;
                             }
                         }
@@ -170,23 +178,24 @@ namespace Duan.Xiugang.Tractor.Objects
         public string NextPlayer(string playerId)
         {
             string nextPlayer = "";
-            if (!ShowedCards.Keys.Contains(playerId))
+            if (CommonMethods.GetShowedCardsByPlayerID(ShowedCards, playerId).Count == 0)
                 return "";
 
 
             bool afterLeader = false;
             //find next player to show card after learder
-            foreach (var showedCard in ShowedCards)
+            for (int i = 0; i < ShowedCards.Count; i++)
             {
-                if (showedCard.Key != playerId && afterLeader == false)
+                ShowedCardKeyValue keyValue = ShowedCards[i];
+                if (keyValue.PlayerID != playerId && afterLeader == false)
                     continue;
-                else if (showedCard.Key == playerId) // search from learder
+                else if (keyValue.PlayerID == playerId) // search from learder
                 {
                     afterLeader = true;
                 }
                 else if (afterLeader)
                 {
-                    nextPlayer = showedCard.Key;
+                    nextPlayer = keyValue.PlayerID;
                     break;
                 }
             }
@@ -194,11 +203,12 @@ namespace Duan.Xiugang.Tractor.Objects
 
             if (string.IsNullOrEmpty(nextPlayer))
             {
-                foreach (var showedCard in ShowedCards)
+                for (int i = 0; i < ShowedCards.Count; i++)
                 {
-                    if (showedCard.Key != playerId)
+                    ShowedCardKeyValue keyValue = ShowedCards[i];
+                    if (keyValue.PlayerID != playerId)
                     {
-                        nextPlayer = showedCard.Key;
+                        nextPlayer = keyValue.PlayerID;
                     }
                     break;
                 }
@@ -215,36 +225,38 @@ namespace Duan.Xiugang.Tractor.Objects
         public string LatestPlayerShowedCard()
         {
             string playerId = "";
-            if (string.IsNullOrEmpty(Learder) || ShowedCards[Learder].Count == 0)
+            if (string.IsNullOrEmpty(Learder) || CommonMethods.GetShowedCardsByPlayerID(ShowedCards, Learder).Count == 0)
                 return playerId;
 
             bool afterLeader = false;
             //find next player to show card after learder
-            foreach (var showedCard in ShowedCards)
+            for (int i = 0; i < ShowedCards.Count; i++)
             {
-                if (showedCard.Key != Learder && afterLeader == false)
+                ShowedCardKeyValue keyValue = ShowedCards[i];
+                if (keyValue.PlayerID != Learder && afterLeader == false)
                     continue;
-                else if (showedCard.Key == Learder) //search from leader;
+                else if (keyValue.PlayerID == Learder) //search from leader;
                 {
                     playerId = Learder;
                     afterLeader = true;
                 }
                 else if (afterLeader)
                 {
-                    if (showedCard.Value.Count == 0)
+                    if (keyValue.Cards.Count == 0)
                         return playerId;
-                    playerId = showedCard.Key;
+                    playerId = keyValue.PlayerID;
                 }
             }
 
 
-            foreach (var showedCard in ShowedCards)
+            for (int i = 0; i < ShowedCards.Count; i++)
             {
-                if (showedCard.Key != Learder)
+                ShowedCardKeyValue keyValue = ShowedCards[i];
+                if (keyValue.PlayerID != Learder)
                 {
-                    if (showedCard.Value.Count == 0)
+                    if (keyValue.Cards.Count == 0)
                         return playerId;
-                    playerId = showedCard.Key;
+                    playerId = keyValue.PlayerID;
                 }
                 else //search end before leader
                     break;
@@ -255,9 +267,10 @@ namespace Duan.Xiugang.Tractor.Objects
 
         public bool AllPlayedShowedCards()
         {
-            foreach (var cards in ShowedCards.Values)
+            for (int i = 0; i < ShowedCards.Count; i++)
             {
-                if (cards.Count == 0)
+                ShowedCardKeyValue keyValue = ShowedCards[i];
+                if (keyValue.Cards.Count == 0)
                     return false;
             }
             return true;
@@ -269,15 +282,16 @@ namespace Duan.Xiugang.Tractor.Objects
                 return false;
             if (ShowedCards.Count == 0)
                 return false;
-            return ShowedCards[Learder].Count > 0;
+            return CommonMethods.GetShowedCardsByPlayerID(ShowedCards, Learder).Count > 0;
         }
 
         public int CountOfPlayerShowedCards()
         {
             int result = 0;
-            foreach (var showedCard in ShowedCards)
+            for (int i = 0; i < ShowedCards.Count; i++)
             {
-                if (showedCard.Value.Count > 0)
+                ShowedCardKeyValue keyValue = ShowedCards[i];
+                if (keyValue.Cards.Count > 0)
                     result++;
             }
             return result;

@@ -287,7 +287,7 @@ namespace TractorServer
             if (!CurrentRoomState.CurrentTrickState.IsStarted() && serverLocalCache.lastShowedCards.Count > 0)
             {
                 CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
-                cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
+                cts.ShowedCards = CommonMethods.DeepClone<List<ShowedCardKeyValue>>(serverLocalCache.lastShowedCards);
                 cts.Learder = serverLocalCache.lastLeader;
                 //先发第一次，让短线重连的玩家收到上一轮的CurrentTrickState，以重画已出的牌
                 player.NotifyCurrentTrickState(cts);
@@ -1168,16 +1168,16 @@ namespace TractorServer
             //玩家出牌倒计时-完成
             PublishStartTimerByPlayer(0, lastestPlayer);
 
-            CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer] = currentTrickState.ShowedCards[lastestPlayer];
+            CurrentRoomState.CurrentTrickState.ShowedCards = CommonMethods.SetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards, lastestPlayer, CommonMethods.GetShowedCardsByPlayerID(currentTrickState.ShowedCards, lastestPlayer));
             StringBuilder logMsg = new StringBuilder();
             logMsg.Append("Player " + lastestPlayer + " showed cards: ");
-            foreach (var card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
+            foreach (var card in CommonMethods.GetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards,lastestPlayer))
             {
                 logMsg.Append(string.Format("{0} {1} ", CommonMethods.GetSuitString(card), CommonMethods.GetNumberString(card)));
             }
             log.Debug(logMsg.ToString());
             //更新每个用户手中的牌在SERVER
-            foreach (int card in CurrentRoomState.CurrentTrickState.ShowedCards[lastestPlayer])
+            foreach (int card in CommonMethods.GetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards,lastestPlayer))
             {
                 CurrentRoomState.CurrentHandState.PlayerHoldingCards[lastestPlayer].RemoveCard(card);
             }
@@ -1204,12 +1204,12 @@ namespace TractorServer
 
                 }
                 serverLocalCache = new ServerLocalCache();
-                serverLocalCache.lastShowedCards = CurrentRoomState.CurrentTrickState.ShowedCards.ToDictionary(entry => entry.Key, entry => entry.Value.ToList());
+                serverLocalCache.lastShowedCards = CommonMethods.DeepClone<List<ShowedCardKeyValue>>(CurrentRoomState.CurrentTrickState.ShowedCards);
                 serverLocalCache.lastLeader = CurrentRoomState.CurrentTrickState.Learder;
 
                 UpdatePlayerCurrentTrickState();
 
-                CurrentRoomState.CurrentHandState.LeftCardsCount -= currentTrickState.ShowedCards[lastestPlayer].Count;
+                CurrentRoomState.CurrentHandState.LeftCardsCount -= CommonMethods.GetShowedCardsByPlayerID(currentTrickState.ShowedCards, lastestPlayer).Count;
 
                 if (this.replayEntity != null) this.replayEntity.CurrentTrickStates.Add(CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState));
 
@@ -1509,7 +1509,7 @@ namespace TractorServer
                 TractorRules.IsValid(CurrentRoomState.CurrentTrickState, SelectedCards, currentPoker);
             if (showingCardsValidationResult.ResultType == ShowingCardsValidationResultType.Valid)
             {
-                CurrentRoomState.CurrentTrickState.ShowedCards[playerId] = SelectedCards;
+                CurrentRoomState.CurrentTrickState.ShowedCards = CommonMethods.SetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards, playerId, SelectedCards);
                 PlayerShowCards(CurrentRoomState.CurrentTrickState);
             }
             else
@@ -1571,7 +1571,10 @@ namespace TractorServer
                     {
                         CurrentTrickState dumpTrick = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
                         dumpTrick.ShowedCards.Clear();
-                        dumpTrick.ShowedCards.Add(playerId, selectedCards);
+                        ShowedCardKeyValue newEntry = new ShowedCardKeyValue();
+                        newEntry.PlayerID = playerId;
+                        newEntry.Cards = selectedCards;
+                        dumpTrick.ShowedCards.Add(newEntry);
                         this.replayEntity.CurrentTrickStates.Add(dumpTrick);
                     }
 
@@ -2052,7 +2055,7 @@ namespace TractorServer
                 serverLocalCache.lastShowedCards.Count > 0)
             {
                 CurrentTrickState cts = CommonMethods.DeepClone<CurrentTrickState>(CurrentRoomState.CurrentTrickState);
-                cts.ShowedCards = CommonMethods.DeepClone<Dictionary<string, List<int>>>(serverLocalCache.lastShowedCards);
+                cts.ShowedCards = CommonMethods.DeepClone<List<ShowedCardKeyValue>>(serverLocalCache.lastShowedCards);
                 cts.Learder = serverLocalCache.lastLeader;
                 IPlayerInvokeForAll(ObserversProxy, new List<string>() { observerId }, "NotifyCurrentTrickStateByType", new List<object>() { cts, CommonMethods.NotifyStateType_ObservePlayerById });
             }
@@ -2458,7 +2461,7 @@ namespace TractorServer
             if (CurrentRoomState.CurrentHandState.LeftCardsCount > 0)
                 return;
 
-            var cards = CurrentRoomState.CurrentTrickState.ShowedCards[CurrentRoomState.CurrentTrickState.Learder];
+            var cards = CommonMethods.GetShowedCardsByPlayerID(CurrentRoomState.CurrentTrickState.ShowedCards, CurrentRoomState.CurrentTrickState.Learder);
             var cardscp = new CurrentPoker(cards, (int)CurrentRoomState.CurrentHandState.Trump,
                                            CurrentRoomState.CurrentHandState.Rank);
 

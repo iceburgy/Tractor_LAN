@@ -63,7 +63,7 @@ namespace Duan.Xiugang.Tractor.Objects
         // 如果玩家玩家保持在线达60分钟，则颁发奖励（理论上为一小时，但启用一个5分钟的容错空间）
         public static int OnlineBonusMunitesRequired = 60;
         public static int OnlineBonusMunitesRequiredBuffer = 5;
-        public static int OnlineBonusShengbi= 1;
+        public static int OnlineBonusShengbi = 1;
 
         public static Random random = new Random();
         public static string RandomString(int lower, int upper)
@@ -565,6 +565,40 @@ namespace Duan.Xiugang.Tractor.Objects
             }
 
             return suitName;
+        }
+
+        public static List<int> GetShowedCardsByPlayerID(List<ShowedCardKeyValue> showedCards, string id)
+        {
+            foreach (var keyValue in showedCards)
+            {
+                if (string.Equals(keyValue.PlayerID, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return keyValue.Cards;
+                }
+            }
+            return new List<int>();
+        }
+
+        public static List<ShowedCardKeyValue> SetShowedCardsByPlayerID(List<ShowedCardKeyValue> showedCards, string id, List<int> cards)
+        {
+            var newEntry = new ShowedCardKeyValue
+            {
+                PlayerID = id,
+                Cards = cards
+            };
+
+            for (int i = 0; i < showedCards.Count; i++)
+            {
+                if (string.Equals(showedCards[i].PlayerID, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    showedCards[i] = newEntry; // Replace if found
+                    return showedCards;
+                }
+            }
+
+            // Not found, append
+            showedCards.Add(newEntry);
+            return showedCards;
         }
     }
 }

@@ -57,6 +57,7 @@
     <Compile Include="Algorithm.cs" />
     <Compile Include="CardsShoe.cs" />
     <Compile Include="OnlineBonusInfo.cs" />
+    <Compile Include="ShowedCardKeyValue.cs" />
     <Compile Include="YuezhanInfo.cs" />
     <Compile Include="HostStatus.cs" />
     <Compile Include="EnterHallInfo.cs" />
