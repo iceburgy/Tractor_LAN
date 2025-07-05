@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel;
-using Duan.Xiugang.Tractor.Objects;
-using System.Threading;
-using System.IO;
-using System.Collections;
-using System.ServiceModel.Channels;
-using System.Configuration;
+﻿using Duan.Xiugang.Tractor.Objects;
 using Fleck;
-using System.Security.Cryptography.X509Certificates;
-using System.Timers;
-using System.Collections.Concurrent;
-using System.Net.Mail;
-using System.Net;
 using Newtonsoft.Json;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Mail;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.Threading;
+using System.Timers;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
@@ -748,11 +749,6 @@ namespace TractorServer
                 UpdateGameHall();
                 Thread.Sleep(250);
                 this.UpdateOnlinePlayerList(playerID, true);
-
-                if (!string.Equals(enterHallInfo.clientType, CommonMethods.PlayerClientType_tljapp, StringComparison.OrdinalIgnoreCase))
-                {
-                    player.NotifyMessage(new string[] { "您当前使用的是怀旧版", "该版本现已停更且会不定期下架", "游戏中将会出现各种问题", "请即时切换到最新版以保证游戏正常运行" });
-                }
             })).Start();
 
             new Thread(new ThreadStart(() =>
@@ -1985,6 +1981,11 @@ namespace TractorServer
             lock (this)
             {
                 EnterHallInfo enterHallInfo = CommonMethods.ReadObjectFromString<EnterHallInfo>(content);
+                if (!string.Equals(enterHallInfo.clientType, CommonMethods.PlayerClientType_tljapp, StringComparison.OrdinalIgnoreCase))
+                {
+                    illegalOperationLogger.Debug(string.Format("您当前使用的客户端版本不正确,请访问下面的网址以确保使用正确的客户端: https://bit.ly/tljapp, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
+                    return new string[] { "您当前使用的客户端版本不正确", "请访问下面的网址以确保使用正确的客户端", "https://bit.ly/tljapp" };
+                }
                 string overridePass = enterHallInfo.password;
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
                 bool isKnownIDExact = clientInfoV3Dict.ContainsKey(playerID);
