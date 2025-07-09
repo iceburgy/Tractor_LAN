@@ -1983,8 +1983,8 @@ namespace TractorServer
                 EnterHallInfo enterHallInfo = CommonMethods.ReadObjectFromString<EnterHallInfo>(content);
                 if (!string.Equals(enterHallInfo.clientType, CommonMethods.PlayerClientType_tljapp, StringComparison.OrdinalIgnoreCase))
                 {
-                    illegalOperationLogger.Debug(string.Format("您当前使用的客户端版本不正确,请访问下面的网址以确保使用正确的客户端: https://bit.ly/tljapp, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
-                    return new string[] { "您当前使用的客户端版本不正确", "请访问下面的网址以确保使用正确的客户端", "https://bit.ly/tljapp" };
+                    illegalOperationLogger.Debug(string.Format("您当前使用的客户端版本不正确,请访问下面的网址以确保使用正确的客户端: https://bit.ly/tljappold, clientIP: {0}, playerID: {1}, content: {2}", clientIP, playerID, content));
+                    return new string[] { "您当前使用的客户端版本不正确", "请访问下面的网址", "https://bit.ly/tljappold" };
                 }
                 string overridePass = enterHallInfo.password;
                 Dictionary<string, ClientInfoV3> clientInfoV3Dict = this.LoadClientInfoV3();
