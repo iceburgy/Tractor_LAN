@@ -42,6 +42,7 @@ namespace Duan.Xiugang.Tractor.Objects
                 selectedCards.Add(currentTractors[i]);
                 allSuitCards[currentTractors[i]] -= 2;
                 leadingPairs.Remove(currentTractors[i]);
+                leadingTractors.Remove(currentTractors[i]);
             }
             //对子：先跳过常主
             var currentPairs = currentCards.GetPairs((int)leadingSuit);
@@ -169,6 +170,7 @@ namespace Duan.Xiugang.Tractor.Objects
                     currentSuitCards.Remove(currentTractors[i]);
                     currentSuitCards.Remove(currentTractors[i]);
                     leadingPairs.Remove(currentTractors[i]);
+                    leadingTractors.Remove(currentTractors[i]);
                 }
             }
             //如果别人出对子，则选择我手中相同花色的对子
